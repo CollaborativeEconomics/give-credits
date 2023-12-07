@@ -38,14 +38,9 @@ export default function Home() {
           <Tile text="My NFTS" icon="collections" href="/nfts" />
         </div>
         <div className="mt-5">
-          <div className="text-center">
-            {/*<button id="login" onClick={onLogin}>Login with Lobstr wallet</button>*/}
-            {/*<button id="logout" onClick={onLogout} className="hidden mx-auto">Logout</button>*/}
-          </div>
           <div className="text-center ">
             <p className="text-xl">We use Freighter wallet for Soroban Network</p>
             <li className="list-none">
-              {/*<Link href={'https://lobstr.co'} target="_blank">Lobstr</Link> • <Link href={'https://xbull.app'} target="_blank">xBull</Link> • <Link href={'https://trustwallet.com'} target="_blank">TrustWallet</Link>*/}
               Download <Link href={'https://www.freighter.app/'} target="_blank">Freighter</Link> wallet
             </li>
             <p className="text-sm text-slate-400 mt-4">You will need to have XLM in a wallet that supports Soroban Network, such as Freighter.  Freighter is a secure, non-custodial, end-to-end encrypted, blockchain wallet. You can learn more in their website.</p>
