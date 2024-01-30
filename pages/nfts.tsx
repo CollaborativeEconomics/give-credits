@@ -6,7 +6,7 @@ import BackButton from 'components/backbutton'
 import { getNFTsByWallet } from 'utils/registry'
 import { getCookie } from 'cookies-next'
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context:any) {
   const { req, res, query } = context
   //console.log({ context })
   //console.log('Cookies', req.cookies)
@@ -17,14 +17,14 @@ export async function getServerSideProps(context) {
   }
   console.log('Wallet:', wallet)
   const NFTs = await getNFTsByWallet(wallet) || []
-  NFTs.sort((n1, n2) => (n1.created < n2.created ? 1 : -1));
+  NFTs.sort((n1:any, n2:any) => (n1.created < n2.created ? 1 : -1));
   //console.log({ NFTs })
   return {
     props: { wallet, NFTs }
   }
 }
 
-export default function ViewNFTs(props) {
+export default function ViewNFTs(props:any) {
   const { wallet, NFTs } = props
   const gateway = 'https://ipfs.io/ipfs/'
   const defaultImage = '/hands.jpg'
@@ -59,7 +59,7 @@ export default function ViewNFTs(props) {
     <Page>
       <BackButton />
       <h1 className="text-center text-4xl mb-6">Your NFTs</h1>
-      {NFTs.map((item) => {
+      {NFTs.map((item:any) => {
         //let nftImage = defaultImage
         let nftImage = item.initiative?.defaultAsset || item.organization?.image || defaultImage
         if(item.imageUri){

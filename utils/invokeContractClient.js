@@ -80,20 +80,23 @@ export async function invoke({ method, args = [], fee = 100, responseType, parse
   const walletAccount = await getAccount(wallet, server)
   // use a placeholder null account if not yet connected to Freighter so that view calls can still work
   const account = walletAccount ?? new SorobanClient.Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0")
+  //if(!walletAccount){ return {success:false, result:'', txid:0, error:'Wallet not found'} }
   console.log('Account', account)
   const contract = new SorobanClient.Contract(contractId)
   let tx = new SorobanClient.TransactionBuilder(account, { fee: fee.toString(10), networkPassphrase })
     .addOperation(contract.call(method, ...args))
     .setTimeout(SorobanClient.TimeoutInfinite)
     .build()
-  //console.log('TX', tx)
-  const simulated = await server.simulateTransaction(tx)
-  //console.log('SIM', simulated)
+  console.log('TX', tx)
+  const simulated = await server.simulateTransaction(tx) // 'Test SDF Future Network ; October 2022'
+  console.log('SIM', simulated)
   if (SorobanClient.SorobanRpc.isSimulationError(simulated)) {
+    console.log('ERROR', simulated.error)
     throw new Error(simulated.error)
   } else if (responseType === "simulated") {
     return simulated
   } else if (!simulated.result) {
+    console.log('ERROR UNKNOWN')
     throw new Error(`invalid simulation: no result in ${simulated}`)
   }
   let authsCount = simulated.result.auth.length

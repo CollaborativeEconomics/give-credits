@@ -15,11 +15,11 @@ interface EventProps {
 const Event = (item:EventProps) => {
   return (
     <div className="flex flex-row justify-start w-full">
-      <Image src={item.image} width={100} height={100} className="w-32 h-32 mr-6 rounded" alt={item.name}/>
+      <Image src={item.image||''} width={100} height={100} className="w-32 h-32 mr-6 rounded" alt={item.name||''}/>
       <div>
-        <h1 className="text-2xl font-bold">{item.name}</h1>
-        <div className="text-slate-400 text-sm">{timeAgo(item.created)}</div>
-        <h3 className="text-base">{item.description}</h3>
+        <h1 className="text-2xl font-bold">{item.name||''}</h1>
+        <div className="text-slate-400 text-sm">{timeAgo(item.created?.toString()||'0')}</div>
+        <h3 className="text-base">{item.description||''}</h3>
       </div>
     </div>
   )

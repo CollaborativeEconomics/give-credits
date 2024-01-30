@@ -1,5 +1,4 @@
-#![allow(non_snake_case)]
-use crate::storage::DataKey;
+use crate::storage_types::DataKey;
 use soroban_sdk::{Address, Env};
 
 pub fn has_administrator(e: &Env) -> bool {
@@ -18,6 +17,7 @@ pub fn write_administrator(e: &Env, id: &Address) {
 }
 
 pub fn check_admin(e: &Env) {
+  // e.invoker() is admin ?
   let admin = read_administrator(&e);
   admin.require_auth();
 }

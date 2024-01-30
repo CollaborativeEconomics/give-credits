@@ -1,3 +1,5 @@
+import { NextApiRequest, NextApiResponse } from 'next'
+
 // TEST
 //import { newWallet } from 'utils/registry'
 //import { getOrganizations } from 'utils/registry'
@@ -10,7 +12,7 @@ import { getNFTsByAccount } from 'utils/registry'
 //import mint from 'libs/nft/mint'
 //import { createNFT } from 'utils/registry'
 
-export default async function test(req, res) {
+export default async function test(req:NextApiRequest, res:NextApiResponse){
   console.log('> api/test')
   //console.log('Params:', req.params)
   //console.log('Body:', req.body)

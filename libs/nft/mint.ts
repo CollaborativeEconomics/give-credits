@@ -1,10 +1,39 @@
 // Mints NFT and returns tokenId
 //   metauri: uri to metadata
+import { Address }  from "@stellar/stellar-sdk"
+import { networks } from 'contracts/nft721/client'
+import { submit }   from 'contracts/nft721/server'
+
+export default async function mint(contractId:string, to:string, uri:string){
+  console.log('-- Minting...')
+  console.log('TO', to)
+  console.log('URI', uri)
+  try {
+    const nettype = process.env.NEXT_PUBLIC_STELLAR_NETWORK||''
+    // @ts-ignore: I hate this
+    const network = nettype=='futurenet' ? networks?.futurenet : networks?.testnet
+    console.log('NET', network)
+    const secret  = process.env.CFCE_MINTER_WALLET_SECRET||''
+    const method  = 'mint'
+    const args    = [new Address(to).toScVal()] // use nativeToScVal for other values
+    const result  = await submit(network, secret, contractId, method, args)
+    //console.log('RES', result)
+    console.log('OK?', result?.success)
+    console.log('TOKENID', result?.tokenId)
+    //console.log('RESULT', result?.result)
+    return result
+  } catch(ex:any) {
+    console.error(ex)
+    return {success:false, error:ex.message||'Error minting NFT', tokenId:''}
+  }
+}
+
+/* OLD JAN 2024
 
 import * as StellarSdk from 'stellar-sdk'
 //import * as SorobanClient  from 'soroban-client'
 //import * as SorobanClient1 from 'soroban-client'
-import {Contract, Networks} from 'contracts/nft721'
+import {Contract, networks} from 'contracts/nft721/client'
 
 interface MintResponse {
   success?: boolean;
@@ -17,7 +46,7 @@ export default async function mint(adr, uri){
   console.log('ADR', adr)
   console.log('URI', uri)
   const nettype = process.env.NEXT_PUBLIC_STELLAR_NETWORK
-  const network = nettype=='futurenet' ? Networks.futurenet : Networks.testnet
+  const network = nettype=='futurenet' ? networks.futurenet : networks.testnet
   console.log('NET', network)
   const contract = new Contract({...network})
   //console.log('CTR', contract.spec)
@@ -35,7 +64,7 @@ export default async function mint(adr, uri){
   return res
 }
 
-
+*/
 
 /*
 //export default async function mintNFT(account:string, metauri: string):Promise<MintResponse>{

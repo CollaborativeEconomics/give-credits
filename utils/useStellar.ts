@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import StellarClient from 'stellar-sdk';
 
-console.log('preparing stellar client', process.env.NEXT_PUBLIC_STELLAR_HORIZON);
-const client = new StellarClient(process.env.NEXT_PUBLIC_STELLAR_HORIZON, {
+console.log('preparing stellar client', process.env.NEXT_PUBLIC_STELLAR_HORIZON||'');
+const client = new StellarClient(process.env.NEXT_PUBLIC_STELLAR_HORIZON||'', {
   assumeOfflineAfterSeconds: 15,
   maxConnectionAttempts: 4,
   connectAttemptTimeoutSeconds: 10

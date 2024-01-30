@@ -3,7 +3,7 @@ import upload from 'libs/nft/upload'
 import mint from 'libs/nft/mint'
 import fetchLedger from 'libs/server/fetchLedger'
 import { getUserByWallet, getOrganizationById, getInitiativeById, createNFT } from 'utils/registry'
-import getRates from 'utils/rates'
+//import getRates from 'utils/rates'
 
 /*
 function getTagFromMemo(memo){
@@ -23,8 +23,8 @@ function getTagFromMemo(memo){
 //   Send tokenId to client
 export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const {txid, initid, donor, destin, amount} = req.body
-    console.log('BODY', txid, initid, donor, destin)
+    const {txid, initid, donor, destin, amount, rate} = req.body
+    console.log('BODY', txid, initid, donor, destin, amount, rate)
 
     // Get tx info
     const txInfo = await fetchLedger('/transactions/'+txid)
@@ -73,6 +73,10 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     const userInfo = await getUserByWallet(donor)
     console.log('USER', userInfo)
     const userId = userInfo?.id || ''
+    if(!userId){
+      console.log('ERROR', 'User not found')
+      return res.status(500).json({error:'User not found'})
+    }
 
     // Get initiative info
     const initiative = await getInitiativeById(initid)
@@ -113,12 +117,12 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     //console.log('INITIATIVE', initiative)
 
     // Get XLM/USD rate
-    const usdRate = await getRates('XLM')
-    console.log('XLM/USD', usdRate)
+    //const usdRate = await getRates('XLM')
+    //console.log('XLM/USD', usdRate)
 
     //const amount = opInfo.amount
     const amountCUR = (+amount).toFixed(4)
-    const amountUSD = (+amount * usdRate).toFixed(4)
+    const amountUSD = (+amount * rate).toFixed(4)
     const coinCode = 'XLM'
     const coinIssuer = 'Stellar'
 
@@ -133,7 +137,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     console.log('CREDIT', initiative?.credits)
     if(initiative?.credits?.length > 0){
       const creditVal = initiative?.credits[0].value || 0
-      const creditTon = creditVal / (usdRate||1)
+      const creditTon = creditVal / (rate||1)
       offsetVal = creditTon>0 ? (+amountUSD / creditTon) : 0
       offsetTxt = offsetVal.toFixed(2) + ' Tons'
       console.log('CREDITVAL', creditVal)
@@ -154,7 +158,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
       organization: organizationName,
       initiative: initiativeName,
       image: uriImage,
-      network: process.env.NEXT_PUBLIC_STELLAR_NETWORK,
+      network: process.env.NEXT_PUBLIC_STELLAR_NETWORK||'unknown',
       coinCode: coinCode,
       coinIssuer: coinIssuer,
       coinValue: amountCUR,
@@ -175,7 +179,8 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     console.log('META URI', uriMeta)
 
     // Mint NFT
-    const resMint = await mint(donor, uriMeta)
+    const contractId = initiative.contract
+    const resMint = await mint(contractId, donor, uriMeta)
     console.log('RESMINT', resMint)
     if (!resMint) {
       return res.status(500).json({ error: 'Error minting NFT' })
@@ -183,7 +188,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     if (resMint?.error) {
       return res.status(500).json({ error: resMint?.error })
     }
-    const tokenId = resMint?.result
+    const tokenId = resMint?.tokenId
     const offerId = '' // no need for offers in soroban
 
     // Save NFT data to Prisma
@@ -195,7 +200,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
       initiativeId: initiativeId,
       metadataUri: uriMeta,
       imageUri: uriImage,
-      coinNetwork: process.env.NEXT_PUBLIC_STELLAR_NETWORK,
+      coinNetwork: process.env.NEXT_PUBLIC_STELLAR_NETWORK||'',
       coinSymbol: coinCode,
       coinLabel: coinIssuer,
       coinValue: amountCUR,
@@ -225,7 +230,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     }
     console.log('RESULT', result)
     return res.status(200).json(result)
-  } catch (ex) {
+  } catch (ex:any) {
     console.error(ex)
     return res.status(500).json({ success: false, error: ex.message })
   }

@@ -28,13 +28,13 @@ export interface NFTList {
 
 const initialState: NFTList = {};
 
-const nftReducer = (state = initialState, action) => {
+const nftReducer = (state = initialState, action:any) => {
   switch (action.type) {
     case nftActions.ADD_NFTS: {
       const { accountID, NFTs } = action.payload;
       console.log({ NFTs });
       const updatedAccount = state[accountID] ? { ...state[accountID] } : {};
-      NFTs.forEach((NFT) => {
+      NFTs.forEach((NFT:any) => {
         updatedAccount[NFT.NFTokenID] = NFT;
       });
       return {

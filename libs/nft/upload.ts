@@ -10,12 +10,12 @@ import {S3Client, PutObjectCommand, HeadObjectCommand} from '@aws-sdk/client-s3'
 export default async function upload(fileId:string, bytes:Buffer, mimeType:string) {
   try {
     let params = {
-      Bucket: process.env.AWS_NFT_BUCKET,
+      Bucket: process.env.AWS_NFT_BUCKET||'',
       Key: fileId,
       ContentType: mimeType,
       Body: bytes
     }
-    let config = {endpoint: process.env.IPFS_API_ENDPOINT, region: process.env.AWS_DEFAULT_REGION}
+    let config = {endpoint: process.env.IPFS_API_ENDPOINT||'', region: process.env.AWS_DEFAULT_REGION||''}
     let client = new S3Client(config)
     let action = new PutObjectCommand(params)
     let result = await client.send(action)
@@ -23,7 +23,7 @@ export default async function upload(fileId:string, bytes:Buffer, mimeType:strin
     if(!result?.ETag){
       return {error:'Error uploading file, no eTag'}
     }
-    let head = new HeadObjectCommand({Bucket: process.env.AWS_NFT_BUCKET, Key: fileId})
+    let head = new HeadObjectCommand({Bucket: process.env.AWS_NFT_BUCKET||'', Key: fileId})
     let data = await client.send(head)
     console.log('GET', data)
     //data.$metadata.httpStatusCode === 200
@@ -31,7 +31,7 @@ export default async function upload(fileId:string, bytes:Buffer, mimeType:strin
       return {error:'Error retrieving file info'}
     }
     return data?.Metadata?.cid
-  } catch(ex) {
+  } catch(ex:any) {
     console.error(ex)
     return {error:'Error uploading file: '+ex.message}
   }

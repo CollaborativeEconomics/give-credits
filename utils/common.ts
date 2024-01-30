@@ -7,29 +7,31 @@ export function $(id:string){
 
 // Quickly assign text to any html element or enable/disable if val is bool
 export function $$(id:string, val:string, off?:boolean|undefined){
-  document.getElementById(id).innerHTML = val || '&nbsp;'
+  const obj = document.getElementById(id)
+  if(!obj){ return }
+  obj.innerHTML = val || '&nbsp;'
   if(typeof(off)!='undefined'){
     if(off){
-      document.getElementById(id).setAttribute('disabled', 'true')
+      obj.setAttribute('disabled', 'true')
     } else {
-      document.getElementById(id).removeAttribute('disabled')
+      obj.removeAttribute('disabled')
     }
   }
 }
 
 // Quickly set message element to inform user of events and states
 export function setMessage(text:string='', warn:boolean|undefined=false){
-  if(warn){
-    text = `<warn>${text}</warn>`
-  }
-  document.getElementById('message').innerHTML = text
+  const obj = document.getElementById('message')
+  if(!obj){ return }
+  if(warn){ text = `<warn>${text}</warn>` }
+  obj.innerHTML = text
 }
 
 export function getNetwork(net:string){
   return net=='pubnet'?'Mainnet':'Testnet'
 }
 
-export function setCookie(name, value='', days=0) {
+export function setCookie(name:string, value='', days=0) {
   var expires = ''
   if(days) {
     var date = new Date()
@@ -41,7 +43,7 @@ export function setCookie(name, value='', days=0) {
   document.cookie = name + '=' + (value || '') + expires + '; path=/'
 }
 
-export function getCookie(name) {
+export function getCookie(name:string) {
   let value = null
   var nameEQ = name + "="
   var ca = document.cookie.split(';')
@@ -53,7 +55,7 @@ export function getCookie(name) {
   return value
 }
 
-export function copyToClipboard(text) {
+export function copyToClipboard(text:string) {
   navigator.clipboard.writeText(text).then(function() {
     console.log('Copying to clipboard was successful!')
   }, function(err) {

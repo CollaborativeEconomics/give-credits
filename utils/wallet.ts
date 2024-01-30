@@ -3,10 +3,10 @@ import {isConnected, getPublicKey, signTransaction} from "@stellar/freighter-api
 
 export default class Wallet {
   account = ''
-  horizon = null
-  soroban = null
-  hznurl  = process.env.NEXT_PUBLIC_STELLAR_HORIZON
-  sbnurl  = process.env.NEXT_PUBLIC_STELLAR_SOROBAN
+  horizon:any = null
+  soroban:any = null
+  horizonUrl  = process.env.NEXT_PUBLIC_STELLAR_HORIZON||''
+  sorobanUrl  = process.env.NEXT_PUBLIC_STELLAR_SOROBAN||''
   
   constructor() {
     console.log('FREIGHT INIT')
@@ -24,8 +24,8 @@ export default class Wallet {
   async connect() {
     try {
       console.log('CONNECT...')
-      this.soroban = new StellarSDK.Server(this.sbnurl)
-      this.horizon = new StellarSDK.Server(this.hznurl)
+      this.soroban = new StellarSDK.Server(this.sorobanUrl)
+      this.horizon = new StellarSDK.Server(this.horizonUrl)
       this.account = await getPublicKey()
       return {success:true, account:this.account}
     } catch(ex) {
@@ -38,8 +38,8 @@ export default class Wallet {
 
   async payment(dst:string, amt:string, memo:string) {
     try {
-      let nwk = process.env.NEXT_PUBLIC_STELLAR_NETWORK.toUpperCase()
-      let net = process.env.NEXT_PUBLIC_STELLAR_PASSPHRASE
+      let nwk = (process.env.NEXT_PUBLIC_STELLAR_NETWORK||'').toUpperCase()
+      let net = (process.env.NEXT_PUBLIC_STELLAR_PASSPHRASE||'')
       console.log('NET:', nwk, net)
       //let pub = process.env.NEXT_PUBLIC_NFT_ISSUER
       let pub = this.account
@@ -76,7 +76,7 @@ export default class Wallet {
       //const txs = new StellarSDK.Transaction(sgn)
       //console.log('TXS', txs)
 
-      //const txs = new StellarSDK.TransactionBuilder.fromXDR(sgn, this.hznurl)
+      //const txs = new StellarSDK.TransactionBuilder.fromXDR(sgn, this.horizonUrl)
       const txs = StellarSDK.TransactionBuilder.fromXDR(sgn, net)
       console.log('TXS', txs)
       const result = await this.horizon.submitTransaction(txs)
@@ -106,7 +106,7 @@ export default class Wallet {
       let result = await fetch(url, options)
       let data = await result.json()
       return data
-    } catch (ex) {
+    } catch (ex:any) {
       console.error(ex)
       return { error: ex.message }
     }

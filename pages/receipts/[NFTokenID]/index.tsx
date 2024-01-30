@@ -12,7 +12,7 @@ import TextRow from '/components/textrow';
 import BackButton from '/components/backbutton';
 import Session from '/utils/session';
 
-export async function getServerSideProps({ req }){
+export async function getServerSideProps({ req }:any){
   const session = Session(req)
   return {
     props: {
@@ -21,13 +21,11 @@ export async function getServerSideProps({ req }){
   }
 }
 
-export default function ReceiptNFT({ wallet, ...props }) {
-  console.log({ wallet, props });
+export default function ReceiptNFT(props:any) {
+  console.log(props);
+  const wallet = props.wallet || ''
   const router = useRouter();
-  const NFTokenID = (typeof router.query.NFTokenID === 'string'
-      ? router.query.NFTokenID
-      : router.query.NFTokenID[0]
-  )
+  const NFTokenID = router.query?.NFTokenID?.toString()
   //const NFT = useSelector((state) =>
   //  getNFTByNFTokenID(state, wallet, NFTokenID)
   //);
@@ -59,7 +57,6 @@ export default function ReceiptNFT({ wallet, ...props }) {
       amount: { value, currency }
     }
   } = NFT;
-  // const { isLoading } = useFetchNFTs(wallet);
   console.log('select', { NFT });
 
   return (

@@ -19,18 +19,18 @@ import getRates from 'utils/rates'
 //import checkTrustline from 'utils/checkTrustline'
 import Wallet from 'utils/wallet'
 import {postApi} from 'utils/api'
-import {Contract, Networks} from 'contracts/credit'
+import {Contract, networks} from 'contracts/credits/client'
 import {$$} from 'utils/common'
 
 const wallet = new Wallet()
 
-export async function getServerSideProps({
-  params: { organizationId },
-  query
-}) {
+export async function getServerSideProps(props:any){
+  const query = props.query
+  const organizationId = props.params?.organizationId || ''
   try {
     //console.log('QUERY:', query)
-    const usdConversion = await getRates('XLM')
+    //const usdRate = await getRates('XLM')
+    const usdRate = 0.10 // TODO: REMOVE WHEN READY
     const organization = await getOrganizationById(organizationId)
     const initiative = await getInitiativeById(query.initiativeId)
     const props = {
@@ -41,12 +41,12 @@ export async function getServerSideProps({
       currencyName: query.tokenName ?? 'XLM',
       currency: query.tokenCode ?? 'XLM',
       issuer: query.tokenIssuer ?? '',
-      usdConversion,
+      usdRate,
       destinationTag: query.destinationTag ?? null
     }
     //console.log('PROPS', props)
     return { props }
-  } catch(ex) {
+  } catch(ex:any) {
     console.error(ex)
     return {
       props: {
@@ -56,19 +56,33 @@ export async function getServerSideProps({
   }
 }
 
-export default function Handler({
-  organization,
-  initiative,
-  amount,
-  credit,
-  currencyName,
-  currency,
-  issuer,
-  usdConversion,
-  destinationTag
-}) {
+interface Summary {
+  organization:any
+  initiative:any
+  amount:number
+  credit:number
+  currencyName:string
+  currency:string
+  issuer:string
+  usdRate:number
+  destinationTag:number
+}
+
+export default function Handler(props:any){
+  const {
+    organization,
+    initiative,
+    amount,
+    credit,
+    currencyName,
+    currency,
+    issuer,
+    usdRate,
+    destinationTag
+  }:Summary = props
+
   const initiativeId = initiative.id
-  const tonCredit = credit / usdConversion
+  const tonCredit = credit / usdRate
   const offsetVal = tonCredit>0 ? (amount / tonCredit) : 0
   //console.log('OFFSET:', offsetVal)
 
@@ -89,11 +103,11 @@ export default function Handler({
   useEffect(() => {
     if (confirmed) {
       setConfirmed(false)
-      sendPayment(name, email, organization, initiativeId, amount, currency, issuer, destinationTag, yesReceipt, yesNFT)
+      sendPayment(name, email, organization, initiativeId, amount, currency, usdRate, issuer, destinationTag, yesReceipt, yesNFT)
     }
-  }, [confirmed, name, email, organization, initiativeId, amount, currency, issuer, destinationTag, yesReceipt, yesNFT])
+  }, [confirmed, name, email, organization, initiativeId, amount, currency, usdRate, issuer, destinationTag, yesReceipt, yesNFT])
 
-  function getWalletByChain(wallets, chain){
+  function getWalletByChain(wallets:[any], chain:string){
     for(let i=0; i<wallets.length; i++){
       if(wallets[i].chain==chain){
         return wallets[i]
@@ -102,28 +116,39 @@ export default function Handler({
     return null
   }
 
-  async function donate(contractid, from, amount) {
+  async function donate(contractId:string, from:string, amount:number) {
     try {
-      console.log('-- Donating', contractid, from, amount)
-      const nettype = process.env.NEXT_PUBLIC_STELLAR_NETWORK
-      const network = nettype=='futurenet' ? Networks.futurenet : Networks.testnet
-      console.log('NET', network)
-      // TODO: get contract id for initiativeId
-      // TODO: pass contract id to contract invoker
-      const contract = new Contract({...network})
-      //console.log('CTR', contract.spec)
-      const wei = amount*10000000
-      const res = await contract.donate({from, amount:wei})
-      console.log('RES', res)
-      return res
-    } catch(ex) {
-      console.error(ex)
-      return {success:false, error:ex?.message || 'Error sending payment'}
+      console.log('-- Donating', contractId, from, amount)
+      const nettype = process.env.NEXT_PUBLIC_STELLAR_NETWORK||''
+      const network = nettype=='futurenet' ? networks.futurenet : networks.testnet
+      const opt = {contractId, ...network}
+      console.log('NET', opt)
+      const wei = BigInt(amount*10000000) // 7 decs
+      const dat = {from, amount:wei}
+      const ctr = new Contract(opt)
+      const trx = await ctr.donate(dat)
+      //const trx = await ctr.donate([from, wei])
+      const res = await trx.signAndSend()
+      console.log('JSN', JSON.stringify(res,null,2))
+      console.log('RES1', res)
+      console.log('RES2', res.sendTransactionResponse)
+      console.log('RES3', res.getTransactionResponse)
+      console.log('RES4', res.getTransactionResponse?.status)
+      let txid = ''
+      if(res?.getTransactionResponse?.status == 'SUCCESS'){
+        txid = res?.sendTransactionResponse?.hash || ''
+        return {success:true, txid, error:null}
+      } else {
+        return {success:false, txid:'', error:'Error sending payment'} // get error?
+      }
+    } catch(ex:any) {
+      console.error('ERROR', ex)
+      return {success:false, error:ex?.message || 'Error sending payment', txid:''}
     }
   }
 
-  async function sendPayment(name, email, organization, initiativeId, amount, currency, issuer, destinTag, yesReceipt, yesNFT){
-    console.log('PAY', {name, email, organization, initiativeId, amount, currency, issuer, destinTag, yesReceipt, yesNFT})
+  async function sendPayment(name:string, email:string, organization:any, initiativeId:string, amount:number, currency:string, rate:number, issuer:string, destinTag:number, yesReceipt:boolean, yesNFT:boolean){
+    console.log('PAY', {name, email, organization, initiativeId, amount, currency, rate, issuer, destinTag, yesReceipt, yesNFT})
     const orgwallet = getWalletByChain(organization.wallets, 'Stellar')
     if(!orgwallet){
       $$('message', 'Error: no Stellar wallet for this organization')
@@ -144,28 +169,20 @@ export default function Handler({
     }
     setCookie('wallet', donor)
     //const memo = destinTag ? 'tag:'+destinTag : ''
-    // TODO: get ctrid from initid in db
-    //const ctrId = 'CDHGVKFRG7CFXVKTZGNM7VKEQWZDBLH733FD6AD3SN7JZIRZSHZM5Q2S';
-    const ctrId = 'CCHJXOOUDFHM6CKNNQ6ZT3GGVU3UPBDDMYUGOW7CMRYBCEWAAOQNSHQW';
+    // TODO: get contract id for initiativeId
+    const ctrId = 'CADWL2UR26VBJ6S3OSZJ5CYPLH3EV3IWYBRVAKT5I7C3QWT74V6VEAQ7';
     const result = await donate(ctrId, donor, amount)
     console.log('UI RESULT', result)
-    if(!result?.success || result?.error){
-     console.log(result?.error)
+    if(!result?.success){
      $$('message', 'Error sending payment')
      return
     }
-    console.log('Result', result)
-    if(result.error){
-      $$('message', 'Error sending payment')
-      return
-    }
     $$('message', 'Payment sent successfully')
-
     if(yesReceipt){
-     sendReceipt(name, email, organization, amount, currency, issuer)
+     sendReceipt(name, email, organization, amount, currency, rate, issuer)
     }
     if(yesNFT){
-      const minted = await mintNFT(result.txid, initiativeId, donor, destin, amount)
+      const minted = await mintNFT(result.txid, initiativeId, donor, destin, amount, rate)
       if(minted?.success){
         router.push(`/donation_confirmation?ok=true&chain=Stellar&txid=${result.txid}&nft=true&nftid=${encodeURIComponent(minted.tokenId)}&urinft=${encodeURIComponent(minted.image)}&urimeta=${encodeURIComponent(minted.metadata)}`)
       }
@@ -226,7 +243,7 @@ export default function Handler({
     }
   }
 */
-  async function sendReceipt(name, email, organization, amount, currency, issuer){
+  async function sendReceipt(name:string, email:string, organization:any, amount:number, currency:string, rate:number, issuer:string){
     fetch('/api/receipt', {
       method: 'post',
       headers: {
@@ -237,6 +254,7 @@ export default function Handler({
         email,
         amount,
         currency,
+        rate, 
         issuer,
         orgName:organization.name,
         orgAddress:organization.address,
@@ -249,14 +267,14 @@ export default function Handler({
     }).catch(console.warn)
   }
 
-  async function mintNFT(txid, initid, donor, destin, amount){
+  async function mintNFT(txid:string, initid:string, donor:string, destin:string, amount:number, rate:number){
     // Mint NFT
     //const imageuri = 'ipfs:QmdmPTsnJr2AwokcR1QC11s1T3NRUh9PK8jste1ngnuDzT'
     //const metadata = 'ipfs:Qme4c3dERwN7xNrC7wyDgbxF4bQ5aS9uNwaeXdXbWTeabh'
     //const imageurl = 'https://gateway.lighthouse.storage/ipfs/QmdmPTsnJr2AwokcR1QC11s1T3NRUh9PK8jste1ngnuDzT'
     //const metaurl  = 'https://gateway.lighthouse.storage/ipfs/Qme4c3dERwN7xNrC7wyDgbxF4bQ5aS9uNwaeXdXbWTeabh'
     $$('message', 'Minting NFT, wait...')
-    const minted = await postApi('nft/mint', {txid, initid, donor, destin, amount})
+    const minted = await postApi('nft/mint', {txid, initid, donor, destin, amount, rate})
     console.log('Minted', minted)
     if(!minted?.success){
       $$('message', 'Error minting NFT')
@@ -290,7 +308,7 @@ export default function Handler({
             />
             <TextRow
               label="Total Value (nearest cent)"
-              text={`$${(amount * usdConversion).toFixed(2)} USD`}
+              text={`$${(amount * usdRate).toFixed(2)} USD`}
               className="px-6 py-3"
             />
           {/* TODO: IF CARBON OFFSET SHOW THIS */}

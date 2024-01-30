@@ -1,6 +1,6 @@
 import fetchLedger from 'libs/server/fetchLedger'
 
-export default async function checkTrustline(account, token, issuer){
+export default async function checkTrustline(account:string, token:string, issuer:string){
   console.log('Checking trustline for account', account, 'and token', token, issuer)
   let url = '/accounts/'+account
   let result = await fetchLedger(url)

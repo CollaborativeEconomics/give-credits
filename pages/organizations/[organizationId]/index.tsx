@@ -13,9 +13,11 @@ import Session from 'utils/session'
 import getRates from 'utils/rates'
 
 
-export async function getServerSideProps({req,query}){
+export async function getServerSideProps(props:any){
+  const req = props.req
+  const query = props.query
   const session = Session(req)
-  const organization = await getOrganizationById(query.organizationId)
+  const organization = await getOrganizationById(query?.organizationId||'')
   const rate = await getRates('XLM')
   //const rate = 0.12
   return {
@@ -27,11 +29,11 @@ export async function getServerSideProps({req,query}){
   }
 }
 
-function Initiatives(organization, initiatives, wallet, rate) {
+function Initiatives(organization:any, initiatives:[any], wallet:string, rate:number) {
   const router = useRouter()
   return (
     <>
-      {initiatives.map((initiative) => {
+      {initiatives.map((initiative:any) => {
         if(initiative.inactive){ return null }
         //console.log('initcredit', initiative.credits)
         const credit = initiative.credits?.length>0 ? initiative.credits[0].value : 0
@@ -104,9 +106,12 @@ function Initiatives(organization, initiatives, wallet, rate) {
   )
 }
 
-export default function Organization({ session, organization, rate }) {
+export default function Organization(props:any){
+  const session = props.session
+  const organization = props.organization
+  const rate = props.rate || 1
   const logo = organization?.image || '/noimage.png'
-  const wallet = session.wallet
+  const wallet = session?.wallet || ''
   const initiatives = organization?.initiative // Now using initiatives table
   //console.log('Initiatives', initiatives)
   //console.log('Credits', initiatives[0].credits)

@@ -9,7 +9,7 @@ const HomeButton = () => {
       text="Home"
       className="mt-4 ml-6 py-1 px-3 bg-slate-600 text-white mb-4"
       icon="home"
-      onClick={() => router.push('/xapp')}
+      onClick={() => router.push('/')}
     />
   )
 }

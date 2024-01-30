@@ -1,6 +1,6 @@
 import { NFTokenWithMeta } from './actions';
 
-export const getNFTArray = (state, walletID: string): NFTokenWithMeta[] => {
+export const getNFTArray = (state:any, walletID: string): NFTokenWithMeta[] => {
   const accountNFTs: { [tokenID: string]: NFTokenWithMeta } =
     state.NFTs[walletID];
   console.log({ accountNFTs });
@@ -15,7 +15,7 @@ export const getNFTArray = (state, walletID: string): NFTokenWithMeta[] => {
 };
 
 export const getNFTByNFTokenID = (
-  state,
+  state: any,
   walletID: string,
   NFTokenID: string
 ): NFTokenWithMeta => {

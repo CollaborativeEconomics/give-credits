@@ -1,4 +1,4 @@
-export default function timeAgo(sdate) {
+export default function timeAgo(sdate:string) {
   var now  = new Date()
   var date = new Date(sdate)
   var seconds = Math.floor((now.getTime() - date.getTime()) / 1000)

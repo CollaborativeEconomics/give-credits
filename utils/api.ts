@@ -15,7 +15,7 @@ export async function fetchApi(query:string) {
     let result = await fetch(url, options);
     let data = await result.json();
     return data;
-  } catch (ex) {
+  } catch (ex:any) {
     console.error(ex);
     return { error: ex.message };
   }
@@ -35,7 +35,7 @@ export async function postApi(query:string, data:Dictionary) {
     let result = await fetch(url, options);
     let info = await result.json();
     return info;
-  } catch (ex) {
+  } catch (ex:any) {
     console.error(ex);
     return { error: ex.message };
   }

@@ -10,7 +10,8 @@ interface PageProps {
   className?: string
 }
 
-export const PageWrapper = ({ children }) => {
+export const PageWrapper = (props:any) => {
+  const children = props?.children
   return (
     <div className="min-h-screen flex flex-col align-middle justify-center bg-slate-300">
       {children}

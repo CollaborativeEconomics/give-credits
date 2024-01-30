@@ -8,9 +8,9 @@ import {
 import thunk from 'redux-thunk';
 import nftReducer from './nft/reducer';
 
-let store;
+let store:any;
 
-const initStore = (initialState) =>
+const initStore = (initialState:any) =>
   createStore(
     combineReducers({
       NFTs: nftReducer
@@ -19,12 +19,12 @@ const initStore = (initialState) =>
     compose(applyMiddleware(thunk))
   );
 
-const useStore = (initialState) => {
+const useStore = (initialState:any) => {
   const store = useMemo(() => initializeStore(initialState), [initialState]);
   return store;
 };
 
-const initializeStore = (preloadedState) => {
+const initializeStore = (preloadedState:any) => {
   let _store = store ?? initStore(preloadedState);
 
   // After navigating to a page with an initial Redux state, merge that state

@@ -7,7 +7,7 @@ export default withIronSessionApiRoute(
   },
   {
     cookieName: 'givexlm_session',
-    password: process.env.IRON_SESSION_KEY,
+    password: process.env.IRON_SESSION_KEY||'',
     // secure: true should be used in production (HTTPS) but can't be used in development (HTTP)
     cookieOptions: {
       secure: process.env.NODE_ENV === 'production'

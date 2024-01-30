@@ -5,7 +5,7 @@ interface TextInputProps {
   label?: string;
   className?: string;
   register: UseFormRegisterReturn;
-  onChange?: (event)=>void;
+  onChange?: (event:any)=>void;
 }
 
 const TextInput = forwardRef(
@@ -24,7 +24,7 @@ const TextInput = forwardRef(
         <span className="text-green-300 text-sm text-left uppercase">
           {label}
         </span>
-        <input onKeyUp={onChange} ref={ref} {...props} {...register} />
+        <input onKeyUp={onChange} {...props} {...register} />
       </label>
     )
   }

@@ -20,7 +20,7 @@ export default async function addOrganization(
     } else {
       res.status(405).send(JSON.stringify({error:'Method not allowed'}))
     }
-  } catch(ex) {
+  } catch(ex:any) {
     console.error(ex)
     res.status(500).send(JSON.stringify({error:ex.message}))
   }

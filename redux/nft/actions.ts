@@ -43,7 +43,7 @@ interface NFTokenError extends NFToken {
 }
 
 export const addNFTS =
-  (accountID: string, NFTs: NFToken[]) => async (dispatch) => {
+  (accountID: string, NFTs: NFToken[]) => async (dispatch:any) => {
     const transformNFT = async (
       NFT: NFToken
     ): Promise<NFTokenWithMeta | NFTokenError> => {

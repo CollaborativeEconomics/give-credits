@@ -1,4 +1,4 @@
-export default async function getRates(symbol){
+export default async function getRates(symbol:string){
   console.warn('Getting CMC ticker for symbol', symbol)
   let url, opt, res, tkr, usd
   try {
@@ -8,7 +8,7 @@ export default async function getRates(symbol){
       headers: {
         'accept': 'application/json',
         'content-type': 'application/json',
-        'X-CMC_PRO_API_KEY': process.env.NEXT_PUBLIC_TICKER_API_KEY
+        'X-CMC_PRO_API_KEY': process.env.NEXT_PUBLIC_TICKER_API_KEY||''
       }
     }
     res = await fetch(url, opt)

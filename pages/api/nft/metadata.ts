@@ -5,7 +5,9 @@ export default async function getMetadata(
   res: NextApiResponse
 ) {
   //console.log('Metadata URI', req.query.url)
-  const url = Array.isArray(req.query.url) ? req.query.url[0] : req.query.url;
+  //const url = Array.isArray(req.query.url) ? req.query.url[0] : req.query.url;
+  const url = req.query?.url?.toString() || ''
+  if(!url) { return res.status(500).json({ error: 'Url is required' }) }
   try {
     const result = await fetch(url);
     const metadata = await result.json();

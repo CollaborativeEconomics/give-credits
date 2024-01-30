@@ -8,20 +8,20 @@ import { getNFTsByWallet } from 'utils/registry'
 import { getCookie } from 'cookies-next'
 //import Session from 'utils/session'
 
-export async function getServerSideProps({ req, res, query }){
-  let { wallet } = query
+export async function getServerSideProps({ req, res, query }:any){
+  let wallet = query.wallet || ''
   if (!wallet) {
     wallet = getCookie('wallet', { req, res }) ?? null; // check cookies just in case
   }
   console.log('Wallet:', wallet)
   //const session = Session(req)
   const NFTs = await getNFTsByWallet(wallet) || [];
-  NFTs.sort((n1, n2) => (n1.created < n2.created ? 1 : -1));
+  NFTs.sort((n1:any, n2:any) => (n1.created < n2.created ? 1 : -1));
   //console.log('Session:', session)
   return { props: {wallet, NFTs} }
 }
 
-export default function Receipts(props) {
+export default function Receipts(props:any) {
   const { wallet, NFTs } = props
 
   if (!wallet) {
@@ -50,7 +50,7 @@ export default function Receipts(props) {
     <Page>
       <BackButton />
       <h1 className="text-center text-4xl mb-6">Your Receipts</h1>
-      {NFTs.map((item) => {
+      {NFTs.map((item:any) => {
         const impactUrl = item.initiative?.id ? '/impact/'+item.initiative?.id : null
         return (
           <Card key={item.tokenId} onClick={() => null}>

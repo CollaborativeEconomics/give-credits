@@ -1,5 +1,5 @@
-const registryApiUrl = process.env.CFCE_REGISTRY_API_URL
-const apiKey = process.env.CFCE_REGISTRY_API_KEY;
+const registryApiUrl = process.env.CFCE_REGISTRY_API_URL||''
+const apiKey = process.env.CFCE_REGISTRY_API_KEY||''
 
 type Dictionary = { [key:string]:any }
 
@@ -16,7 +16,7 @@ const fetchRegistry = async (endpoint: string) => {
     const response = await fetch(url, options)
     const { data } = await response.json()
     return data
-  } catch(ex) {
+  } catch(ex:any) {
     console.error(ex)
     return {error:ex.message}
   }
@@ -37,7 +37,7 @@ const postRegistry = async (endpoint: string, body: Dictionary) => {
     const response = await fetch(url, options)
     const result = await response.json()
     return result
-  } catch(ex) {
+  } catch(ex:any) {
     console.error(ex)
     return {error:ex.message}
   }
