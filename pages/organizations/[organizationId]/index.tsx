@@ -30,6 +30,7 @@ export async function getServerSideProps(props:any){
 }
 
 function Initiatives(organization:any, initiatives:[any], wallet:string, rate:number) {
+  const minimum = 10
   const router = useRouter()
   return (
     <>
@@ -82,7 +83,7 @@ function Initiatives(organization:any, initiatives:[any], wallet:string, rate:nu
             <DonationTierRow
               title="Custom Amount"
               image={"/noimage.png"}
-              value={1}
+              value={minimum}
               credit={credit}
               rate={rate}
               onClick={(amount,credit) => {

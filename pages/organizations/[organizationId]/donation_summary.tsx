@@ -116,6 +116,7 @@ export default function Handler(props:any){
     return null
   }
 
+  // Contract call
   async function donate(contractId:string, from:string, amount:number) {
     try {
       console.log('-- Donating', contractId, from, amount)
@@ -147,6 +148,7 @@ export default function Handler(props:any){
     }
   }
 
+  // Wallet call
   async function sendPayment(name:string, email:string, organization:any, initiativeId:string, amount:number, currency:string, rate:number, issuer:string, destinTag:number, yesReceipt:boolean, yesNFT:boolean){
     console.log('PAY', {name, email, organization, initiativeId, amount, currency, rate, issuer, destinTag, yesReceipt, yesNFT})
     const orgwallet = getWalletByChain(organization.wallets, 'Stellar')
@@ -168,6 +170,14 @@ export default function Handler(props:any){
       return
     }
     setCookie('wallet', donor)
+    // Check network
+    const useNetwork = process.env.NEXT_PUBLIC_STELLAR_NETWORK||''
+    if(info.network!==useNetwork){
+      console.log('Error: Wrong network', info.network)
+      console.log('Expected network:', useNetwork)
+      $$('message', 'Select '+useNetwork+' network in Freighter Wallet')
+      return
+    }
     //const memo = destinTag ? 'tag:'+destinTag : ''
     // TODO: get contract id for initiativeId
     const ctrId = 'CADWL2UR26VBJ6S3OSZJ5CYPLH3EV3IWYBRVAKT5I7C3QWT74V6VEAQ7';

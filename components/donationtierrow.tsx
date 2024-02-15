@@ -1,3 +1,4 @@
+"use client"
 import React, { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import Image from 'next/image'
@@ -29,6 +30,8 @@ const DonationTierRow = ({
   description
 }: DonationTierRowTypes) => {
   // ref not working for some reason
+  const minimum = 10
+  const [message, setMessage] = useState('')
   const textInputRef = useRef(null)
   const { register, watch } = useForm({ defaultValues: { [title as string]: value } })
   const [amount] = watch([title as string])
@@ -46,7 +49,6 @@ const DonationTierRow = ({
   }
   return (
     <>
-      {/*<div>{title}</div>*/}
       <div className="text-gray-400 mb-1 text-xs">{description}</div>
       <div className="mx-auto text-center">Your donation will offset {offset} tons of carbon</div>
       <Card className="w-full h-24 p-0 mb-4" key={title}>
@@ -65,18 +67,24 @@ const DonationTierRow = ({
           />
           <label className="mr-4 mb-0">{currency ?? 'XLM'}</label>
           <div
-            onClick={() => onClick(amount,credit)}
+            onClick={() => { 
+              if(amount<minimum){
+                setMessage('Minimum amount of 10 XLM required')
+                return
+              }
+              onClick(amount,credit)
+            }}
             className="bg-green-700 self-stretch rounded-r-xl flex basis-24 flex-grow-0 justify-center items-center"
           >
             <Icon icon="arrow_forward" className="cursor-pointer" />
           </div>
         </div>
       </Card>
+      <p className="my-2 text-center text-yellow-300">{message}</p>
     </>
   )
 }
 
 export default DonationTierRow
-
 
 // textinput onFocus={() => textInputRef?.current?.select() }

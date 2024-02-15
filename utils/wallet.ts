@@ -1,8 +1,9 @@
 import * as StellarSDK from 'stellar-sdk'
-import {isConnected, getPublicKey, signTransaction} from "@stellar/freighter-api"
+import {isConnected, getNetwork, getPublicKey, signTransaction} from "@stellar/freighter-api"
 
 export default class Wallet {
   account = ''
+  network = ''
   horizon:any = null
   soroban:any = null
   horizonUrl  = process.env.NEXT_PUBLIC_STELLAR_HORIZON||''
@@ -27,7 +28,8 @@ export default class Wallet {
       this.soroban = new StellarSDK.Server(this.sorobanUrl)
       this.horizon = new StellarSDK.Server(this.horizonUrl)
       this.account = await getPublicKey()
-      return {success:true, account:this.account}
+      this.network = (await getNetwork() || '').toLowerCase()
+      return {success:true, account:this.account, network:this.network}
     } catch(ex) {
       console.error(ex)
       return {success:false, account:''}
@@ -48,9 +50,9 @@ export default class Wallet {
       let act = await this.horizon.loadAccount(pub)
       let fee = await this.horizon.fetchBaseFee() // 100
       let opr = StellarSDK.Operation.payment({
-       destination: dst,
-       asset: StellarSDK.Asset.native(),
-       amount: amt
+        destination: dst,
+        asset: StellarSDK.Asset.native(),
+        amount: amt
       })
       // TODO: fix type error: TransactionBuilderOptions <<<
       const opt = { fee, network:nwk, networkPassphrase:net }
