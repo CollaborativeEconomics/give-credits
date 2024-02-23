@@ -20,25 +20,11 @@
     "strict": true,
     "target": "esnext",
     "paths": {
-      "*": [
-        "node_modules/*",
-        "./*"
-      ],
-      "~/*": [
-        "./*"
-      ],
-      "@/*": [
-        "./*"
-      ]
+      "*": [ "node_modules/*", "./*" ],
+      "~/*": [ "./*" ],
+      "@/*": [ "./*" ]
     }
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules",
-    "work"
-  ]
+  "include": [ "next-env.d.ts", "**/*.ts", "**/*.tsx" ],
+  "exclude": [ "node_modules", "work" ]
 }
