@@ -188,7 +188,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     console.log('META URI', uriMeta)
 
     // Mint NFT
-    const contractId = initiative.contract
+    const contractId = initiative.contractnft
     const resMint = await mint(contractId, donor, uriMeta)
     console.log('RESMINT', resMint)
     if (!resMint) {
