@@ -2,7 +2,6 @@ import { useRouter } from 'next/router'
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { setCookie } from 'cookies-next'
-//import Link from 'next/link'
 import Page from 'components/page'
 import BackButton from 'components/backbutton'
 import Button from 'components/button'
@@ -10,17 +9,12 @@ import Card from 'components/card'
 import Divider from 'components/divider'
 import Checkbox from 'components/form/checkbox'
 import TextInput from 'components/form/textinput'
-//import Spinner from 'components/spinner'
 import TextRow from 'components/textrow'
 import { getOrganizationById, getInitiativeById } from 'utils/registry'
+import { fetchApi, postApi } from 'utils/api'
 import getRates from 'utils/rates'
-//import PaymentXDR from 'utils/payment'
-//import trustlineXDR from 'utils/trustlineXDR'
-//import checkTrustline from 'utils/checkTrustline'
 import Wallet from 'utils/wallet'
-import {postApi} from 'utils/api'
 import {Contract, networks} from 'contracts/credits/client'
-import {$$} from 'utils/common'
 
 const wallet = new Wallet()
 
@@ -29,8 +23,8 @@ export async function getServerSideProps(props:any){
   const organizationId = props.params?.organizationId || ''
   try {
     //console.log('QUERY:', query)
-    //const usdRate = await getRates('XLM')
-    const usdRate = 0.10 // TODO: REMOVE WHEN READY
+    const usdRate = await getRates('XLM')
+    //const usdRate = 0.10 // TODO: REMOVE WHEN READY
     const organization = await getOrganizationById(organizationId)
     const initiative = await getInitiativeById(query.initiativeId)
     const props = {
@@ -89,6 +83,7 @@ export default function Handler(props:any){
 
   const { ...router } = useRouter()
   const [confirmed, setConfirmed] = useState(false)
+  const [message, setMessage] = useState('One wallet confirmation required')
 
   const { register, watch } = useForm({
     defaultValues: { yesReceipt: false, yesNFT:true, name: '', email: '' }
@@ -154,11 +149,11 @@ export default function Handler(props:any){
     console.log('PAY', {contractId, name, email, organization, initiativeId, amount, currency, rate, issuer, destinTag, yesReceipt, yesNFT})
     const orgwallet = getWalletByChain(organization.wallets, 'Stellar')
     if(!orgwallet){
-      $$('message', 'Error: no Stellar wallet for this organization')
+      setMessage('Error: no Stellar wallet for this organization')
       console.log('Error sending payment, no Stellar wallet')
       return
     }
-    $$('message', 'Confirm payment in your wallet')
+    setMessage('Confirm payment in your wallet')
     const destin = orgwallet.address
     console.log('Sending payment to', destin)
     await wallet.init()
@@ -166,17 +161,44 @@ export default function Handler(props:any){
     const donor = info?.account
     console.log('DONOR', donor)
     if(!donor){
-      $$('message', 'Error: Signature rejected by user')
+      setMessage('Error: Signature rejected by user')
       console.log('Error: Signature rejected by user')
       return
     }
+
+    // Check user exists or create a new one
+    let userInfo = await fetchApi('users?wallet='+donor)
+    console.log('USER', userInfo)
+    const userId = userInfo?.id || ''
+    if(!userId){
+      //const email = donor.substr(0,10).toLowerCase() + '@example.com'
+      const user = await postApi('users', {
+        name: 'Anonymous', 
+        wallet: donor,
+        wallets:{
+          create:{
+            address: donor,
+            chain:'Stellar'
+          }
+        }
+      })
+      userInfo = user.data
+      console.log('NEWUSER', userInfo)
+      if(!userInfo){
+        console.log('ERROR', 'Error creating user')
+        setMessage('Error: User could not be created')
+        return
+      }
+    }
+
     setCookie('wallet', donor)
+
     // Check network
     const useNetwork = process.env.NEXT_PUBLIC_STELLAR_NETWORK||''
     if(info.network!==useNetwork){
       console.log('Error: Wrong network', info.network)
       console.log('Expected network:', useNetwork)
-      $$('message', 'Select '+useNetwork+' network in Freighter Wallet')
+      setMessage('Select '+useNetwork+' network in Freighter Wallet')
       return
     }
     //const memo = destinTag ? 'tag:'+destinTag : ''
@@ -185,10 +207,10 @@ export default function Handler(props:any){
     const result = await donate(contractId, donor, amount)
     console.log('UI RESULT', result)
     if(!result?.success){
-     $$('message', 'Error sending payment')
+     setMessage('Error sending payment')
      return
     }
-    $$('message', 'Payment sent successfully')
+    setMessage('Payment sent successfully')
     if(yesReceipt){
      sendReceipt(name, email, organization, amount, currency, rate, issuer)
     }
@@ -202,58 +224,6 @@ export default function Handler(props:any){
     }
   }
 
-/*
-  async function sendPaymentOLD(name, email, organization, initiativeId, amount, currency, issuer, destinTag, yesReceipt, yesNFT){
-    const orgwallet = getWalletByChain(organization.wallets, 'Stellar')
-    if(!orgwallet){
-      $$('message', 'Error: no Stellar wallet for this organization')
-      console.log('Error sending payment, no Stellar wallet')
-      return
-    }
-    $$('message', 'Waiting for confirmation')
-    const destin = orgwallet.address
-    console.log('Sending payment to', destin)
-    await wallet.init()
-    const info = await wallet.connect()
-    const source = info?.account
-    console.log('SOURCE', source)
-    if(!source){
-      $$('message', 'Error: Signature rejected by user')
-      console.log('Error: Signature rejected by user')
-      return
-    }
-    setCookie('wallet', source)
-    const memo = destinTag ? 'tag:'+destinTag : ''
-    //const {txid, xdr} = await PaymentXDR(source, destin, amount, currency, issuer, memo)
-    //console.log('txid', txid, xdr)
-    //wallet.signAndSubmit(xdr, async result=>{
-    const result = await wallet.payment(destin, amount, memo)
-    console.log('UI RESULT', result)
-    if(!result?.success || result?.error){
-     console.log('Error', result.error)
-     $$('message', 'Error sending payment')
-     return
-    }
-    console.log('Result', result)
-    if(result.error){
-      $$('message', 'Error sending payment')
-      return
-    }
-    $$('message', 'Payment sent successfully')
-    if(yesReceipt){
-     sendReceipt(name, email, organization, amount, currency, issuer)
-    }
-    if(yesNFT){
-      //verifyTrustline(source, txid)
-      const minted = await mintNFT(result.txid, initiativeId, source, destin)
-      if(minted?.success){
-        router.push(`/donation_confirmation?ok=true&chain=Stellar&txid=${result.txid}&nft=true&nftid=${encodeURIComponent(minted.tokenId)}&urinft=${encodeURIComponent(minted.image)}&urimeta=${encodeURIComponent(minted.metadata)}`)
-      }
-    } else {
-      router.push(`/donation_confirmation?ok=true&chain=Stellar&txid=${result.txid}`)
-    }
-  }
-*/
   async function sendReceipt(name:string, email:string, organization:any, amount:number, currency:string, rate:number, issuer:string){
     fetch('/api/receipt', {
       method: 'post',
@@ -284,14 +254,14 @@ export default function Handler(props:any){
     //const metadata = 'ipfs:Qme4c3dERwN7xNrC7wyDgbxF4bQ5aS9uNwaeXdXbWTeabh'
     //const imageurl = 'https://gateway.lighthouse.storage/ipfs/QmdmPTsnJr2AwokcR1QC11s1T3NRUh9PK8jste1ngnuDzT'
     //const metaurl  = 'https://gateway.lighthouse.storage/ipfs/Qme4c3dERwN7xNrC7wyDgbxF4bQ5aS9uNwaeXdXbWTeabh'
-    $$('message', 'Minting NFT, wait...')
+    setMessage('Minting NFT, wait...')
     const minted = await postApi('nft/mint', {txid, initid, donor, destin, amount, rate})
     console.log('Minted', minted)
     if(!minted?.success){
-      $$('message', 'Error minting NFT')
+      setMessage('Error minting NFT')
       return minted
     }
-    $$('message', `NFT minted successfully • <a href="${minted.image}" target="_blank">Image</a> • <a href="${minted.metadata}" target="_blank">Meta</a>`)
+    setMessage(`NFT minted successfully • <a href="${minted.image}" target="_blank">Image</a> • <a href="${minted.metadata}" target="_blank">Meta</a>`)
     return minted
   }
 
@@ -356,7 +326,7 @@ export default function Handler(props:any){
           className="w-full bg-blue-700"
           onClick={onPressConfirm}
         />
-        <p id="message" className="mt-5 text-center">One wallet confirmation required</p>
+        <p id="message" className="mt-5 text-center">{message}</p>
       </div>
     </Page>
   )

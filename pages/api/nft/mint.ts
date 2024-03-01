@@ -70,9 +70,14 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
 
     // Get user data
     console.log('Donor', donor)
-    let userInfo = await getUserByWallet(donor)
+    let userInfo = await getUserByWallet(donor) // Should exist user by now
     console.log('USER', userInfo)
     const userId = userInfo?.id || ''
+    if(!userId){
+      console.log('ERROR', 'User not found')
+      return res.status(500).json({error:'User not found'})
+    }
+/* DEPRECATED. We should create user on donation page
     if(!userId){
       const email = donor.substr(0,10).toLowerCase() + '@example.com'
       const user = await newUser({name:'Anonymous', email, wallet:donor})
@@ -86,6 +91,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
         return res.status(500).json({error:'User not found'})
       }
     }
+*/
 
     // Get initiative info
     const initiative = await getInitiativeById(initid)

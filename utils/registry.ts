@@ -82,7 +82,7 @@ export const getUserByWallet = (wallet: string) => fetchRegistry('users?wallet='
 export const getUserByEmail = (email: string) => fetchRegistry('users?email='+email)
 export const getUserById = (id: string) => fetchRegistry('users/'+id)
 export const updateUser = (id: string, body: Dictionary) => postRegistry('users/'+id, body)
-export const getUserWallets = () => fetchRegistry('userwallets')
+export const getUserWallets = (userid: string) => fetchRegistry('userwallets?userid='+userid)
 export const newUserWallet = (body: Dictionary) => postRegistry('userwallets', body)
 
 export const newStory = (body: Dictionary) => postRegistry('stories', body)
