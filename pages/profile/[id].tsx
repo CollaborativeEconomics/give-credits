@@ -4,7 +4,7 @@ import Page from '@/components/page'
 import { getUserById, getNFTsByAccount, getDonationsByUser, getFavoriteOrganizations, getUserBadges, getRecentStories } from '@/utils/registry'
 import TableDonations from '@/components/tabledonations'
 import NotFound from '@/components/notfound'
-//import StoryCardCompactVert from '@/components/StoryCardCompactVert'
+import StoryCard from '@/components/storycard'
 
 type Dictionary = { [key: string]: any }
 
@@ -102,7 +102,7 @@ export default function Profile(props: any) {
                   {stories.map((story:any)=>{
                     return (
                       <div className="my-4" key={story.id}>
-                        {/*<StoryCardCompactVert story={story} />*/}
+                        <StoryCard story={story} />
                       </div>
                     )
                   })}
