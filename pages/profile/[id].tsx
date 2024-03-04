@@ -1,3 +1,4 @@
+import { useContext } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import Page from '@/components/page'
@@ -5,6 +6,7 @@ import { getUserById, getNFTsByAccount, getDonationsByUser, getFavoriteOrganizat
 import TableDonations from '@/components/tabledonations'
 import NotFound from '@/components/notfound'
 import StoryCard from '@/components/storycard'
+import { ConfigContext } from '@/components/config' 
 
 type Dictionary = { [key: string]: any }
 
@@ -26,8 +28,15 @@ export async function getServerSideProps({ req, res, query }:any){
 export default function Profile(props: any) {
   const {userId, user, receipts, donations, favorgs, badges, stories} = props
   if(!user){ return NotFound() }
+  // @ts-ignore: Typescript sucks donkey balls
+  const {config, setConfig} = useContext(ConfigContext)
+  console.log('CONFIG PROFILE', config)
 
   const nopic = '/media/nopic.png'
+
+  function logout(){
+    setConfig({...config, wallet:'', user:''})
+  }
 
   return (
     <Page>
@@ -41,7 +50,7 @@ export default function Profile(props: any) {
               <h1 className="font-bold text-lg">{user.name}</h1>
               <h2 className="">{user.email}</h2>
               <h2 className="">{user.wallet.substr(0,16)+'...'}</h2>
-              <button className="mt-4 py-1 px-4 rounded text-black bg-gray-300">Log out</button>
+              <button className="mt-4 py-1 px-4 rounded text-black bg-gray-300" onClick={logout}>Log out</button>
             </div>
           </div>
         </div>
