@@ -1,11 +1,44 @@
+import { useState } from 'react'
+import { useRouter } from 'next/router'
+import Image from 'next/image'
 import Link  from 'next/link'
 import Page  from 'components/page'
 import Card  from 'components/card'
 import Tile  from 'components/tile'
-import Image from 'next/image'
 //import Button from '../components/button'
+import { isConnected, getPublicKey } from "@stellar/freighter-api"
+
 
 export default function Home() {
+  const router = useRouter()
+  const [loginText, setLoginText] = useState('LOGIN')
+  const [logged, setLogged] = useState(false)
+  const [userId, setUserId] = useState(null)
+
+  function onLogin(){
+    console.log('LOGIN')
+    if(!logged){
+      getPublicKey().then(address=>{
+        console.log('Wallet', address)
+        setLogged(true)
+        setLoginText('Connected to '+address.substr(0,10)+'...')
+        fetch('/api/users?wallet='+address).then(res=>{
+          res.json().then(user=>{
+            console.log('User', user)
+            if(user){
+              console.log('UserId', user.id)
+              setUserId(user.id)
+            }
+          })
+        })
+      })
+    } else {
+      if(userId){
+        router.push('/profile/'+userId)
+      }
+    }
+  }
+  
   return (
     <>
       <Page>
@@ -36,6 +69,9 @@ export default function Home() {
           </Link>
           <Tile text="Receipts" icon="receipt_long" href="/receipts" />
           <Tile text="My NFTS" icon="collections" href="/nfts" />
+        </div>
+        <div className="mt-5">
+          <Card><button className="w-full py-3 text-center" onClick={onLogin}>{loginText}</button></Card>
         </div>
         <div className="mt-5">
           <div className="text-center ">

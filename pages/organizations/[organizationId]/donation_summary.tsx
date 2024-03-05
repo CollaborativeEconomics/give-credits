@@ -82,6 +82,7 @@ export default function Handler(props:any){
   }:Summary = props
 
   const initiativeId = initiative.id
+  const contractId = initiative.contractcredit
   const tonCredit = credit / usdRate
   const offsetVal = tonCredit>0 ? (amount / tonCredit) : 0
   //console.log('OFFSET:', offsetVal)
@@ -103,9 +104,9 @@ export default function Handler(props:any){
   useEffect(() => {
     if (confirmed) {
       setConfirmed(false)
-      sendPayment(name, email, organization, initiativeId, amount, currency, usdRate, issuer, destinationTag, yesReceipt, yesNFT)
+      sendPayment(contractId, name, email, organization, initiativeId, amount, currency, usdRate, issuer, destinationTag, yesReceipt, yesNFT)
     }
-  }, [confirmed, name, email, organization, initiativeId, amount, currency, usdRate, issuer, destinationTag, yesReceipt, yesNFT])
+  }, [confirmed, contractId, name, email, organization, initiativeId, amount, currency, usdRate, issuer, destinationTag, yesReceipt, yesNFT])
 
   function getWalletByChain(wallets:[any], chain:string){
     for(let i=0; i<wallets.length; i++){
@@ -149,8 +150,8 @@ export default function Handler(props:any){
   }
 
   // Wallet call
-  async function sendPayment(name:string, email:string, organization:any, initiativeId:string, amount:number, currency:string, rate:number, issuer:string, destinTag:number, yesReceipt:boolean, yesNFT:boolean){
-    console.log('PAY', {name, email, organization, initiativeId, amount, currency, rate, issuer, destinTag, yesReceipt, yesNFT})
+  async function sendPayment(contractId:string, name:string, email:string, organization:any, initiativeId:string, amount:number, currency:string, rate:number, issuer:string, destinTag:number, yesReceipt:boolean, yesNFT:boolean){
+    console.log('PAY', {contractId, name, email, organization, initiativeId, amount, currency, rate, issuer, destinTag, yesReceipt, yesNFT})
     const orgwallet = getWalletByChain(organization.wallets, 'Stellar')
     if(!orgwallet){
       $$('message', 'Error: no Stellar wallet for this organization')
@@ -180,8 +181,8 @@ export default function Handler(props:any){
     }
     //const memo = destinTag ? 'tag:'+destinTag : ''
     // TODO: get contract id for initiativeId
-    const ctrId = 'CADWL2UR26VBJ6S3OSZJ5CYPLH3EV3IWYBRVAKT5I7C3QWT74V6VEAQ7';
-    const result = await donate(ctrId, donor, amount)
+    //const contractId = 'CD56WYW2DWT2N2PWZ2LYFEVKORDQFQBYB6CNYHFWN5HC66HELNMCXNVJ';
+    const result = await donate(contractId, donor, amount)
     console.log('UI RESULT', result)
     if(!result?.success){
      $$('message', 'Error sending payment')

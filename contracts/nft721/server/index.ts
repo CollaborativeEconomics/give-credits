@@ -79,9 +79,11 @@ async function submitTx(tx:Transaction) {
         // Find the return value from the contract and return it
         let transactionMeta = result.resultMetaXdr;
         let returnValue = result.returnValue;
-        console.log(`Return value: ${returnValue}`);
+        console.log('Return value:', JSON.stringify(returnValue,null,2));
+        //console.log(`Return value: ${returnValue}`);
         return {success:true, value:returnValue, meta:transactionMeta, txid};
       } else {
+        console.log('XDR:', JSON.stringify(result.resultXdr,null,2));
         throw `Transaction failed: ${result.resultXdr}`;
       }
     } else {
@@ -90,6 +92,7 @@ async function submitTx(tx:Transaction) {
   } catch (err:any) {
     // Catch and report any errors we've thrown
     console.log("Sending transaction failed");
+    console.log(err);
     console.log(JSON.stringify(err));
     return {success:false, error:err.message};
   }
