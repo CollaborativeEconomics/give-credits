@@ -106,6 +106,7 @@ export default function Home() {
               Download <Link href={'https://www.freighter.app/'} target="_blank">Freighter</Link> wallet
             </li>
             <p className="text-sm text-slate-400 mt-4">You will need to have XLM in a wallet that supports Soroban Network, such as Freighter.  Freighter is a secure, non-custodial, end-to-end encrypted, blockchain wallet. You can learn more in their website.</p>
+            <p className="text-xl mt-4">DEV BRANCH</p>
           </div>
         </div>
       </Page>
