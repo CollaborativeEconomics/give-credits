@@ -17,7 +17,6 @@ export default function StoryCard(props:any) {
         </div>
 
         <div className="flex flex-col ml-4 justify-start">
-
           <div className="flex flex-row">
             <Image className="rounded" src={organization?.image} width={48} height={48} alt="org avatar" />
             <div className="ml-2">
@@ -33,7 +32,6 @@ export default function StoryCard(props:any) {
           <div className="text-sm line-clamp-2">
             {story.description}
           </div>
-
         </div>
       </div>
     </>
