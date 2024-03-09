@@ -50,14 +50,17 @@ export const getOrganizationByEmail = (email: string) => fetchRegistry(`organiza
 export const getOrganizationsByCategory = (categorySlug: string) => fetchRegistry(`organizations?category=${categorySlug}`)
 export const getOrganizationsByWallet = (walletAddress: string) => fetchRegistry(`organizations?wallet=${walletAddress}`)
 export const getOrganizationsByChain = (chain: string) => fetchRegistry(`organizations?chain=${chain}`)
+export const searchOrganizations = (q:string, c:string, l:string) => fetchRegistry(`organizations?search=${q}&category=${c}&location=${l}`)
 
 export const getCategories = () => fetchRegistry('categories')
+export const getCategoriesDistinct = (val:string) => fetchRegistry('categories?distinct='+val)
 
 export const newInitiative = (body: Dictionary) => postRegistry('initiatives', body)
 export const getInitiativeById = (id: string) => fetchRegistry(`initiatives/${id}`)
 export const getInitiativeByTag = (tag: string) => fetchRegistry(`initiatives?tag=${tag}`)
 export const getInitiatives = () => fetchRegistry('initiatives')
 export const getInitiativesByOrganization = (id: string) => fetchRegistry(`initiatives?orgid=${id}`)
+export const searchInitiatives = (q:string, c:string, l:string) => fetchRegistry(`initiatives?search=${q}&category=${c}&location=${l}`)
 
 export const newProvider = (body: Dictionary) => postRegistry('providers', body)
 export const getProviderById = (id: string) => fetchRegistry(`providers/${id}`)
@@ -91,6 +94,8 @@ export const getStoryById = (id: string) => fetchRegistry('stories/'+id)
 export const getStoriesByOrganization = (id: string) => fetchRegistry('stories?orgid='+id)
 export const getStoriesByInitiative = (id: string) => fetchRegistry('stories?initid='+id)
 export const getRecentStories = (qty:number) => fetchRegistry('stories?recent='+qty)
+
+export const getLocations = () => fetchRegistry('locations')
 
 export const newDonation = (body: Dictionary) => postRegistry('donations', body)
 export const getDonations = () => fetchRegistry('donations')

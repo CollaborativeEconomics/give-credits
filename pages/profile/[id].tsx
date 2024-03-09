@@ -4,8 +4,8 @@ import Link from 'next/link'
 import Page from '@/components/page'
 import { getUserById, getNFTsByAccount, getDonationsByUser, getFavoriteOrganizations, getUserBadges, getRecentStories } from '@/utils/registry'
 import TableDonations from '@/components/tabledonations'
-import NotFound from '@/components/notfound'
-import StoryCard from '@/components/storycard'
+import NotFound from '@/components/NotFound'
+import StoryCard from '@/components/StoryCard'
 import { ConfigContext } from '@/components/config' 
 
 type Dictionary = { [key: string]: any }

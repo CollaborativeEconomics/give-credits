@@ -1,18 +1,48 @@
 import React from 'react'
+import Link from 'next/link'
 import Image from 'next/image'
+import { NavMenu } from './navigation-menu'
+import { SessionProvider } from "next-auth/react";
 
-const Header = () => {
+export default function Header() {
+  const [y, setY] = React.useState(0);
+  const handleScroll = (e: Event) => {
+    const scrollY = (e.currentTarget as Window).scrollY;
+    setY(scrollY);
+  };
+
+  React.useEffect(() => {
+    console.log('Y',window.scrollY);
+    setY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
-    <>
-      <header className='header mb-10 pb-10'>
-        <Image src="/logo.png" className="logo" width={370} height={80} alt="" />
-      </header>
-      <style jsx>{`
-        .header { border-bottom: 1px solid #F8FAFD; }
-        .logo   { height: 60px; }
-      `}</style>
-    </>
-  )
+    <header
+      className={`w-full py-10 pb-7.5 fixed top-0 z-50 transition-all ${
+        y > 0 ? 'bg-white dark:bg-accent py-4 shadow-md' : 'bg-transparent'
+      }`}
+    >
+      <div className="flex justify-between container">
+        <Link href="/">
+          <Image
+            src="/logox.png"
+            alt="Give Credit"
+            className="dark:invert"
+            width={300}
+            height={60}
+            priority
+          />
+        </Link>
+        <div className="flex flex-row items-center">
+          <SessionProvider>
+            <NavMenu />
+          </SessionProvider>
+        </div>
+      </div>
+    </header>
+  );
 }
-
-export default Header
