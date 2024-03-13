@@ -1,39 +1,36 @@
-import Image from 'next/image'
+import Link from 'next/link'
+import OrganizationAvatar from './OrganizationAvatar'
+import { Card, CardContent, CardHeader } from './ui/card'
+import { DateDisplay } from './ui/date-posted'
+import Gallery from './ui/gallery'
 
 export default function StoryCard(props:any) {
   const story = props?.story
-  if(!story){ return (<>Story cards not found</>) }
+  if(!story){ return }
   const organization = story.organization
   const initiative = story.initiative
-  //const media = story.media.map((it:any)=>it.media) // flatten list
-  //media.unshift(story.image) // main image to the top
-
+  const media = story.media.map((it:any)=>it.media) // flatten list
+  media.unshift(story.image) // main image to the top
+  //console.log(media)
   return (
-    <>
-      <div className="flex flex-row justify-start mb-8">
-
-        <div className="relative max-w-[200px] w-full h-auto aspect-[8/5]">
-          <Image className="rounded" src={story.image} alt="Story image" fill style={{ objectFit: 'cover' }} />
-        </div>
-
-        <div className="flex flex-col ml-4 justify-start">
-          <div className="flex flex-row">
-            <Image className="rounded" src={organization?.image} width={48} height={48} alt="org avatar" />
-            <div className="ml-2">
-              <h1>{organization?.name}</h1>
-              <p className="text-sm truncate">
-                in <span className="underline"><a href={'/initiatives/'+initiative?.id}>{initiative?.title}</a></span>
-              </p>
-            </div>
-          </div>
-
-          <div><span className="text-sm text-slate-400">{new Date(story.created).toLocaleString()}</span></div>
-
-          <div className="text-sm line-clamp-2">
-            {story.description}
-          </div>
-        </div>
+    <Card className="flex flex-col overflow-hidden">
+      <CardHeader>
+        <OrganizationAvatar name={organization?.name} image={organization?.image} avatarProps={{ title: organization?.name }} />
+        <p className="text-sm font-semibold">
+          in <span className="underline"><a href={'/initiatives/'+initiative?.id}>{initiative?.title}</a></span>
+        </p>
+        <DateDisplay timestamp={story.created} className="py-4" />
+      </CardHeader>
+      <div className="px-2 -mt-2">
+        <Link href={'/stories/'+story.id}>
+          <Gallery images={media} />
+        </Link>
       </div>
-    </>
+      <CardContent className="flex flex-col pb-8 pt-3 gap-3 px-0">
+        <p className="px-6">
+          {story.description}
+        </p>
+      </CardContent>
+    </Card>
   )
 }

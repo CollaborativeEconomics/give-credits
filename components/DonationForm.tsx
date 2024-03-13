@@ -14,6 +14,8 @@ import { Separator } from './ui/separator'
 import { Dictionary, getChainWallets, getChainsList, getChainsMap } from '@/libs/chains/utils'
 import Chains from '@/libs/chains/client/apis'
 import getRates from '@/utils/rates'
+import Chart from '@/components/carbonchart'
+import Progressbar from '@/components/progressbar'
 
 export default function DonationForm(props:any) {
   //console.log('Props', props)
@@ -237,7 +239,20 @@ export default function DonationForm(props:any) {
   const [buttonText, setButtonText] = useState('Donate')
   const [message, setMessage] = useState('One wallet confirmation required')
   const [rateMessage, setRateMessage] = useState('USD conversion rate')
+  const [chartTitle, setChartTitle] = useState('Total estimated carbon emissions retired')
+  const [chartValue, setChartValue] = useState('24.30') // TODO: calc aggregate from db
+  const [offset, setOffset]   = useState('0.00')
+  const [percent, setPercent] = useState('0.00')
+  const carbonCredit = 20 // TODO: Get from stellar carbon
 
+  function amountChanged(evt){
+    const amount = evt.target.value
+    const retire = (amount / carbonCredit).toFixed(2)
+    const pct = ((amount>carbonCredit) ? 100 : (amount / carbonCredit * 100)).toFixed(2)
+    console.log('Amount changed', amount, retire, pct)
+    setOffset(retire)
+    setPercent(pct)
+  }
   //console.log({wallets})
   //console.log({currentChain})
   //console.log({currentWallet})
@@ -284,6 +299,11 @@ export default function DonationForm(props:any) {
         </div>
         <Separator />
         <div className="px-6">
+          <div className="my-10 text-center">
+            <Chart title={chartTitle} value={chartValue} />
+            <p className="mt-12 mb-4">Your donation will offset {offset} tons of carbon</p>
+            <Progressbar value={percent} />
+          </div>
           <div className="w-full my-6">
             <div className="flex flex-row justify-between items-center mb-2">
               <Label>Amount</Label>{' '}
@@ -306,28 +326,16 @@ export default function DonationForm(props:any) {
                 id="amount"
                 text={ showUSD ? '| ' + chainLookup[currentChain]?.symbol : '| USD' }
                 divRef={amountInputRef}
+                onChange={amountChanged}
               />
             </div>
             <Label className="block mt-2 text-right">{rateMessage}</Label>
           </div>
-          <Label htmlFor="name-input" className="mb-2">
-            Name (optional)
-          </Label>
+          <Label htmlFor="name-input" className="mb-2">Name (optional)</Label>
           <Input type="text" className="pl-4 mb-6" id="name-input" />
-          <Label htmlFor="email-input" className="mb-2">
-            Email address (optional)
-          </Label>
+          <Label htmlFor="email-input" className="mb-2">Email address (optional)</Label>
           <Input type="text" className="pl-4 mb-6" id="email-input" />
-          <CheckboxWithText
-            id="receipt-check"
-            text="I'd like to receive an emailed receipt"
-            className="mb-2"
-          />
-          {/*<CheckboxWithText
-            id="mintnft-check"
-            text="I'd like to receive an NFT receipt"
-            className="mb-6"
-          />*/}
+          <CheckboxWithText id="receipt-check" text="I'd like to receive an emailed receipt" className="mb-2" />
         </div>
         <Separator />
         <div className="flex flex-col items-center justify-center">

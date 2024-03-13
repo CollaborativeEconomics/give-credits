@@ -1,16 +1,15 @@
-import { localDate } from '@/utils/date'
-import { coinFromChain } from '@/utils/chain'
+import Image from 'next/image'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 type Dictionary = { [key: string]: any }
 
-export default function TableDonations(props:any){
-  const donations:[Dictionary] = props?.donations || []
+export default function TableReceipts(props:any){
+  const receipts:[Dictionary] = props?.receipts || []
   return (
-    <Table id="table-donations" className="w-full">
+    <Table id="table-nfts" className="w-full">
       <TableHeader>
         <TableRow>
-          <TableHead>Date</TableHead>
+          <TableHead>Image</TableHead>
           <TableHead>Initiative</TableHead>
           <TableHead>Organization</TableHead>
           <TableHead>Amount</TableHead>
@@ -18,19 +17,20 @@ export default function TableDonations(props:any){
         </TableRow>
       </TableHeader>
       <TableBody>
-        {donations.length ? donations.map((item:any)=>{
+        {receipts.length ? receipts.map((item:any)=>{
+          const image = item.imageUri.startsWith('ipfs') ? 'https://ipfs.filebase.io/ipfs/'+item.imageUri.substr(5) : item.imageUri
           return (
             <TableRow key={item.id}>
-              <TableCell>{localDate(item.created)}</TableCell>
+              <TableCell><Image src={image} width={64} height={64} alt="NFT" /></TableCell>
               <TableCell>{item.initiative.title}</TableCell>
               <TableCell>{item.organization.name}</TableCell>
-              <TableCell>{item.amount}</TableCell>
-              <TableCell>{coinFromChain(item.chain).toUpperCase()}</TableCell>
+              <TableCell>{item.coinValue}</TableCell>
+              <TableCell>{item.coinSymbol}</TableCell>
             </TableRow>
           )
         }) : (
           <TableRow>
-            <TableCell className="col-span-5">No donations found</TableCell>
+            <TableCell className="col-span-5">No receipts found</TableCell>
           </TableRow>
         )}  
       </TableBody>
