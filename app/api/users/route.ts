@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     return Response.json({success:true, result:res})
   } catch(ex:any) {
     console.error(ex)
-    res.status(500).send(JSON.stringify({error:ex.message}))
+    return Response.json({success:false, error:ex.message}, {status:500})
   }
 }
 

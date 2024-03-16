@@ -5,10 +5,10 @@ export async function GET(request: Request) {
     const requrl = new URL(request.url)
     const userid = requrl.searchParams.get('userid') || ''
     const result = await getUserWallets(userid)
-    return Response.json({success:true, result:res})
+    return Response.json({success:true, result})
   } catch(ex:any) {
     console.error(ex)
-    res.status(500).send(JSON.stringify({error:ex.message}))
+    return Response.json({success:false, error:ex.message}, {status:500})
   }
 }
 

@@ -1,4 +1,4 @@
-import { newDonation } from '@/lib/utils/registry'
+import { newDonation } from '@/utils/registry'
 
 export async function POST(request: Request) {
   const data = await request.json()

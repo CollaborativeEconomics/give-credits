@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import Chains from '@/lib/chains/server/apis'
+import Chains from '@/libs/chains/server/apis'
 
 // POST /api/nft/offer {tokenid}
 //   Create offer Id for NFT transfer

@@ -9,22 +9,18 @@ import { OrgSocials } from '@/components/ui/org-socials';
 import StoryCard from '@/components/StoryCard';
 import InitiativeCard from '@/components/InitiativeCard';
 import OrganizationAvatar from '@/components/OrganizationAvatar';
+import NotFound from '@/components/NotFound';
 import { getOrganizationById, getStoriesByOrganization } from '@/utils/registry'
 
-export async function getServerSideProps(props:any) {
+export default async function Home(props: any) {
+  //console.log('PROPS', props)
   const orgid = props?.params?.organizationId || null
-  if(!orgid){ return }
-  const organization = await getOrganizationById(orgid) || {}
+  if(!orgid){ return <NotFound /> }
+  const organization = await getOrganizationById(orgid) || null
+  if(!organization){ return <NotFound /> }
   //const initiatives = organization.initiative || []
   const stories = await getStoriesByOrganization(orgid) || []
-  return { props: { organization, stories } }
-}
-
-export default function Home(props: any) {
-  //console.log('PROPS', props)
-  const organization = props.organization
   const initiatives = organization.initiative
-  const stories = props.stories
   console.log('ORGANIZATION', organization)
   console.log('INITIATIVES', initiatives.length)
   console.log('STORIES', stories.length)

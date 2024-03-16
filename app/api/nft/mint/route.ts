@@ -1,4 +1,3 @@
-import { NextApiRequest, NextApiResponse } from 'next'
 import upload from '@/libs/nft/upload'
 import mint from '@/libs/nft/mint'
 import fetchLedger from '@/libs/server/fetchLedger'
@@ -31,11 +30,11 @@ export async function POST(request: Request) {
     const txInfo = await fetchLedger('/transactions/'+txid)
     if(!txInfo || txInfo.status==404) {
       console.log('ERROR', 'Transaction not found')
-      return res.status(500).json({ error: 'Transaction info not found' })
+      return Response.json({ error: 'Transaction info not found' }, {status:500})
     }
     if(!txInfo.successful) {
       console.log('ERROR', 'Transaction not valid')
-      return res.status(500).json({ error: 'Transaction not valid' })
+      return Response.json({ error: 'Transaction not valid' }, {status:500})
     }
     console.log('TXINFO', txInfo)
     const page = BigInt(txInfo.paging_token) + BigInt(1)
@@ -47,17 +46,17 @@ export async function POST(request: Request) {
     console.log('OPINFO', opInfo)
     if(!opInfo || opInfo?.status==404) {
       console.log('ERROR', 'Operation not found')
-      return res.status(500).json({ error: 'Operation info not found' })
+      return Response.json({ error: 'Operation info not found' }, {status:500})
     }
     if(!opInfo?.transaction_successful) {
       console.log('ERROR', 'Transaction not valid')
-      return res.status(500).json({ error: 'Transaction not valid' })
+      return Response.json({ error: 'Transaction not valid' }, {status:500})
     }
     if(donor!==opInfo?.source_account){
-      return res.status(500).json({ error: 'Transaction not valid, wrong sender' })
+      return Response.json({ error: 'Transaction not valid, wrong sender' }, {status:500})
     }
     //if(destin!==opInfo.to){
-    //  return res.status(500).json({ error: 'Transaction not valid, wrong receiver' })
+    //  return Response.json({ error: 'Transaction not valid, wrong receiver' })
     //}
 
     // Get organization from initid
@@ -76,7 +75,7 @@ export async function POST(request: Request) {
     const userId = userInfo?.id || ''
     if(!userId){
       console.log('ERROR', 'User not found')
-      return res.status(500).json({error:'User not found'})
+      return Response.json({error:'User not found'}, {status:500})
     }
 
     // Get initiative info
@@ -84,7 +83,7 @@ export async function POST(request: Request) {
     console.log('INITIATIVE', initiative)
     if(!initiative || initiative?.error) {
       console.log('ERROR', 'Initiative not found')
-      return res.status(500).json({ error: 'Initiative info not found' })
+      return Response.json({ error: 'Initiative info not found' }, {status:500})
     }
     const initiativeId = initiative?.id || ''
     const initiativeName = initiative?.title || 'Direct Donation'
@@ -94,7 +93,7 @@ export async function POST(request: Request) {
     console.log('ORGANIZATION', organization)
     if(!organization || organization?.error) {
       console.log('ERROR', 'Organization not found')
-      return res.status(500).json({ error: 'Organization info not found' })
+      return Response.json({ error: 'Organization info not found' }, {status:500})
     }
     const organizationId = organization?.id
     const organizationName = organization?.name
@@ -151,7 +150,7 @@ export async function POST(request: Request) {
     const cidMeta = await upload(fileId, bytes, 'text/plain')
     console.log('CID', cidMeta)
     if (!cidMeta || (typeof cidMeta !== 'string' && cidMeta.error)) {
-      return res.status(500).json({ error: 'Error uploading metadata' })
+      return Response.json({ error: 'Error uploading metadata' }, {status:500})
     }
     const uriMeta = 'ipfs:' + cidMeta
     //let uriMeta = process.env.IPFS_GATEWAY_URL + cidMeta
@@ -162,10 +161,10 @@ export async function POST(request: Request) {
     const resMint = await mint(contractId, donor, uriMeta)
     console.log('RESMINT', resMint)
     if (!resMint) {
-      return res.status(500).json({ error: 'Error minting NFT' })
+      return Response.json({ error: 'Error minting NFT' }, {status:500})
     }
     if (resMint?.error) {
-      return res.status(500).json({ error: resMint?.error })
+      return Response.json({ error: resMint?.error }, {status:500})
     }
     const tokenId = resMint?.tokenId
     const offerId = '' // no need for offers in soroban
@@ -208,9 +207,9 @@ export async function POST(request: Request) {
       offerId:  offerId
     }
     console.log('RESULT', result)
-    return res.status(200).json(result)
+    return Response.json(result)
   } catch (ex:any) {
     console.error(ex)
-    return res.status(500).json({ success: false, error: ex.message })
+    return Response.json({ success: false, error: ex.message }, {status:500})
   }
 }

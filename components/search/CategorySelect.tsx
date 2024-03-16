@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { cn } from '@/libs/shadCnUtil';
 import { Button } from '@/components/ui/button';
@@ -88,23 +87,19 @@ export default function CategorySelect(props:any) {
           <CommandEmpty>No category found.</CommandEmpty>
           <CommandGroup>
             {categories.map((item:CategoryType) => {
+              //console.log('ITEM', item)
               // TODO: Fix duplicate category key
               return (
                 <CommandItem
                   key={item?.value}
                   onSelect={(currentValue) => {
-                    console.log('CAT', currentValue, 'OLD', value)
+                    console.log('CAT', currentValue, 'OLD', 'value')
                     setValue(item?.value);
                     onChange(item?.value);
                     setOpen(false);
                   }}
                 >
-                  <CheckCircledIcon
-                    className={cn(
-                      'mr-2 h-4 w-4',
-                      value === item?.value ? 'opacity-100' : 'opacity-0',
-                    )}
-                  />
+                  <CheckCircledIcon className={cn('mr-2 h-4 w-4', value === item?.value ? 'opacity-100' : 'opacity-0')} />
                   {item?.label}
                 </CommandItem>
               )

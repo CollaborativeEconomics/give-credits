@@ -5,21 +5,13 @@ import styles from 'styles/common.module.css'
 import { getStoriesByInitiative } from 'utils/registry'
 
 
-export async function getServerSideProps(props:any) {
-  console.log('QUERY', props.query)
-  const initid = props.query?.id?.toString() || ''
+export default async function Impact(props:any) {
+  const initid = props.params?.id?.toString() || ''
   console.log('InitID', initid)
-  if(!initid){
-    return { props: { stories:null } }
-  }
-  const stories = await getStoriesByInitiative(initid) || null
+  const stories = await getStoriesByInitiative(initid) || []
   //console.log('STORIES', stories)
   if(stories?.length>0){ stories.sort((a:any, b:any) => (a.created < b.created ? 1 : -1)) } // Sort by date desc
-  return { props: { stories } }
-}
 
-export default function Impact(props:any) {
-  const stories = props.stories
   return (
     <Page>
       <div className={styles.content}>
