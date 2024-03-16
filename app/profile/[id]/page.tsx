@@ -12,32 +12,18 @@ import { coinFromChain } from '@/utils/chain'
 
 type Dictionary = { [key: string]: any }
 
-export async function getServerSideProps(props:any) {
+export default async function Profile(props: any) {
+  console.log('PROPS', props)
   const userid = props?.params?.id
   const search = props?.searchParams?.tab || 'receipts'
   const user = await getUserById(userid) || null
-  if(!user){ return { props: { user } } }
+  if(!user){ return (<NotFound />) }
   const receipts:[Dictionary]  = await getNFTsByAccount(userid) || []
   const donations:[Dictionary] = await getDonationsByUser(userid) || []
   const favorgs:[Dictionary]   = await getFavoriteOrganizations(userid) || []
   const badges:[Dictionary]    = await getUserBadges(userid) || []
   const stories:[Dictionary]   = await getRecentStories(5) || []
-  return { props: { user, receipts, donations, favorgs, badges, stories, search } }
-}
-
-export default function Profile(props: any) {
-  const user = props.user
-  if(!user){
-    return (<NotFound />)
-  }
-
-  const receipts  = props.receipts
-  const donations = props.donations
-  const favorgs   = props.favorgs
-  const badges    = props.badges
-  const stories   = props.stories
-  const search    = props.search
-  const nopic     = '/media/nopic.png'
+  const nopic = '/media/nopic.png'
 
   return (
     <main className="flex min-h-screen flex-col items-stretch container py-24 mt-24">
@@ -154,11 +140,11 @@ export default function Profile(props: any) {
             <div className="w-full border rounded-md p-10 bg-white">
               {/* NFTS Receipts */}
               <TabsContent className="TabsContent" value="tab1">
-                {/*<TableReceiptsSort receipts={receipts} />*/}
+                <TableReceiptsSort receipts={receipts} />
               </TabsContent>
               {/* Donations */}
               <TabsContent className="TabsContent" value="tab2">
-                {/*<TableDonationsSort donations={donations} />*/}
+                <TableDonationsSort donations={donations} />
               </TabsContent>
             </div>
           </Tabs>
