@@ -1,8 +1,9 @@
 // Mints NFT and returns tokenId
 //   metauri: uri to metadata
-import { Address }  from "@stellar/stellar-sdk"
+import { Address } from "@stellar/stellar-sdk"
 import { networks } from 'contracts/nft721/client'
-import { submit }   from 'contracts/nft721/server'
+import { submit } from 'contracts/nft721/server'
+import { init } from '@cfce/registry-hooks'
 
 export default async function mint(contractId:string, to:string, uri:string){
   console.log('-- Minting...')
@@ -15,7 +16,11 @@ export default async function mint(contractId:string, to:string, uri:string){
     console.log('NET', network)
     const secret  = process.env.CFCE_MINTER_WALLET_SECRET||''
     const method  = 'mint'
-    const args    = [new Address(to).toScVal()] // use nativeToScVal for other values
+    // Fetch the metadata from the registry and pass it to the mint method
+    const meta = await fetch(uri);
+    const metajson = await meta.json()
+    console.log('META', metajson)
+    const args    = [new Address(to).toScVal(), metajson] // use nativeToScVal for other values
     const result  = await submit(network, secret, contractId, method, args)
     //console.log('RES', result)
     console.log('OK?', result?.success)
