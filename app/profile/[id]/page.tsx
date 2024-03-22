@@ -36,6 +36,7 @@ export default async function Profile(props: any) {
             <div className="flex flex-col flex-start items-start rounded-full">
               <h1 className="font-bold text-lg">{user.name}</h1>
               <h2 className="">{user.email}</h2>
+              <h2 className="">{user.wallet.substr(0,10)+'...'}</h2>
             </div>
           </div>
         </div>
@@ -80,9 +81,10 @@ export default async function Profile(props: any) {
         <div className="w-1/4 mr-12">
           
           {/* Fav Orgs */}
-          <h1 className="text-2xl font-medium">Favorite Organizations</h1>
+          <h1 className="text-2xl font-medium mb-4">Favorite Organizations</h1>
           <div className="grid grid-cols-2 gap-2 mb-8">
-            {favorgs.map((item:any)=>{
+          { favorgs?.length>0 ?
+            favorgs.map((item:any)=>{
               const org = item.organization
               return (
                 <div key={org.id} className="flex flex-row justify-start items-center content-center mt-4">
@@ -90,28 +92,39 @@ export default async function Profile(props: any) {
                   <h1 className="text-sm text-center">{org.name}</h1>
                 </div>
               )
-            })}
+            })
+            :
+            <div className="text-gray-300">None</div>
+          }
           </div>
           
           {/* Badges */}
           <h1 className="text-2xl font-medium mb-4">Badges</h1>
           <div className="grid grid-cols-4 gap-2 mb-8">
-            {badges.map((item:any)=>{
+          { badges?.length>0 ?
+            badges.map((item:any)=>{
               const badge = item.category
               return (<Image key={badge.id} className="mr-1" src={badge.image} width={72} height={72} alt="Badge" />)
-            })}
+            })
+            :
+            <div className="text-gray-300">None</div>
+          }
           </div>
 
           {/* Stories */}
-          <h1 className="text-2xl font-medium">Recent Stories</h1>
+          <h1 className="text-2xl font-medium mb-4">Recent Stories</h1>
           <div className="">
-            {stories.map((story:any)=>{
+          { stories?.length>0 ?
+            stories.map((story:any)=>{
               return (
                 <div className="my-4" key={story.id}>
                   <StoryCardCompactVert story={story} />
                 </div>
               )
-            })}
+            })
+            :
+            <div className="text-gray-300">None</div>
+          }
           </div>
 
         </div>

@@ -13,7 +13,6 @@ import { DonationFormSelect } from '@/components/DonationFormSelect'
 import { Separator } from './ui/separator'
 import { Dictionary, getChainWallets, getChainsList, getChainsMap } from '@/libs/chains/utils'
 import Chains from '@/libs/chains/client/apis'
-import getRates from '@/utils/rates'
 import Chart from '@/components/carbonchart'
 import Progressbar from '@/components/progressbar'
 
@@ -22,6 +21,7 @@ export default function DonationForm(props:any) {
   const initiative = props.initiative
   const organization = initiative.organization
   const {donation, setDonation} = useContext(DonationContext)
+  const rate = props.rate || 0
 
   function $(id:string){ return document.getElementById(id) as HTMLInputElement }
 
@@ -29,7 +29,6 @@ export default function DonationForm(props:any) {
     return text.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g)
   }
 
-/*
   function getWalletByChain(wallets:[any], chain:string){
     for(let i=0; i<wallets.length; i++){
       if(wallets[i].chain==chain){
@@ -38,7 +37,7 @@ export default function DonationForm(props:any) {
     }
     return null
   }
-*/
+
   async function sendReceipt(data:any){
     console.log('Sending receipt...', data)
     try {
@@ -98,9 +97,8 @@ export default function DonationForm(props:any) {
     setDisabled(true)
     setMessage('Approve payment in your Freighter wallet')
 
-    //const chainText = chainName.startsWith('Ethereum') ? 'Ethereum' : chainName
-    //const orgwallet = getWalletByChain(organization?.wallets, chainText)
-    const orgwallet = {name:'Freighter', address:'G123...'}
+    const chainText = 'Stellar'
+    const orgwallet = getWalletByChain(organization?.wallets, chainText)
     console.log('Org wallet', orgwallet)
     if(!orgwallet || !orgwallet?.address){
       console.log('Error sending payment, no wallet found for chain', chainName)
@@ -117,8 +115,7 @@ export default function DonationForm(props:any) {
     }
     const network = sdk.network
     const destinationTag = initiative.tag
-    // TODO: if amount in USD convert by coin rate
-    const rate = await getRates(currency, true) // get from server, CORS sucks 
+    // if amount in USD convert by coin rate
     const amountNum = parseInt(amount)
     const coinValue = showUSD ? amountNum : (amountNum / rate)
     const usdValue  = showUSD ? (amountNum * rate) : amountNum
@@ -127,7 +124,11 @@ export default function DonationForm(props:any) {
       : `${coinValue.toFixed(2)} ${currency} at ${rate.toFixed(2)} ${currency}/USD`
     console.log('AMT', showUSD, coinValue, usdValue)
     setRateMessage(rateMsg)
-    sdk.sendPayment(address, coinValue, destinationTag, async (result:any)=>{
+    const weiValue = Math.trunc(coinValue * 1000000).toString()
+    console.log('WEI', weiValue)
+    const amountStr = coinValue.toFixed(7)
+
+    sdk.sendPayment(address, amountStr, destinationTag, async (result:any)=>{
       if(result?.error){
         console.log('Error sending payment', result.error)
         setMessage('Error sending payment')
@@ -145,7 +146,7 @@ export default function DonationForm(props:any) {
 
       // Save donation to DB
       const catId = initiative.categoryId || organization.categoryId 
-      const retx = await fetch('/api/user?wallet='+result.address)
+      const retx = await fetch('/api/users?wallet='+result.address)
       const resx = await retx.json()
       const user = resx.result
       console.log('USER', user)
@@ -228,7 +229,6 @@ export default function DonationForm(props:any) {
   const chainLookup = getChainsMap()
   const chainWallets = getChainWallets(chains[0].symbol)
 
-  // TODO: Get rate after chain selected?
   // TODO: currentChain should be currently selected chain in wallet instead of first one
   const [showUSD, toggleShowUSD] = useState(false)
   const [currentChain, setCurrentChain] = useState('Stellar')
@@ -238,7 +238,7 @@ export default function DonationForm(props:any) {
   const [disabled, setDisabled] = useState(false)
   const [buttonText, setButtonText] = useState('Donate')
   const [message, setMessage] = useState('One wallet confirmation required')
-  const [rateMessage, setRateMessage] = useState('USD conversion rate')
+  const [rateMessage, setRateMessage] = useState(`0 USD at ${rate.toFixed(2)} XLM/USD`)
   const [chartTitle, setChartTitle] = useState('Total estimated carbon emissions retired')
   const [chartValue, setChartValue] = useState('24.30') // TODO: calc aggregate from db
   const [offset, setOffset]   = useState('0.00')
@@ -246,22 +246,22 @@ export default function DonationForm(props:any) {
   const carbonCredit = 20 // TODO: Get from stellar carbon
 
   function amountChanged(evt){
+    const currency = 'XLM'
     const amount = evt.target.value
+    const amountNum = parseInt(amount)
+    const coinValue = showUSD ? amountNum : (amountNum / rate)
+    const usdValue  = showUSD ? (amountNum * rate) : amountNum
+    const rateMsg   = showUSD 
+      ? `${usdValue.toFixed(2)} USD at ${rate.toFixed(2)} USD/${currency}` 
+      : `${coinValue.toFixed(2)} ${currency} at ${rate.toFixed(2)} USD/${currency}`
+    console.log('AMT', showUSD, coinValue, usdValue)
+    setRateMessage(rateMsg)
     const retire = (amount / carbonCredit).toFixed(2)
     const pct = ((amount>carbonCredit) ? 100 : (amount / carbonCredit * 100)).toFixed(2)
     console.log('Amount changed', amount, retire, pct)
     setOffset(retire)
     setPercent(pct)
   }
-  //console.log({wallets})
-  //console.log({currentChain})
-  //console.log({currentWallet})
-  
-  //const { register, watch, handleSubmit, formState } = useForm({
-  //  defaultValues: { amount:0, name: '', email: '', receipt: false, mintnft: false }
-  //})
-  //const { errors } = formState
-  //const [amount, name, email, receipt, mintnft] = watch(['amount', 'name', 'email', 'receipt', 'mintnft'])
 
   return (
     <div className="flex min-h-full w-full">

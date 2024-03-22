@@ -26,7 +26,7 @@ export default function Header() {
       <div className="flex justify-between container">
         <Link href="/">
           <Image
-            src="/logox.png"
+            src="/newui/logo.png"
             alt="Give Credit"
             className="dark:invert"
             width={300}

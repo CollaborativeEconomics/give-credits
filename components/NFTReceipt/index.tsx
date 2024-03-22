@@ -1,20 +1,20 @@
 "use client"
 import { useContext, useState } from 'react'
 import Image from 'next/image'
-import { TimestampToDateString } from '../ui/date-posted'
-import money from '@/utils/money'
-import { ReceiptStatus } from '../ui/receipt-status'
-import { ClaimButton } from '../ui/button'
-import { NFTReceiptText } from './NFTReceiptText'
+import { TimestampToDateString } from '@/components/ui/date-posted'
+import { ReceiptStatus } from '@/components/ui/receipt-status'
+import { ClaimButton } from '@/components/ui/button'
+import { NFTReceiptText } from '@/components/NFTReceipt/NFTReceiptText'
 import { DonationContext } from '@/components/DonationView'
+import money from '@/utils/money'
 //import Chains from '@/libs/chains/client/apis'
 
 export default function NFTReceipt(props:any) {
   const receipt = props.data
   const {donation, setDonation} = useContext(DonationContext)
   const [message, setMessage] = useState('Claim your NFT')
-  //console.log('Donation', donation)
   //console.log('Receipt:', receipt)
+  //console.log('Donation', donation)
 
   async function mintNFT(chain:string, txid:string, address:string, itag:string, rate:number){
     console.log('Minting NFT in', chain, txid, address, itag, rate)
