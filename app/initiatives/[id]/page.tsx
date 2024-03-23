@@ -20,9 +20,10 @@ export default async function Handler(props: any) {
   //console.log('INITID', initId)
 
   const params = props.params
-  console.log(params)
+  //console.log(params)
   const initiative = await getInitiativeById(params?.id) || null
   if(!initiative){ return <NotFound /> }
+  console.log(initiative)
   const organization = initiative?.organization 
   const initiatives = await getInitiativesByOrganization(organization.id)
   const stories = initiative?.stories

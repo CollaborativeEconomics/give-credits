@@ -1,9 +1,9 @@
 import timeAgo from '@/utils/timeago'
 
 interface ChartType {
-  goal: number
+  goal?: number
   value: number
-  date: Date
+  max100?: boolean
 }
 
 // https://stackoverflow.com/questions/50960084/how-to-extend-cssproperties-in-react-project
@@ -58,11 +58,8 @@ const style = {
   p90: { background: 'linear-gradient(to right, #00aa00 0%, #00aa00 90%, #fff 90%, #fff 100%)' }
 } as const
 
-function MainChart({
-  goal,
-  value,
-  date
-}: ChartType) {
+function MainChart({ goal=100, value, max100=false }: ChartType) {
+  const max = (max100 ? 100 : goal)
   const pct:any = {
     10: { ...style.ton, ...style.p10 },
     20: { ...style.ton, ...style.p20 },
@@ -79,9 +76,9 @@ function MainChart({
   const mod = num % 1
   const ext = mod ? 1 : 0
   const fix = mod.toFixed(1)
-  const dec = Number(fix) * 100
+  const dec = Number(fix) * max
   const prt:any = pct[dec]
-  const rst = 100 - int - ext
+  const rst = max - int - ext
   const offs = Array(int).fill(0)
   const tons = Array(rst).fill(0)
   //console.log('Tons', num, int, mod, fix, dec, rst)

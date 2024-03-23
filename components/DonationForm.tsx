@@ -22,6 +22,12 @@ export default function DonationForm(props:any) {
   const organization = initiative.organization
   const {donation, setDonation} = useContext(DonationContext)
   const rate = props.rate || 0
+  const credit = initiative?.credits?.length>0 ? initiative?.credits[0] : null
+  const creditGoal = credit?.goal ?? 0
+  const creditCurrent = credit?.current ?? 0
+  const creditValue = credit?.value ?? 0
+  const creditPercent = (creditValue * 100 / creditGoal).toFixed(0)
+  const creditDate = new Date().toLocaleDateString(undefined, {month:'long', day:'numeric', year:'numeric'})
 
   function $(id:string){ return document.getElementById(id) as HTMLInputElement }
 
@@ -116,7 +122,7 @@ export default function DonationForm(props:any) {
     const network = sdk.network
     const destinationTag = initiative.tag
     // if amount in USD convert by coin rate
-    const amountNum = parseInt(amount)
+    const amountNum = parseInt(amount||'0')
     const coinValue = showUSD ? amountNum : (amountNum / rate)
     const usdValue  = showUSD ? (amountNum * rate) : amountNum
     const rateMsg   = showUSD 
@@ -240,14 +246,13 @@ export default function DonationForm(props:any) {
   const [message, setMessage] = useState('One wallet confirmation required')
   const [rateMessage, setRateMessage] = useState(`0 USD at ${rate.toFixed(2)} XLM/USD`)
   const [chartTitle, setChartTitle] = useState('Total estimated carbon emissions retired')
-  const [chartValue, setChartValue] = useState('24.30') // TODO: calc aggregate from db
+  const [chartValue, setChartValue] = useState(creditCurrent) // TODO: calc aggregate from db
+  const [percent, setPercent] = useState('0')
   const [offset, setOffset]   = useState('0.00')
-  const [percent, setPercent] = useState('0.00')
-  const carbonCredit = 20 // TODO: Get from stellar carbon
 
   function amountChanged(evt){
     const currency = 'XLM'
-    const amount = evt.target.value
+    const amount = evt.target.value || '0'
     const amountNum = parseInt(amount)
     const coinValue = showUSD ? amountNum : (amountNum / rate)
     const usdValue  = showUSD ? (amountNum * rate) : amountNum
@@ -256,8 +261,8 @@ export default function DonationForm(props:any) {
       : `${coinValue.toFixed(2)} ${currency} at ${rate.toFixed(2)} USD/${currency}`
     console.log('AMT', showUSD, coinValue, usdValue)
     setRateMessage(rateMsg)
-    const retire = (amount / carbonCredit).toFixed(2)
-    const pct = ((amount>carbonCredit) ? 100 : (amount / carbonCredit * 100)).toFixed(2)
+    const retire = (amount / creditValue).toFixed(2)
+    const pct = ((amount>creditValue) ? 100 : (amount / creditValue * 100)).toFixed(2)
     console.log('Amount changed', amount, retire, pct)
     setOffset(retire)
     setPercent(pct)
@@ -300,7 +305,7 @@ export default function DonationForm(props:any) {
         <Separator />
         <div className="px-6">
           <div className="my-10 text-center">
-            <Chart title={chartTitle} value={chartValue} />
+            <Chart title={chartTitle} goal={creditGoal} value={chartValue} />
             <p className="mt-12 mb-4">Your donation will offset {offset} tons of carbon</p>
             <Progressbar value={percent} />
           </div>
