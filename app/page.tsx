@@ -1,18 +1,19 @@
 //import Main from '@/components/ui/main'
-import ImpactCarousel from '@/components/home/ImpactCarousel'
-import ActionBar from '@/components/home/ActionBar'
-import InstructionPanes from '@/components/home/InstructionPanes'
-import VideoBackground from '@/components/home/VideoBackground'
-import { getInitiatives } from '@/utils/registry'
+// import ImpactCarousel from '@/components/home/ImpactCarousel';
+import ActionBar from '@/components/home/ActionBar';
+import InstructionPanes from '@/components/home/InstructionPanes';
+// import VideoBackground from '@/components/home/VideoBackground';
+import ParallaxHero from '@/components/home/ParallaxHero';
+// import { getInitiatives } from '@/utils/registry';
 
 export default async function Home(props: any) {
-  const query = props?.searchParams?.query || ''
-  const category = props?.searchParams?.category || ''
-  const location = props?.searchParams?.location || ''
-  const data = await getInitiatives()
-  const initiatives = data.filter((it:any)=>!it.inactive)
+  const query = props?.searchParams?.query || '';
+  const category = props?.searchParams?.category || '';
+  const location = props?.searchParams?.location || '';
+  // const data = await getInitiatives();
+  // const initiatives = data.filter((it: any) => !it.inactive);
 
-  console.log('SEARCH', query, category, location)
+  console.log('SEARCH', query, category, location);
   return (
     <>
       <div className="w-full top-0">
@@ -27,11 +28,12 @@ export default async function Home(props: any) {
             story of real world impact.
           </p>
         </div>
-        <ImpactCarousel initiatives={initiatives} />
+        <ParallaxHero />
+        {/* <ImpactCarousel initiatives={initiatives} /> */}
         <ActionBar />
         <InstructionPanes />
-        <VideoBackground />
+        {/* <VideoBackground /> */}
       </div>
     </>
-  )
+  );
 }
