@@ -36,25 +36,11 @@ export default async function Home(props: any) {
 
   return (
     <>
-      <div className="w-full">
+      <div className="w-full h-screen">
         {/* HERO */}
-        <div className="h-[456px] mt-32 mb-16 pt-0 text-center bg-[url('/newui/bg-green.jpg')] bg-center">
-          <div className="py-48 bg-black/50">
-            <h1 className="text-white text-4xl font-extrabold tracking-tight lg:text-5xl">
-              Donate Carbon Credits
-            </h1>
-            <h2 className="text-white">
-              Make tax-deductible donations of carbon credits to worthy
-              non-profits
-            </h2>
-          </div>
-        </div>
         <ParallaxHero />
         <div className="bg-white relative">
-          {/* <ImpactCarousel initiatives={initiatives} /> */}
-          {/* <ActionBar /> */}
           {/* <InstructionPanes /> */}
-          {/* <VideoBackground /> */}
 
           {/* INTRO */}
           <div className="container flex flex-col">
@@ -69,7 +55,7 @@ export default async function Home(props: any) {
                 width={384}
                 height={384}
                 alt="Stellar green"
-                className="aspect-square"
+                // className="aspect-square"
               />
               <div className="ml-12">
                 <h2 className="mt-6 mb-4 text-4xl font-bold">
