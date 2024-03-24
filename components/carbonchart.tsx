@@ -2,7 +2,9 @@ import timeAgo from '@/utils/timeago'
 
 interface ChartType {
   title?: string
-  value: string
+  goal?: number
+  value: number
+  max100?: boolean
 }
 
 // https://stackoverflow.com/questions/50960084/how-to-extend-cssproperties-in-react-project
@@ -57,10 +59,8 @@ const style = {
 } as const
 
 //const CarbonChart = ({
-function CarbonChart({
-  title,
-  value
-}: ChartType) {
+function CarbonChart({ title, goal=100, value=0, max100=false }: ChartType) {
+  const max = (max100 ? 100 : goal)
   const pct:any = {
     10: { ...style.ton, ...style.p10 },
     20: { ...style.ton, ...style.p20 },
@@ -72,16 +72,17 @@ function CarbonChart({
     80: { ...style.ton, ...style.p80 },
     90: { ...style.ton, ...style.p90 }
   }
-  const num = parseFloat(value)
+  const num = value
   const int = Math.trunc(num)
   const mod = num % 1
+  const ext = mod ? 1 : 0
   const fix = mod.toFixed(1)
-  const dec = Number(fix) * 100
+  const dec = Number(fix) * max
   const prt:any = pct[dec]
-  const rst = 99 - int
+  const rst = max - int - ext
+  console.log('Tons', num, mod, dec, rst)
   const offs = Array(int).fill(0)
   const tons = Array(rst).fill(0)
-  //console.log('Tons', num, mod, dec, rst)
   //console.log('Arrs', offs.length, tons.length)
   return (
     <>

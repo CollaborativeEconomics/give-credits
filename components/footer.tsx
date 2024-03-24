@@ -9,15 +9,15 @@ export default function Footer() {
         <div>
           <Link href="/" className='block'>
             <Image
-              src="/GC Logo.png"
+              src="/newui/logo.png"
               alt="Give Credit"
               className="dark:invert"
-              width={200}
-              height={40}
+              width={300}
+              height={60}
               priority
             />
           </Link>
-          <p className='ml-12'>by Center For Collaborative Economics</p>
+          <p className='ml-16'>by Center For Collaborative Economics</p>
         </div>
         <div>
           <h1 className='font-bold'>Know Us:</h1>

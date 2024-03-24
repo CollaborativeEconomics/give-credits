@@ -12,6 +12,7 @@ import DonationView from '@/components/DonationView'
 import { ReceiptStatus } from '@/types/common'
 import InitiativeCardCompact from '@/components/InitiativeCardCompact'
 import NotFound  from '@/components/NotFound'
+import getRates from '@/utils/rates'
 
 export default async function Handler(props: any) {
   //console.log('PROPS', props)
@@ -19,9 +20,10 @@ export default async function Handler(props: any) {
   //console.log('INITID', initId)
 
   const params = props.params
-  console.log(params)
+  //console.log(params)
   const initiative = await getInitiativeById(params?.id) || null
   if(!initiative){ return <NotFound /> }
+  console.log(initiative)
   const organization = initiative?.organization 
   const initiatives = await getInitiativesByOrganization(organization.id)
   const stories = initiative?.stories
@@ -29,6 +31,8 @@ export default async function Handler(props: any) {
   //console.log('ORGANIZATION', organization)
   //console.log('STORIES', stories.length, stories[0])
   //console.log('INITIATIVES', initiatives)
+  const rate = await getRates('XLM')
+  console.log('RATE', rate)
 
   const receipt = {
     status: ReceiptStatus.pending,
@@ -95,7 +99,7 @@ export default async function Handler(props: any) {
         <Separator className='mb-6' />
 
         <div className="md:flex md:flex-col items-center">
-          <DonationView initiative={initiative} receipt={receipt} />
+          <DonationView initiative={initiative} receipt={receipt} rate={rate} />
         </div>
 
         <div className="mb-10 pt-10 flex justify-center w-full">

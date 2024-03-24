@@ -3,10 +3,11 @@ import { useContext, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link  from 'next/link'
+import { getProviders, signIn } from "next-auth/react"
 import { isConnected, getPublicKey } from "@stellar/freighter-api"
 import { ConfigContext } from '@/components/config' 
-import { fetchApi, postApi } from '@/utils/api'
 import ButtonWallet from '@/components/ButtonWallet'
+import { fetchApi, postApi } from '@/utils/api'
 
 
 export default function Signin() {
@@ -18,21 +19,28 @@ export default function Signin() {
   const [logged, setLogged] = useState(config.user!=='')
   const [userId, setUserId] = useState(config.user)
 
-  function onLogin(){
+  async function onLogin(){
     console.log('LOGIN')
     if(!logged){
       getPublicKey().then(address=>{
         console.log('Wallet', address)
+        const chainName = 'Stellar'
+        const chainid   = '0'
+        const network   = 'testnet'
+        const currency  = 'XLM'
         setLogged(true)
         setLoginText('WALLET '+address.substr(0,10)+'...')
         fetch('/api/users?wallet='+address).then(res=>{
-          res.json().then(data=>{
+          res.json().then(async data=>{
             const user = data.result
             console.log('User', user)
             if(user){
               console.log('UserId', user.id)
               setUserId(user.id)
               setConfig({...config, wallet:address, user:user.id})
+              const callbackUrl = '/profile/'+user.id
+              await signIn(chainName, {callbackUrl, address, chainName, chainid, network, currency})
+              //router.push('/profile/'+user.id)
             } else {
               const body = JSON.stringify({
                 name: 'Anonymous', 
@@ -45,11 +53,15 @@ export default function Signin() {
                 }
               })
               fetch('/api/users', {method:'POST', headers: { 'Content-Type': 'application/json' }, body}).then(rex=>{
-                rex.json().then(newUser=>{
+                rex.json().then(async newUser=>{
                   const userInfo = newUser.data
                   console.log('NEWUSER', userInfo)
                   if(!userInfo){
                     console.log('Error creating user')
+                  } else {
+                    const callbackUrl = '/profile/'+userInfo.id
+                    await signIn(chainName, {callbackUrl, address, chainName, chainid, network, currency})
+                    //router.push('/profile/'+userInfo.id)
                   }
                 })
               })
