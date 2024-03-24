@@ -3,6 +3,7 @@ import upload from 'libs/nft/upload'
 import mint from 'libs/nft/mint'
 import fetchLedger from 'libs/server/fetchLedger'
 import { newUser, newUserWallet, getUserByWallet, getOrganizationById, getInitiativeById, createNFT } from 'utils/registry'
+import {runHook, Triggers} from '@cfce/registry-hooks';
 //import getRates from 'utils/rates'
 
 /*
@@ -106,6 +107,9 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     }
     const organizationId = organization?.id
     const organizationName = organization?.name
+
+    // runHook takes 3 params. 1. The Trigger name 2. The organizations to check and 3. Additional data that can be used by the the hook (currently just the below)
+    const extraMetadata = runHook(Triggers.addMetadataToNFTReceipt, organizationId, {userId, donor, organizationId});
 
     // Get org data
     //console.log('Org wallet', organizationAddress)

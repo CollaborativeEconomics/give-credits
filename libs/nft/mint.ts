@@ -3,7 +3,13 @@
 import { Address } from "@stellar/stellar-sdk"
 import { networks } from 'contracts/nft721/client'
 import { submit } from 'contracts/nft721/server'
-import { init } from '@cfce/registry-hooks'
+import { init, runHook, Triggers } from '@cfce/registry-hooks'
+
+
+init({
+  registryApiKey: process.env.CFCE_REGISTRY_API_KEY || '',
+  registryBaseUrl: 'https://registry.staging.cfce.io/api',
+});
 
 export default async function mint(contractId:string, to:string, uri:string){
   console.log('-- Minting...')

@@ -6,7 +6,7 @@ import BackButton from 'components/backbutton'
 import { getNFTsByWallet } from 'utils/registry'
 import { getCookie } from 'cookies-next'
 
-export async function getServerSideProps(context:any) {
+export async function getServerSideProps(context: any) {
   const { req, res, query } = context
   //console.log({ context })
   //console.log('Cookies', req.cookies)
