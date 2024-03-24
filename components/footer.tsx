@@ -9,7 +9,7 @@ export default function Footer() {
         <div>
           <Link href="/" className='block'>
             <Image
-              src="/logox.png"
+              src="/GC Logo.png"
               alt="Give Credit"
               className="dark:invert"
               width={200}

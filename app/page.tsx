@@ -30,8 +30,10 @@ export default async function Home(props: any) {
         </div>
         <ParallaxHero />
         {/* <ImpactCarousel initiatives={initiatives} /> */}
-        <ActionBar />
-        <InstructionPanes />
+        <div className="bg-white relative">
+          <ActionBar />
+          <InstructionPanes />
+        </div>
         {/* <VideoBackground /> */}
       </div>
     </>

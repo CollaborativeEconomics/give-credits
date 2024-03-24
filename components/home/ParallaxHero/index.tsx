@@ -26,9 +26,10 @@ const ParallaxHero: React.FC = () => {
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {layers.map((layer, index) => {
-        const speed = index * 0.05;
+        const initialOffset = index * 0.05 * window.outerHeight;
+        const speed = - index * 0.05;
         const blurMultiplier = index * 0.001;
-        const offset = scrollOffset * speed;
+        const offset = scrollOffset * speed + initialOffset;
         const blur = Math.min(10, Math.abs(offset) * blurMultiplier);
 
         return (
