@@ -32,7 +32,7 @@ export default class Wallet {
       return {success:true, account:this.account, network:this.network}
     } catch(ex) {
       console.error(ex)
-      return {success:false, account:''}
+      return {success:false, account:'', network:''}
     }
   }
 

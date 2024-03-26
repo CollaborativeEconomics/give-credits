@@ -97,6 +97,7 @@ class StellarClass{
       callback(data)
     }
   }
+
 /*
   async paymentXDR(source, destin, amount, currency, issuer, memo='') {
     console.log('PAYMENT', source, destin, amount, currency, issuer, memo)

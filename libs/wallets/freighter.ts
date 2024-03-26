@@ -1,10 +1,10 @@
 import * as StellarSDK from '@stellar/stellar-sdk'
-import {isConnected, getPublicKey, signTransaction} from "@stellar/freighter-api"
+import {isConnected, getNetwork, getPublicKey, signTransaction} from "@stellar/freighter-api"
 
 export default class Wallet {
   neturl     = ''
   explorer   = ''
-  network    = 'testnet'
+  network    = ''
   chainId    = '0x0'
   accounts?:[string] = undefined
   myaccount:string  = ''
@@ -33,10 +33,11 @@ export default class Wallet {
       //this.soroban = new StellarSDK.Soroban(this.sorobanurl || '')
       this.horizon = new StellarSDK.Horizon.Server(this.horizonurl || '')
       this.myaccount = await getPublicKey()
+      this.network = (await getNetwork() || '').toLowerCase()
       return {success:true, account:this.myaccount, network:this.network}
     } catch(ex) {
       console.error(ex)
-      return {success:false, account:''}
+      return {success:false, account:'', network:''}
     }
   }
 

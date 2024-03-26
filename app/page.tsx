@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 //import Main from '@/components/ui/main'
 // import ImpactCarousel from '@/components/home/ImpactCarousel';
 import ActionBar from '@/components/home/ActionBar';
@@ -10,6 +11,17 @@ import Link from 'next/link';
 import MainChart from '@/components/mainchart';
 import StoryCard from '@/components/StoryCardCompactVert';
 import { getRecentStories, getCreditsByInitiative } from '@/utils/registry';
+
+//import Image from 'next/image'
+//import Link from 'next/link'
+=======
+import Image from 'next/image'
+import Link from 'next/link'
+import ParallaxHero from '@/components/home/ParallaxHero'
+import MainChart from '@/components/mainchart'
+import StoryCard from '@/components/StoryCardCompactVert'
+import { getRecentStories, getCreditsByInitiative } from '@/utils/registry'
+>>>>>>> Stashed changes
 
 export default async function Home(props: any) {
   const query = props?.searchParams?.query || '';
@@ -36,9 +48,14 @@ export default async function Home(props: any) {
 
   return (
     <>
+
       <div className="w-full h-screen">
+
+        <div className="h-[456px] mt-32 mb-16 pt-0 text-center">
+          <ParallaxHero />
+        </div>
+
         {/* HERO */}
-        <ParallaxHero />
         <div className="bg-white relative">
           {/* <InstructionPanes /> */}
 
