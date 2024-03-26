@@ -1,12 +1,20 @@
 import { CronJob } from 'cron';
-import mint from './nft/mint';
+import { runHook, Triggers } from '@cfce/registry-hooks'
+import { getOrganizations } from 'utils/registry';
 
 const job = new CronJob('00 00 00 * * *', 
   async () => {
     console.log('Running scheduled mint task');
+
+
+    let organizations: any[] = await getOrganizations();
+
+    let organizationIds = organizations.map((organization) => organization.id);
+  
     try {
-      const result = await mint('contractId', 'toAddress', 'uriToMetadata');
-      console.log('Mint task completed:', result);
+      for (let i = 0; i < organizationIds.length; i++) {
+        await runHook(Triggers.onceDaily, organizationIds[i], {});
+      } 
     } catch (error) {
       console.error('Mint task failed:', error);
     }

@@ -108,8 +108,6 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     const organizationId = organization?.id
     const organizationName = organization?.name
 
-    // runHook takes 3 params. 1. The Trigger name 2. The organizations to check and 3. Additional data that can be used by the the hook (currently just the below)
-    const extraMetadata = runHook(Triggers.addMetadataToNFTReceipt, organizationId, {userId, donor, organizationId});
 
     // Get org data
     //console.log('Org wallet', organizationAddress)
@@ -139,6 +137,10 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     const coinCode = 'XLM'
     const coinIssuer = 'Stellar'
 
+    // runHook takes 3 params. 1. The Trigger name 2. The organizations to check and 3. Additional data that can be used by the the hook (currently just the below)
+    const extraMetadata = await runHook(Triggers.addMetadataToNFTReceipt, organizationId, {userId, donor, organizationId, amountUSD: `${amountUSD}`});
+    // extraMetadata.output
+
     //if (opInfo?.asset_type !== 'native') {
     //  amountUSD = '0'
     //  coinCode = opInfo?.asset_code
@@ -165,6 +167,8 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
 
     // Save metadata
     const metadata = {
+      creditValue: offsetTxt,
+      ...(extraMetadata?.output ?? {}),
       mintedBy: 'CFCE via GiveCredit',
       created: created,
       donorAddress: donor,
@@ -176,9 +180,9 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
       coinIssuer: coinIssuer,
       coinValue: amountCUR,
       usdValue: amountUSD,
-      creditValue: offsetTxt,
-      operation: opid
+      operation: opid,
     }
+
     console.log('META', metadata)
     const fileId = 'meta-' + opid // unique file id
     const bytes = Buffer.from(JSON.stringify(metadata, null, 2))
