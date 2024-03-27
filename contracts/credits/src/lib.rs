@@ -1,13 +1,10 @@
 #![no_std]
+#![allow(non_snake_case)]
 
 mod admin;
-mod balance;
 mod contract;
 mod events;
-mod metadata;
-mod operator;
-mod owner;
-mod storage_types;
+mod storage;
 mod test;
 
-pub use crate::contract::NonFungibleTokenClient;
+pub use crate::contract::CreditsClient;

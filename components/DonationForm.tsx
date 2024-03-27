@@ -92,7 +92,7 @@ export default function DonationForm(props:any) {
       const dat = {from, amount:wei}
       const ctr = new Contract(opt)
       const trx = await ctr.donate(dat)
-      const res = await trx.signAndSend()
+      const res = await trx.signAndSend() // Wallet call
       console.log('JSN', JSON.stringify(res,null,2))
       console.log('RES1', res)
       console.log('RES2', res.sendTransactionResponse)
@@ -218,7 +218,7 @@ export default function DonationForm(props:any) {
       return
     }
     //const memo = destinTag ? 'tag:'+destinTag : ''
-    const result = await donate(contractId, donor, amount)
+    const result = await donate(contractId, donor, amountNum)
     console.log('UI RESULT', result)
     if(!result?.success){
       setMessage('Error sending payment')
@@ -260,11 +260,11 @@ export default function DonationForm(props:any) {
       amountFiat: usdValue,
       fiatCurrencyCode: 'USD',
       donor: {
-        name: name || user?.name || 'Anonymous',
+        name: name || userInfo?.name || 'Anonymous',
         address
       },
       chainName,
-      rate,
+      rate: usdRate,
       txid: result.txid
     }
     //if(!mintnft){ NFTData.status = 'Rejected' }

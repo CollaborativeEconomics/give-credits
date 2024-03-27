@@ -1,38 +1,67 @@
+#![allow(non_snake_case)]
 use soroban_sdk::{symbol_short, Address, Env};
 
-pub(crate) fn approve(e: &Env, owner: Address, operator: Address) {
-  let topics = (symbol_short!("approve"), operator);
-  e.events().publish(topics, owner);
+pub(crate) fn admin(e: &Env, oldValue: Address, newValue: Address) {
+  let topics = (symbol_short!("admin"), symbol_short!("change"));
+  e.events().publish(topics, (oldValue, newValue));
 }
 
-pub(crate) fn unapprove(e: &Env, owner: Address) {
-  let topics = (symbol_short!("unapprove"), owner.clone());
-  e.events().publish(topics, owner);
+pub(crate) fn bucket(e: &Env, oldValue: i128, newValue: i128) {
+  let topics = (symbol_short!("bucket"), symbol_short!("change"));
+  e.events().publish(topics, (oldValue, newValue));
 }
 
+pub(crate) fn donation(e: &Env, from: Address, destin: Address, amount: i128) {
+  let topics = (symbol_short!("donation"), from, destin);
+  e.events().publish(topics, amount);
+}
+
+pub(crate) fn fees(e: &Env, oldValue: i128, newValue: i128) {
+  let topics = (symbol_short!("fees"), symbol_short!("change"));
+  e.events().publish(topics, (oldValue, newValue));
+}
+
+pub(crate) fn minimum(e: &Env, oldValue: i128, newValue: i128) {
+  let topics = (symbol_short!("minimum"), symbol_short!("change"));
+  e.events().publish(topics, (oldValue, newValue));
+}
+
+pub(crate) fn provider(e: &Env, oldValue: Address, newValue: Address) {
+  let topics = (symbol_short!("provider"), symbol_short!("change"));
+  e.events().publish(topics, (oldValue, newValue));
+}
+
+pub(crate) fn providerFees(e: &Env, oldValue: i128, newValue: i128) {
+  let topics = (symbol_short!("provfees"), symbol_short!("change"));
+  e.events().publish(topics, (oldValue, newValue));
+}
 /*
-pub(crate) fn approve_all(e: &Env, operator: Address, owner: Address) {
-  let topics = (Symbol::new(&e, "approve_all"), operator);
-  e.events().publish(topics, owner);
+pub(crate) fn transfer(e: &Env, from: Address, destin: Address, amount: i128) {
+  let topics = (symbol_short!("transfer"), from, destin);
+  e.events().publish(topics, amount);
 }
 */
-
-pub(crate) fn burn(e: &Env, from: Address, id: i128) {
-  let topics = (symbol_short!("burn"), from);
-  e.events().publish(topics, id);
+pub(crate) fn treasury(e: &Env, oldValue: Address, newValue: Address) {
+  let topics = (symbol_short!("treasury"), symbol_short!("change"));
+  e.events().publish(topics, (oldValue, newValue));
 }
 
-pub(crate) fn mint(e: &Env, to: Address, id: i128) {
-  let topics = (symbol_short!("mint"), to);
-  e.events().publish(topics, id);
+pub(crate) fn vendor(e: &Env, oldValue: Address, newValue: Address) {
+  let topics = (symbol_short!("vendor"), symbol_short!("change"));
+  e.events().publish(topics, (oldValue, newValue));
 }
 
-pub(crate) fn set_admin(e: &Env, admin: Address, new_admin: Address) {
-  let topics = (symbol_short!("set_admin"), admin);
-  e.events().publish(topics, new_admin);
+pub(crate) fn vendorFees(e: &Env, oldValue: i128, newValue: i128) {
+  let topics = (symbol_short!("vendfees"), symbol_short!("change"));
+  e.events().publish(topics, (oldValue, newValue));
 }
-
-pub(crate) fn transfer(e: &Env, from: Address, to: Address, id: i128) {
-  let topics = (symbol_short!("transfer"), from, to);
-  e.events().publish(topics, id);
+/*
+pub(crate) fn withdraw(e: &Env, destin: Address, amount: i128) {
+  let topics = (symbol_short!("withdraw"), destin);
+  e.events().publish(topics, amount);
+}
+*/
+pub(crate) fn xlm(e: &Env, oldValue: Address, newValue: Address) {
+  let topics = (symbol_short!("xlm"), symbol_short!("change"));
+  e.events().publish(topics, (oldValue, newValue));
 }

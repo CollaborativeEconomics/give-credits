@@ -1,147 +1,222 @@
-//! Implementation of Soroban NFT721 interface
+#![allow(non_snake_case)]
 use crate::admin::{check_admin, has_administrator, read_administrator, write_administrator};
-use crate::balance::{read_balance, receive_balance, spend_balance, read_supply, increment_supply};
 use crate::events;
-use crate::metadata::{read_name, read_symbol, write_name, write_symbol};
-use crate::operator::{check_operator, clear_operator, read_operator, write_operator};
-use crate::owner::{check_owner, clear_owner, read_owner, write_owner};
-//use crate::storage_types::{instance_bump};
-use soroban_sdk::{contract, contractimpl, Address, Env, String};
+use crate::storage::{
+  read_balance, write_balance,
+  read_bucket, write_bucket,
+  read_fees, write_fees,
+  read_initiative, write_initiative,
+  read_minimum, write_minimum,
+  read_provider, write_provider,
+  read_provider_fees, write_provider_fees,
+  read_treasury, write_treasury,
+  read_vendor, write_vendor,
+  read_vendor_fees, write_vendor_fees,
+  read_xlm, write_xlm,
+};
+use soroban_sdk::{contract, contractimpl, token, Address, Env};
 
+//const xlmNative: &str = "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT";  // futurenet
 
-fn check_nonnegative_amount(amount: i128) {
-  if amount < 0 {
-    panic!("negative amount is not allowed: {}", amount)
-  }
-}
 
 #[contract]
-pub struct NonFungibleToken;
+pub struct Credits;
 
 #[contractimpl]
-impl NonFungibleToken {
-  pub fn initialize(e: Env, admin: Address, name: String, symbol: String) {
+impl Credits {
+  pub fn initialize(e: Env, admin: Address, initiative: u128, provider: Address, vendor: Address, bucket: i128, xlm: Address) {
     if has_administrator(&e) { panic!("already initialized") }
     write_administrator(&e, &admin);
-    write_name(&e, name);
-    write_symbol(&e, symbol);
+    write_balance(&e, 0);
+    write_bucket(&e, bucket);
+    write_fees(&e, 10);
+    write_initiative(&e, initiative);
+    write_minimum(&e, 10000000);
+    write_provider(&e, &provider);
+    write_provider_fees(&e, 80);
+    write_treasury(&e, &admin);
+    write_vendor(&e, &vendor);
+    write_vendor_fees(&e, 10);
+    write_xlm(&e, &xlm);
   }
 
-  // Allows to change the admin address
-  pub fn set_admin(e: Env, new_admin: Address) {
-    check_admin(&e);
-    //instance_bump(&e);
-    let admin = read_administrator(&e);
-    write_administrator(&e, &new_admin);
-    events::set_admin(&e, admin, new_admin);
-  }
+  //---- METHODS
 
-  // Approve operator to mint/transfer/burn in the name of owner
-  pub fn approve(e: Env, owner: Address, operator: Address) {
-    owner.require_auth();
-    //instance_bump(&e);
-    write_operator(&e, owner.clone(), operator.clone());
-    events::approve(&e, owner, operator);
-  }
-
-  // Remove operator from owner
-  pub fn unapprove(e: Env, owner: Address) {
-    owner.require_auth();
-    //instance_bump(&e);
-    clear_operator(&e, owner.clone());
-    events::unapprove(&e, owner);
-  }
-
-  // Mint autoincrement
-  pub fn mint(e: Env, to: Address) {
-    check_admin(&e);
-    //instance_bump(&e);
-    let id = increment_supply(&e);
-    receive_balance(&e, to.clone(), 1);
-    write_owner(&e, id, to.clone());
-    events::mint(&e, to, id);
-  }
-
-  // Transfer ownership of token id
-  pub fn transfer(e: Env, from: Address, to: Address, id: i128) {
+  pub fn donate(e: Env, from: Address, amount: i128) {
+    if amount <= 0 { panic!("amount less than zero") }
+    let minimum = read_minimum(&e);
+    if amount < minimum { panic!("amount less than minimum allowed") }
     from.require_auth();
-    check_nonnegative_amount(id);
-    check_owner(&e, from.clone(), id);
+    let thisctr = &e.current_contract_address();
+    let provider = read_provider(&e);
+    let providerFees = read_provider_fees(&e);
+    let vendorFees = read_vendor_fees(&e);
+    //let ourFees = read_fees(&e);
+    let balance = read_balance(&e);
+    let bucket = read_bucket(&e);
+    let pfees = (amount * providerFees / 100) as i128;
+    let vfees = (amount * vendorFees / 100) as i128;
+    let fees = amount - pfees - vfees; // get diff instead of calc to avoid rounding errors
+    //let fees = (amount * ourFees / 100) as i128;
     //instance_bump(&e);
-    spend_balance(&e, from.clone(), 1);
-    receive_balance(&e, to.clone(), 1);
-    write_owner(&e, id, to.clone());
-    events::transfer(&e, from, to, id);
-  }
-
-  // Transfer ownership of token id by operator
-  pub fn transfer_from(e: Env, operator: Address, from: Address, to: Address, id: i128) {
-    operator.require_auth();
-    check_nonnegative_amount(id);
-    check_owner(&e, from.clone(), id);
-    check_operator(&e, operator, from.clone());
-    //instance_bump(&e);
-    spend_balance(&e, from.clone(), 1);
-    receive_balance(&e, to.clone(), 1);
-    write_owner(&e, id, to.clone());
-    events::transfer(&e, from, to, id)
-  }
-
-  // Burn token id by owner
-  pub fn burn(e: Env, from: Address, id: i128) {
-    from.require_auth();
-    check_nonnegative_amount(id);
-    check_owner(&e, from.clone(), id);
-    //instance_bump(&e);
-    spend_balance(&e, from.clone(), 1);
-    clear_owner(&e, id);
-    events::burn(&e, from, id);
-  }
-
-  // Burn token id by operator
-  pub fn burn_from(e: Env, operator: Address, from: Address, id: i128) {
-    operator.require_auth();
-    check_nonnegative_amount(id);
-    check_owner(&e, from.clone(), id);
-    check_operator(&e, operator, from.clone());
-    //instance_bump(&e);
-    spend_balance(&e, from.clone(), 1);
-    clear_owner(&e, id);
-    events::burn(&e, from, id)
+    let xlm = token::Client::new(&e, &read_xlm(&e));
+    xlm.transfer(&from, &thisctr, &amount); // From donor to contract
+    if fees > 0 {
+      let treasury = read_treasury(&e);
+      xlm.transfer(&thisctr, &treasury, &fees); // Our fees from contract to treasury
+    }
+    if vfees > 0 {
+      let vendor = read_vendor(&e);
+      xlm.transfer(&thisctr, &vendor, &vfees); // Vendor fees from contract to vendor
+    }
+    let newbalance = balance + pfees; // Accumulate carbon credits
+    if newbalance >= bucket {
+      let reminder = newbalance % bucket;
+      let credits  = newbalance - reminder;
+      xlm.transfer(&thisctr, &provider, &credits); // Credits from contract to provider
+      write_balance(&e, reminder);
+    } else {
+      write_balance(&e, newbalance);
+    }
+    events::donation(&e, from, provider, amount);
   }
 
   //---- VIEWS
 
-  pub fn admin(e: Env) -> Address {
+  pub fn getAdmin(e: Env) -> Address {
     read_administrator(&e)
   }
 
-  pub fn balance(e: Env, id: Address) -> i128 {
-    read_balance(&e, id)
+  pub fn getBalance(e: Env) -> i128 {
+    read_balance(&e)
   }
 
-  pub fn name(e: Env) -> String {
-    read_name(&e)
+  pub fn getContractBalance(e: Env) -> i128 {
+    let xlm = token::Client::new(&e, &read_xlm(&e));
+    xlm.balance(&e.current_contract_address())
   }
 
-  pub fn operator(e: Env, owner: Address) -> Address {
-    read_operator(&e, owner)
+  pub fn getBucket(e: Env) -> i128 {
+    read_bucket(&e)
   }
 
-  pub fn owner(e: Env, id: i128) -> Address {
-    read_owner(&e, id)
+  pub fn getFees(e: Env) -> i128 {
+    read_fees(&e)
   }
 
-  pub fn supply(e: Env) -> i128 {
-    read_supply(&e)
+  pub fn getInitiative(e: Env) -> u128 {
+    read_initiative(&e)
   }
 
-  pub fn symbol(e: Env) -> String {
-    read_symbol(&e)
+  pub fn getMinimum(e: Env) -> i128 {
+    read_minimum(&e)
   }
 
-  pub fn token_uri(e: Env) -> String {
-    let uri = "https://example.com/nft";
-    String::from_str(&e, uri)
+  pub fn getProvider(e: Env) -> Address {
+    read_provider(&e)
   }
+
+  pub fn getProviderFees(e: Env) -> i128 {
+    read_provider_fees(&e)
+  }
+
+  pub fn getTreasury(e: Env) -> Address {
+    read_treasury(&e)
+  }
+
+  pub fn getVendor(e: Env) -> Address {
+    read_vendor(&e)
+  }
+
+  pub fn getVendorFees(e: Env) -> i128 {
+    read_vendor_fees(&e)
+  }
+
+  pub fn getXLM(e: Env) -> Address {
+    read_xlm(&e)
+  }
+
+  //---- UPDATES
+
+  pub fn setAdmin(e: Env, newval: Address) {
+    check_admin(&e);
+    //instance_bump(&e);
+    let admin = read_administrator(&e);
+    write_administrator(&e, &newval);
+    events::admin(&e, admin, newval);
+  }
+
+  pub fn setBucket(e: Env, newval: i128) {
+    check_admin(&e);
+    //instance_bump(&e);
+    let oldval = read_bucket(&e);
+    write_bucket(&e, newval);
+    events::bucket(&e, oldval, newval);
+  }
+
+  pub fn setFees(e: Env, newval: i128) {
+    check_admin(&e);
+    //instance_bump(&e);
+    let oldval = read_fees(&e);
+    write_fees(&e, newval);
+    events::fees(&e, oldval, newval);
+  }
+
+  pub fn setMinimum(e: Env, newval: i128) {
+    check_admin(&e);
+    //instance_bump(&e);
+    let oldval = read_minimum(&e);
+    write_minimum(&e, newval);
+    events::minimum(&e, oldval, newval);
+  }
+
+  pub fn setProvider(e: Env, newval: Address) {
+    check_admin(&e);
+    //instance_bump(&e);
+    let oldval = read_provider(&e);
+    write_provider(&e, &newval);
+    events::provider(&e, oldval, newval);
+  }
+
+  pub fn setProviderFees(e: Env, newval: i128) {
+    check_admin(&e);
+    //instance_bump(&e);
+    let oldval = read_provider_fees(&e);
+    write_provider_fees(&e, newval);
+    events::providerFees(&e, oldval, newval);
+  }
+
+  pub fn setTreasury(e: Env, newval: Address) {
+    check_admin(&e);
+    //instance_bump(&e);
+    let oldval = read_treasury(&e);
+    write_treasury(&e, &newval);
+    events::treasury(&e, oldval, newval);
+  }
+
+  pub fn setVendor(e: Env, newval: Address) {
+    check_admin(&e);
+    //instance_bump(&e);
+    let oldval = read_vendor(&e);
+    write_vendor(&e, &newval);
+    events::vendor(&e, oldval, newval);
+  }
+
+  pub fn setVendorFees(e: Env, newval: i128) {
+    check_admin(&e);
+    //instance_bump(&e);
+    let oldval = read_vendor_fees(&e);
+    write_vendor_fees(&e, newval);
+    events::vendorFees(&e, oldval, newval);
+  }
+
+  pub fn setXLM(e: Env, newval: Address) {
+    check_admin(&e);
+    //instance_bump(&e);
+    let oldval = read_xlm(&e);
+    write_xlm(&e, &newval);
+    events::xlm(&e, oldval, newval);
+  }
+
 }
+
