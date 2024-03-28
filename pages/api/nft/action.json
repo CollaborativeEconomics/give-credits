@@ -1,0 +1,9 @@
+{
+    "action": "transform",
+    "key": "output",
+    "description": "Set the NFT metadata",
+    "parameters": {
+      "tonsCO2": "tonsCO2",
+      "input.walletAddress": "walletAddress"
+    }
+}

@@ -831,13 +831,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cfce/registry-hooks@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "@cfce/registry-hooks@npm:0.2.3"
+"@cfce/registry-hooks@npm:^0.3.3":
+  version: 0.3.3
+  resolution: "@cfce/registry-hooks@npm:0.3.3"
   dependencies:
     lodash: "npm:^4.17.21"
     react-query: "npm:^3.39.3"
-  checksum: 10c0/0075c0eee0fa01095d21fb064b3e4cb5e161d2c786f93abd62cb7ae6561ba384a08f34cf5eeecf0e29e2da1208bd3945436990c2bab9263dfe8962f27fed0622
+  checksum: 10c0/64cf965ce6849c6136fdf10383684d78eb411eed75a0b8c9d11a2e7f2896d8d367801b57de3e40064dea66de3b8fb43cb956ea1d30bfbacdc35632f6fe2d1c9d
   languageName: node
   linkType: hard
 
@@ -9008,7 +9008,7 @@ __metadata:
     "@aws-sdk/client-pinpoint": "npm:^3.95.0"
     "@aws-sdk/client-pinpoint-email": "npm:^3.95.0"
     "@aws-sdk/client-s3": "npm:^3.216.0"
-    "@cfce/registry-hooks": "npm:^0.2.3"
+    "@cfce/registry-hooks": "npm:^0.3.3"
     "@lighthouse-web3/sdk": "npm:^0.1.12"
     "@stellar/freighter-api": "npm:^1.7.1"
     "@stellar/stellar-sdk": "npm:^11.2.1"

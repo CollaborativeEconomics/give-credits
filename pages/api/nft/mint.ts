@@ -137,9 +137,8 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     const coinCode = 'XLM'
     const coinIssuer = 'Stellar'
 
-    // runHook takes 3 params. 1. The Trigger name 2. The organizations to check and 3. Additional data that can be used by the the hook (currently just the below)
+    // runHook takes 3 params. 1. The Trigger name 2. The organizations to check and 3. Additional data that can be used by the the hook
     const extraMetadata = await runHook(Triggers.addMetadataToNFTReceipt, organizationId, {userId, donor, organizationId, amountUSD: `${amountUSD}`});
-    // extraMetadata.output
 
     //if (opInfo?.asset_type !== 'native') {
     //  amountUSD = '0'
@@ -150,7 +149,7 @@ export default async function Mint(req: NextApiRequest, res: NextApiResponse) {
     let offsetVal = 0
     let offsetTxt = '0 Tons'
     console.log('CREDIT', initiative?.credits)
-    if(initiative?.credits?.length > 0){
+    if (initiative?.credits?.length > 0) {
       const creditVal = initiative?.credits[0].value || 0
       const creditTon = creditVal / (rate||1)
       offsetVal = creditTon>0 ? (+amountUSD / creditTon) : 0

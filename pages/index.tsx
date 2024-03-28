@@ -7,7 +7,7 @@ import Card  from 'components/card'
 import Tile  from 'components/tile'
 //import Button from '../components/button'
 import { isConnected, getPublicKey } from "@stellar/freighter-api"
-import 'libs/scheduler'
+// import 'libs/scheduler'
 
 
 export default function Home() {
