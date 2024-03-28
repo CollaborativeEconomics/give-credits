@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import Link  from 'next/link'
@@ -7,14 +7,18 @@ import Card  from 'components/card'
 import Tile  from 'components/tile'
 //import Button from '../components/button'
 import { isConnected, getPublicKey } from "@stellar/freighter-api"
-// import 'libs/scheduler'
+import { ConfigContext } from 'components/config' 
+import { fetchApi, postApi } from 'utils/api'
 
 
 export default function Home() {
+  // @ts-ignore: Typescript sucks donkey balls
+  const {config, setConfig} = useContext(ConfigContext)
+  console.log('CONFIG INDEX', config)
   const router = useRouter()
-  const [loginText, setLoginText] = useState('LOGIN')
-  const [logged, setLogged] = useState(false)
-  const [userId, setUserId] = useState(null)
+  const [loginText, setLoginText] = useState(config.user=='' ? 'LOGIN' : 'PROFILE '+config.wallet.substr(0,10))
+  const [logged, setLogged] = useState(config.user!=='')
+  const [userId, setUserId] = useState(config.user)
 
   function onLogin(){
     console.log('LOGIN')
@@ -22,13 +26,34 @@ export default function Home() {
       getPublicKey().then(address=>{
         console.log('Wallet', address)
         setLogged(true)
-        setLoginText('Connected to '+address.substr(0,10)+'...')
+        setLoginText('PROFILE '+address.substr(0,10)+'...')
         fetch('/api/users?wallet='+address).then(res=>{
           res.json().then(user=>{
             console.log('User', user)
             if(user){
               console.log('UserId', user.id)
               setUserId(user.id)
+              setConfig({...config, wallet:address, user:user.id})
+            } else {
+              const body = JSON.stringify({
+                name: 'Anonymous', 
+                wallet: address,
+                wallets:{
+                  create:{
+                    address: address,
+                    chain: 'Stellar'
+                  }
+                }
+              })
+              fetch('/api/users', {method:'POST', headers: { 'Content-Type': 'application/json' }, body}).then(rex=>{
+                rex.json().then(newUser=>{
+                  const userInfo = newUser.data
+                  console.log('NEWUSER', userInfo)
+                  if(!userInfo){
+                    console.log('Error creating user')
+                  }
+                })
+              })
             }
           })
         })
