@@ -1,147 +1,169 @@
-import { useContext } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import Page from '@/components/page'
+import { Image as Picture, Newspaper, LayoutList } from 'lucide-react'
+import { ListObject } from '@/components/ui/list-object'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import TableReceiptsSort from '@/components/TableReceiptsSort'
+import TableDonationsSort from '@/components/TableDonationsSort'
+import StoryCardCompactVert from '@/components/StoryCardCompactVert'
+import NotFound from '@/components/NotFound'
 import { getUserById, getNFTsByAccount, getDonationsByUser, getFavoriteOrganizations, getUserBadges, getRecentStories } from '@/utils/registry'
-import TableDonations from '@/components/tabledonations'
-import NotFound from '@/components/notfound'
-import StoryCard from '@/components/storycard'
-import { ConfigContext } from '@/components/config' 
+import { coinFromChain } from '@/utils/chain'
 
 type Dictionary = { [key: string]: any }
 
-export async function getServerSideProps({ req, res, query }:any){
-  console.log(query)
-  const userId = query?.id || ''
-  const user = await getUserById(userId) || null
-  if(!user){
-    return { props: {userId, user:null, receipts:[], donations:[], favorgs:[], badges:[], stories:[]} }
-  }
-  const receipts:[Dictionary]  = await getNFTsByAccount(userId) || []
-  const donations:[Dictionary] = await getDonationsByUser(userId) || []
-  const favorgs:[Dictionary]   = await getFavoriteOrganizations(userId) || []
-  const badges:[Dictionary]    = await getUserBadges(userId) || []
+export async function getServerSideProps(props:any) {
+  const userid = props?.params?.id
+  const search = props?.searchParams?.tab || 'receipts'
+  const user = await getUserById(userid) || null
+  if(!user){ return { props: { user } } }
+  const receipts:[Dictionary]  = await getNFTsByAccount(userid) || []
+  const donations:[Dictionary] = await getDonationsByUser(userid) || []
+  const favorgs:[Dictionary]   = await getFavoriteOrganizations(userid) || []
+  const badges:[Dictionary]    = await getUserBadges(userid) || []
   const stories:[Dictionary]   = await getRecentStories(5) || []
-  return { props: {userId, user, receipts, donations, favorgs, badges, stories} }
+  return { props: { user, receipts, donations, favorgs, badges, stories, search } }
 }
 
 export default function Profile(props: any) {
-  const {userId, user, receipts, donations, favorgs, badges, stories} = props
-  if(!user){ return NotFound() }
-  // @ts-ignore: Typescript sucks donkey balls
-  const {config, setConfig} = useContext(ConfigContext)
-  console.log('CONFIG PROFILE', config)
-
-  const nopic = '/media/nopic.png'
-
-  function logout(){
-    setConfig({...config, wallet:'', user:''})
+  const user = props.user
+  if(!user){
+    return (<NotFound />)
   }
 
+  const receipts  = props.receipts
+  const donations = props.donations
+  const favorgs   = props.favorgs
+  const badges    = props.badges
+  const stories   = props.stories
+  const search    = props.search
+  const nopic     = '/media/nopic.png'
+
   return (
-    <Page>
+    <main className="flex min-h-screen flex-col items-stretch container py-24 mt-24">
       <div className="flex flex-row justify-between">
 
         {/* Avatar */}
-        <div className="border rounded-md p-8 w-1/3 bg-white opacity-80 w-full">
+        <div className="border rounded-md p-8 w-1/3 bg-white">
           <div className="flex flex-row flex-start items-center rounded-full">
-            <Image className="mr-20 rounded-full" src={user.image||nopic} width={100} height={100} alt="Avatar" />
-            <div className="flex flex-col flex-start items-start rounded-full text-black">
+            <Image className="mr-8 rounded-full" src={user.image||nopic} width={100} height={100} alt="Avatar" />
+            <div className="flex flex-col flex-start items-start rounded-full">
               <h1 className="font-bold text-lg">{user.name}</h1>
               <h2 className="">{user.email}</h2>
-              <h2 className="">{user.wallet.substr(0,16)+'...'}</h2>
-              <button className="mt-4 py-1 px-4 rounded text-black bg-gray-300" onClick={logout}>Log out</button>
             </div>
           </div>
+        </div>
+
+        {/* Empty */}
+        <div className="p-4 w-1/3">&nbsp;</div>
+
+        {/* Chains */}
+        <div className="flex flex-col items-center border rounded-md p-4 w-1/3 bg-white">
+          {user.wallets ? (
+            <>
+              <h1>Active Chains</h1>
+              <div className="mt-4 pb-4 w-full border-b">
+                {user.wallets.map((item:any)=>{
+                  return (
+                    <span key={item.id} className="inline-block border rounded-full p-1 mx-1">
+                      <Image src={'/coins/' + (coinFromChain(item.chain)||'none') + '.png'} width={48} height={48} alt="Chain" />
+                    </span>
+                  )
+                })}
+                <span key={0} className="inline-block border rounded-full p-1">
+                  <Image src={'/coins/newcoin.png'} width={48} height={48} alt="New chain" />
+                </span>
+              </div>
+              <button className="block w-2/3 mt-4 mx-auto py-1 px-8 bg-red-400 text-white rounded-full">
+                <Link href="/api/auth/signout">Log Out</Link>
+              </button>
+            </>
+          ) : (
+            <>
+              <p>No wallets</p>
+              <button>Connect Wallet</button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Mid Section */}
-      <div className="mt-12 flex flex-col">
+      <div className="mt-12 flex flex-row justify-between">
 
-        {/* Panel */}
-        <div className="w-full">
+        {/* Sidebar */}
+        <div className="w-1/4 mr-12">
           
           {/* Fav Orgs */}
           <h1 className="text-2xl font-medium">Favorite Organizations</h1>
-          {favorgs.length>0 
-            ? ( 
-                <div className="grid grid-cols-2 gap-2 mb-8">
-                  {favorgs.map((item:any)=>{
-                    const org = item.organization
-                    return (
-                      <div key={org.id} className="flex flex-row justify-start items-center content-center mt-4">
-                        <Image className="rounded-full mr-1" src={org.image} width={64} height={64} alt="Organization" />
-                        <h1 className="text-sm text-center">{org.name}</h1>
-                      </div>
-                    )
-                  })}
+          <div className="grid grid-cols-2 gap-2 mb-8">
+            {favorgs.map((item:any)=>{
+              const org = item.organization
+              return (
+                <div key={org.id} className="flex flex-row justify-start items-center content-center mt-4">
+                  <Image className="rounded-full mr-1" src={org.image} width={64} height={64} alt="Organization" />
+                  <h1 className="text-sm text-center">{org.name}</h1>
                 </div>
               )
-            : (
-                <div className="mb-8 w-full text-gray-400">
-                  <h1>No favorite organizations found</h1>
-                </div>
-              )
-          }
+            })}
+          </div>
           
           {/* Badges */}
-          <h1 className="text-2xl font-medium">Badges</h1>
-          {badges.length>0 
-            ? ( 
-                <div className="grid grid-cols-4 gap-2 mb-8 w-full">
-                  {badges.map((item:any)=>{
-                    const badge = item.category
-                    return (<Image key={badge.id} className="mr-1" src={badge.image} width={72} height={72} alt="Badge" />)
-                  })}
-                </div>
-              )
-            : (
-                <div className="mb-8 w-full text-gray-400">
-                  <h1>No badges found</h1>
-                </div>
-              )
-          }
+          <h1 className="text-2xl font-medium mb-4">Badges</h1>
+          <div className="grid grid-cols-4 gap-2 mb-8">
+            {badges.map((item:any)=>{
+              const badge = item.category
+              return (<Image key={badge.id} className="mr-1" src={badge.image} width={72} height={72} alt="Badge" />)
+            })}
+          </div>
 
           {/* Stories */}
           <h1 className="text-2xl font-medium">Recent Stories</h1>
-          {stories.length>0 
-            ? ( 
-                <div className="">
-                  {stories.map((story:any)=>{
-                    return (
-                      <div className="my-4" key={story.id}>
-                        <StoryCard story={story} />
-                      </div>
-                    )
-                  })}
+          <div className="">
+            {stories.map((story:any)=>{
+              return (
+                <div className="my-4" key={story.id}>
+                  <StoryCardCompactVert story={story} />
                 </div>
               )
-            : (
-                <div className="mb-8 w-full text-gray-400">
-                  <h1>No stories found</h1>
-                </div>
-              )
-          }
+            })}
+          </div>
+
         </div>
 
-        {/* Donations */}
-        <div className="w-full">
-          <h1 className="text-2xl font-medium mb-4">Donations</h1>
-          {donations.length>0 
-            ? ( 
-                <div className="w-full rounded-md p-10 bg-green-800 text-white">
-                  <TableDonations donations={donations} />
-                </div>
-              )
-            : (
-                <div className="mb-8 w-full text-gray-400">
-                  <h1>No donations found</h1>
-                </div>
-              )
-          }
+        {/* Table */}
+        <div className="w-3/4">
+          <h1 className="text-2xl font-medium mb-4">Donation Data</h1>
+          <Tabs className="TabsRoot" defaultValue="tab1">
+            <div className="flex flex-row justify-between items-center">
+              <div className="mb-2">
+                <TabsList className="TabsList" aria-label="Donations data">
+                  <TabsTrigger className="TabsTrigger" value="tab1">
+                    NFTs Receipts
+                  </TabsTrigger>
+                  <TabsTrigger className="TabsTrigger" value="tab2">
+                    My Donations
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+              <div className="flex flex-row">
+                <Newspaper size={32} className="pr-2 cursor-pointer" />
+                <LayoutList size={32} className="pr-2 cursor-pointer" />
+                <Picture size={32} className="pr-2 cursor-pointer" />
+              </div>
+            </div>
+            <div className="w-full border rounded-md p-10 bg-white">
+              {/* NFTS Receipts */}
+              <TabsContent className="TabsContent" value="tab1">
+                {/*<TableReceiptsSort receipts={receipts} />*/}
+              </TabsContent>
+              {/* Donations */}
+              <TabsContent className="TabsContent" value="tab2">
+                {/*<TableDonationsSort donations={donations} />*/}
+              </TabsContent>
+            </div>
+          </Tabs>
         </div>
       </div>
-    </Page>
+    </main>
   )
 }

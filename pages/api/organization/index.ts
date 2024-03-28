@@ -2,10 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { newOrganization } from 'utils/registry'
 console.log('neworg',newOrganization)
 
-export default async function addOrganization(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export default async function Organization(req: NextApiRequest, res: NextApiResponse) {
   const { method, body } = req
   console.log('BODY', body)
 

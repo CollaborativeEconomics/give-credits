@@ -1,4 +1,7 @@
 import Document, { Html, Head, Main, NextScript } from 'next/document'
+import Header from '@/components/header'
+import Footer from '@/components/footer'
+import { ThemeProvider } from 'next-themes'
 
 class MyDocument extends Document {
   render() {
@@ -10,8 +13,12 @@ class MyDocument extends Document {
           <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap" rel="stylesheet" />
           <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
         </Head>
-        <body className="text-white bg-slate-900">
-          <Main />
+        <body>
+          <ThemeProvider defaultTheme="light" forcedTheme="light">
+            <Header />
+            <Main />
+            <Footer />
+          </ThemeProvider>
           <NextScript />
         </body>
       </Html>

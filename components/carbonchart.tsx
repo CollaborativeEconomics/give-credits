@@ -2,15 +2,16 @@ import timeAgo from '@/utils/timeago'
 
 interface ChartType {
   title?: string
-  value: number
+  value: string
 }
 
 // https://stackoverflow.com/questions/50960084/how-to-extend-cssproperties-in-react-project
 //const style: { [key: string]: React.CSSProperties } = {
 const style = {
   label: {
-    color: '#fff',
-    textAlign: 'center'
+    color: '#000',
+    textAlign: 'center',
+    marginBottom: '14px'
   },
   value: {
     fontWeight: '400',
@@ -42,17 +43,17 @@ const style = {
     margin: '2px',
     border: '1px solid #666',
     borderRadius: '6px',
-    backgroundColor: 'green'
+    backgroundColor: '#1a56db'
   },
-  p10: { background: 'linear-gradient(to right, green 0%, green 10%, transparent 10%, transparent 100%)' },
-  p20: { background: 'linear-gradient(to right, green 0%, green 20%, transparent 20%, transparent 100%)' },
-  p30: { background: 'linear-gradient(to right, green 0%, green 30%, transparent 30%, transparent 100%)' },
-  p40: { background: 'linear-gradient(to right, green 0%, green 40%, transparent 40%, transparent 100%)' },
-  p50: { background: 'linear-gradient(to right, green 0%, green 50%, transparent 50%, transparent 100%)' },
-  p60: { background: 'linear-gradient(to right, green 0%, green 60%, transparent 60%, transparent 100%)' },
-  p70: { background: 'linear-gradient(to right, green 0%, green 70%, transparent 70%, transparent 100%)' },
-  p80: { background: 'linear-gradient(to right, green 0%, green 80%, transparent 80%, transparent 100%)' },
-  p90: { background: 'linear-gradient(to right, green 0%, green 90%, transparent 90%, transparent 100%)' }
+  p10: { background: 'linear-gradient(to right, #1a56db 0%, #1a56db 10%, transparent 10%, transparent 100%)' },
+  p20: { background: 'linear-gradient(to right, #1a56db 0%, #1a56db 20%, transparent 20%, transparent 100%)' },
+  p30: { background: 'linear-gradient(to right, #1a56db 0%, #1a56db 30%, transparent 30%, transparent 100%)' },
+  p40: { background: 'linear-gradient(to right, #1a56db 0%, #1a56db 40%, transparent 40%, transparent 100%)' },
+  p50: { background: 'linear-gradient(to right, #1a56db 0%, #1a56db 50%, transparent 50%, transparent 100%)' },
+  p60: { background: 'linear-gradient(to right, #1a56db 0%, #1a56db 60%, transparent 60%, transparent 100%)' },
+  p70: { background: 'linear-gradient(to right, #1a56db 0%, #1a56db 70%, transparent 70%, transparent 100%)' },
+  p80: { background: 'linear-gradient(to right, #1a56db 0%, #1a56db 80%, transparent 80%, transparent 100%)' },
+  p90: { background: 'linear-gradient(to right, #1a56db 0%, #1a56db 90%, transparent 90%, transparent 100%)' }
 } as const
 
 //const CarbonChart = ({
@@ -71,7 +72,7 @@ function CarbonChart({
     80: { ...style.ton, ...style.p80 },
     90: { ...style.ton, ...style.p90 }
   }
-  const num = value
+  const num = parseFloat(value)
   const int = Math.trunc(num)
   const mod = num % 1
   const fix = mod.toFixed(1)

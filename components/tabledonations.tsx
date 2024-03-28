@@ -1,53 +1,39 @@
-"use client"
-import { useState } from "react"
-
-type Donation = {
-  id: string;
-  created: Date;
-  organization: string;
-  initiative: string;
-  amount: string;
-}
+import { localDate } from '@/utils/date'
+import { coinFromChain } from '@/utils/chain'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 type Dictionary = { [key: string]: any }
 
 export default function TableDonations(props:any){
   const donations:[Dictionary] = props?.donations || []
-  const recs = donations.map(rec => { 
-    return {
-      id: rec.id,
-      created: rec.created,
-      organization: rec.organization.name,
-      initiative: rec.initiative.title,
-      amount: rec.amount
-    }
-  })
-
-  const [data, setData] = useState(recs)
-
-  function toLocal(sdate:string){ return new Date(sdate).toLocaleString() }
-
   return (
-    <table id="table-donations" className="w-full border-collapse">
-      <thead className="text-left">
-        <tr><th>Date</th><th>Initiative</th><th>Amount</th></tr>
-      </thead>
-      <tbody>
-        { recs.length>0 ? recs.map((row) => {
+    <Table id="table-donations" className="w-full">
+      <TableHeader>
+        <TableRow>
+          <TableHead>Date</TableHead>
+          <TableHead>Initiative</TableHead>
+          <TableHead>Organization</TableHead>
+          <TableHead>Amount</TableHead>
+          <TableHead>Coin</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {donations.length ? donations.map((item:any)=>{
           return (
-            <tr key={row.id} className="border-y border-y-green-900 align-top">
-              <td>{toLocal(row.created).substr(0,10)}</td>
-              <td>{row.initiative}<br/>
-                  <small className="text-gray-400">{row.organization}</small></td>
-              <td>{row.amount} XLM</td>
-            </tr>
+            <TableRow key={item.id}>
+              <TableCell>{localDate(item.created)}</TableCell>
+              <TableCell>{item.initiative.title}</TableCell>
+              <TableCell>{item.organization.name}</TableCell>
+              <TableCell>{item.amount}</TableCell>
+              <TableCell>{coinFromChain(item.chain).toUpperCase()}</TableCell>
+            </TableRow>
           )
         }) : (
-          <tr>
-            <td className="col-span-3">No donations found</td>
-          </tr>
-        )}
-      </tbody>
-    </table>
+          <TableRow>
+            <TableCell className="col-span-5">No donations found</TableCell>
+          </TableRow>
+        )}  
+      </TableBody>
+    </Table>
   )
 }

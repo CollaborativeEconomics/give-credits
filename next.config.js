@@ -41,6 +41,12 @@ module.exports = {
         hostname: 'ipfs.io',
         port: '',
         pathname: '/ipfs/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'partners.cfce.io',
+        port: '',
+        pathname: '/**'
       }
     ],
   },
