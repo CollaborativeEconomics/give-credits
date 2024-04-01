@@ -3,7 +3,7 @@ const { Api, assembleTransaction } = SorobanRpc;
 
 const networks = {
   futurenet: {
-    contractId: "CDWEQ6B7ARL7GF72SCTI7HASXCAP7SXWIPWP326VQAUZOXBX5M7SYWZV",
+    contractId: '',
     networkPassphrase: "Test SDF Future Network ; October 2022",
     rpcUrl: 'https://rpc-futurenet.stellar.org:443'
   }
@@ -74,6 +74,7 @@ async function submitTx(tx:Transaction) {
       if (result.status === "SUCCESS") {
         // Make sure the transaction's resultMetaXDR is not empty
         if (!result.resultMetaXdr) {
+          console.log('Error: Empty resultMetaXDR')
           throw "Empty resultMetaXDR in getTransaction response";
         }
         // Find the return value from the contract and return it
@@ -83,10 +84,11 @@ async function submitTx(tx:Transaction) {
         //console.log(`Return value: ${returnValue}`);
         return {success:true, value:returnValue, meta:transactionMeta, txid};
       } else {
-        console.log('XDR:', JSON.stringify(result.resultXdr,null,2));
+        console.log('ERROR IN TRANSACTION:', JSON.stringify(result.resultXdr,null,2));
         throw `Transaction failed: ${result.resultXdr}`;
       }
     } else {
+      console.log('ERROR IN RESPONSE')
       throw response.errorResult;
     }
   } catch (err:any) {
@@ -108,6 +110,7 @@ async function submitOrRestoreAndRetry(signer: Keypair, tx: Transaction) {
 
   // Other failures are out of scope of this tutorial.
   if (!Api.isSimulationSuccess(sim)) {
+    console.log('Error simulating')
     throw sim;
   }
 
@@ -209,7 +212,7 @@ export async function submit(network:any, secret:string, contractId:string, meth
   const server   = new SorobanRpc.Server(network.rpcUrl)
   const contract = new Contract(contractId)
   const account  = await server.getAccount(source.publicKey())
-  console.log({network, contractId, method, args})
+  console.log('SUBMIT', {network, contractId, method, args})
 
   let op = contract.call(method, ...args)
   let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })

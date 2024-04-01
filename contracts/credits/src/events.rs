@@ -16,11 +16,6 @@ pub(crate) fn donation(e: &Env, from: Address, destin: Address, amount: i128) {
   e.events().publish(topics, amount);
 }
 
-pub(crate) fn fees(e: &Env, oldValue: i128, newValue: i128) {
-  let topics = (symbol_short!("fees"), symbol_short!("change"));
-  e.events().publish(topics, (oldValue, newValue));
-}
-
 pub(crate) fn minimum(e: &Env, oldValue: i128, newValue: i128) {
   let topics = (symbol_short!("minimum"), symbol_short!("change"));
   e.events().publish(topics, (oldValue, newValue));
@@ -41,11 +36,6 @@ pub(crate) fn transfer(e: &Env, from: Address, destin: Address, amount: i128) {
   e.events().publish(topics, amount);
 }
 */
-pub(crate) fn treasury(e: &Env, oldValue: Address, newValue: Address) {
-  let topics = (symbol_short!("treasury"), symbol_short!("change"));
-  e.events().publish(topics, (oldValue, newValue));
-}
-
 pub(crate) fn vendor(e: &Env, oldValue: Address, newValue: Address) {
   let topics = (symbol_short!("vendor"), symbol_short!("change"));
   e.events().publish(topics, (oldValue, newValue));

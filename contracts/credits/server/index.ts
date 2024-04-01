@@ -1,5 +1,6 @@
 import { Address, BASE_FEE, Contract, FeeBumpTransaction, Keypair, nativeToScVal, Networks, Operation, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, xdr } from "@stellar/stellar-sdk";
 const { Api, assembleTransaction } = SorobanRpc;
+import * as SorobanClient from 'soroban-client'
 
 const networks = {
   futurenet: {
@@ -72,13 +73,19 @@ async function submitTx(tx:Transaction) {
       //console.log(`getTransaction response: ${JSON.stringify(result)}`);
       console.log(`Status:`, result.status);
       if (result.status === "SUCCESS") {
+        console.log('RESULT:', result);
         // Make sure the transaction's resultMetaXDR is not empty
         if (!result.resultMetaXdr) {
           throw "Empty resultMetaXDR in getTransaction response";
         }
         // Find the return value from the contract and return it
         let transactionMeta = result.resultMetaXdr;
-        let returnValue = result.returnValue;
+        //const metares  = result.resultMetaXdr.v3().sorobanMeta().returnValue();
+        //console.log('METARES:', metares);
+        let returnValue = result.returnValue;  //parseResultXdr(result.returnValue);
+        //const metaXDR = SorobanClient.xdr.TransactionMeta.fromXDR(result.resultMetaXdr, "base64")
+        //console.log('METAXDR:', JSON.stringify(metaXDR,null,2));
+        //console.log('Return meta:', JSON.stringify(transactionMeta,null,2));
         console.log('Return value:', JSON.stringify(returnValue,null,2));
         //console.log(`Return value: ${returnValue}`);
         return {success:true, value:returnValue, meta:transactionMeta, txid};
@@ -98,7 +105,7 @@ async function submitTx(tx:Transaction) {
   }
 }
 
-//---- RESTORE
+//---- RESTORE DATA
 
 // assume that `server` is the Server() instance from the preamble
 async function submitOrRestoreAndRetry(signer: Keypair, tx: Transaction) {
@@ -175,7 +182,7 @@ async function submitOrRestoreAndRetry(signer: Keypair, tx: Transaction) {
   return resx
 }
 
-//---- RESTORE
+//---- RESTORE CONTRACT
 
 async function restoreContract(signer:Keypair, c:Contract){
   const instance = c.getFootprint();
@@ -221,16 +228,18 @@ export async function submit(network:any, secret:string, contractId:string, meth
     const resp = await submitOrRestoreAndRetry(source, tx)
     console.log('RESP', resp)
     if(resp.success){
-      const meta:any = resp.meta
+      //const meta:any = resp.meta
       //console.log('META', JSON.stringify(meta,null,2))
-      console.log('Return value:', resp?.value)
-      return {success:true, value:resp?.value, error:null}
+      //console.log('Return value:', resp?.value)
+      const resval = SorobanClient.scValToNative(resp?.value)
+      console.log('Return value:', resval)
+      return {success:true, value:resval, error:null}
     } else {
-      return {success:false, value:'', error:'Error minting NFT'}
+      return {success:false, value:'', error:'Error submitting transaction'}
     }
   } catch (err:any) {
     // Catch and report any errors we've thrown
     console.log("Error sending transaction", err)
-    return {success:false, value:'', error:err.message||'Error minting NFT'}
+    return {success:false, value:'', error:err.message||'Error sending transaction'}
   }
 }

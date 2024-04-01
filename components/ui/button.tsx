@@ -89,7 +89,8 @@ function createClaimButton(status: string): React.JSX.Element {
       return (
         <button
           type="button"
-          className="inline-flex rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-2 text-sm font-semibold w-[200px]"
+          className="inline-flex rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-2 text-sm font-semibold w-[200px] disabled:pointer-events-none disabled:opacity-50"
+          disabled={true}
         >
           <p className="text-white text-center w-full">{claimText}</p>
         </button>
@@ -99,7 +100,8 @@ function createClaimButton(status: string): React.JSX.Element {
       return (
         <button
           type="button"
-          className="inline-flex rounded-md bg-gray-400 px-3 py-2 text-sm font-semibold w-[200px]"
+          className="inline-flex rounded-md bg-gray-400 px-3 py-2 text-sm font-semibold w-[200px] disabled:pointer-events-none disabled:opacity-50"
+          disabled={true}
         >
           <p className="text-slate-200 text-center w-full">{claimText}</p>
         </button>

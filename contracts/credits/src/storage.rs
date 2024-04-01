@@ -14,14 +14,12 @@ pub enum DataKey {
     Admin,
     Balance,
     Bucket,
-    Fees,
     Initiative,
     Minimum,
     Provider,
     ProviderFees,
     Vendor,
     VendorFees,
-    Treasury,
     XLM
 }
 
@@ -69,20 +67,6 @@ pub fn read_bucket(e: &Env) -> i128 {
 
 pub fn write_bucket(e: &Env, value: i128) {
   let key = DataKey::Bucket;
-  e.storage().instance().set(&key, &value);
-}
-
-pub fn read_fees(e: &Env) -> i128 {
-  let key = DataKey::Fees;
-  let val = e.storage().instance().get(&key);
-  match val {
-    Some(amount) => amount,
-    None => 0
-  }
-}
-
-pub fn write_fees(e: &Env, value: i128) {
-  let key = DataKey::Fees;
   e.storage().instance().set(&key, &value);
 }
 
@@ -139,20 +123,6 @@ pub fn read_provider_fees(e: &Env) -> i128 {
 
 pub fn write_provider_fees(e: &Env, value: i128) {
   let key = DataKey::ProviderFees;
-  e.storage().instance().set(&key, &value);
-}
-
-pub fn read_treasury(e: &Env) -> Address {
-  let key = DataKey::Treasury;
-  let val = e.storage().instance().get(&key);
-  match val {
-    Some(addr) => addr,
-    None => zero_address(&e)
-  }
-}
-
-pub fn write_treasury(e: &Env, value: &Address) {
-  let key = DataKey::Treasury;
   e.storage().instance().set(&key, &value);
 }
 

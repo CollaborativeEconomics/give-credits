@@ -16,12 +16,12 @@ export default function NFTReceipt(props:any) {
   //console.log('Receipt:', receipt)
   //console.log('Donation', donation)
 
-  async function mintNFT(chain:string, txid:string, address:string, itag:string, rate:number){
-    console.log('Minting NFT in', chain, txid, address, itag, rate)
+  async function mintNFT(txid:string, initid:string, donor:string, destin:string, amount:number, rate:number){
+    console.log('Minting NFT, wait...', txid, initid, donor, destin, amount, rate)
     const options = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({chain, txid, itag, rate})
+      body: JSON.stringify({txid, initid, donor, destin, amount, rate})
     }
     const response = await fetch('/api/nft/mint', options)
     //console.log('Minting response', response)
@@ -36,30 +36,25 @@ export default function NFTReceipt(props:any) {
   }
 
   async function claimNFT(){
+    if(donation.status!=='Claim'){ return }
     console.log('Claiming...', donation)
-    //NFTData.status = 'Minting'
     setMessage('Minting NFT, wait a moment...')
-    const minted = await mintNFT(donation.chainName, donation.txid, donation.donor.address, donation.tag, donation.rate)
+    const minted = await mintNFT(donation.txid, donation.initiativeId, donation.donor.address, donation.receiver, donation.amount, donation.rate)
     const result = structuredClone(donation)
     if(minted?.success){
       result.status = 'Minted'
       setDonation(result)
-      //setButtonText('DONE')
-      //setDisabled(true)
       setMessage('NFT minted successfully!')
     } else {
       result.status = 'Failed'
       setDonation(result)
-      //setButtonText('ERROR')
-      //setDisabled(true)
       setMessage('Minting NFT failed!')
     }
   }
 
-
   return (
     <div className="flex min-h-full w-full">
-      <div className="relative bg-white dark:bg-slate-500 p-6 my-4 h-auto shadow-xl">
+      <div className="relative bg-white dark:bg-slate-500 p-6 h-auto shadow-xl border rounded-lg">
         <div className="border-dotted border-t-2 border-b-2 border-gray-300 p-2">
           <h3 className="text-3xl font-semibold uppercase text-center text-gray-500 dark:text-white">
             NFT Receipt

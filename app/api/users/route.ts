@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     console.log('BODY', body)
     const res = await newUser(body)
     console.log('Response', res)
-    return Response.json({success:true, result:res})
+    return Response.json(res)
   } catch(ex:any) {
     console.error(ex)
     return Response.json({success:false, error:ex.message}, {status:500})

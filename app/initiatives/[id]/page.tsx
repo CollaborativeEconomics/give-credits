@@ -56,9 +56,9 @@ export default async function Handler(props: any) {
     <main className="w-full bg-gradient-to-t from-slate-200 mt-12">
       <div className="relative flex flex-col px-[5%] container pt-24 w-full h-full">
         <div className="flex overflow-hidden mb-4 flex-col md:flex-row">
-          <div className="relative w-full md:w-[45%] h-[200px] md:h-[300px] mb-6 md:mb-0">
+          <div className="relative w-full md:w-[45%] h-[200px] md:h-[300px] mb-12 md:mb-2">
             <Image
-              className="h-[300px]"
+              className="h-[300px] rounded-lg"
               src={initiative.defaultAsset}
               alt="IMG BG"
               fill

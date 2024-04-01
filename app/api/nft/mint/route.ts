@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 
     // Get initiative info
     const initiative = await getInitiativeById(initid)
-    console.log('INITIATIVE', initiative)
+    //console.log('INITIATIVE', initiative)
     if(!initiative || initiative?.error) {
       console.log('ERROR', 'Initiative not found')
       return Response.json({ error: 'Initiative info not found' }, {status:500})
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
 
     // Get organization info
     const organization = await getOrganizationById(initiative?.organizationId)
-    console.log('ORGANIZATION', organization)
+    //console.log('ORGANIZATION', organization)
     if(!organization || organization?.error) {
       console.log('ERROR', 'Organization not found')
       return Response.json({ error: 'Organization info not found' }, {status:500})

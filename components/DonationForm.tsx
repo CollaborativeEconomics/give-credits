@@ -21,6 +21,7 @@ import { fetchApi, postApi } from '@/utils/api'
 
 export default function DonationForm(props:any) {
   //console.log('Props', props)
+  const network = process.env.NEXT_PUBLIC_STELLAR_NETWORK||''
   const initiative = props.initiative
   const contractId = initiative.contractcredit
   const organization = initiative.organization
@@ -62,6 +63,7 @@ export default function DonationForm(props:any) {
     }
   }
 
+/*
   async function mintNFT(txid:string, initid:string, donor:string, destin:string, amount:number, rate:number){
     // Mint NFT
     //const imageuri = 'ipfs:QmdmPTsnJr2AwokcR1QC11s1T3NRUh9PK8jste1ngnuDzT'
@@ -69,6 +71,7 @@ export default function DonationForm(props:any) {
     //const imageurl = 'https://gateway.lighthouse.storage/ipfs/QmdmPTsnJr2AwokcR1QC11s1T3NRUh9PK8jste1ngnuDzT'
     //const metaurl  = 'https://gateway.lighthouse.storage/ipfs/Qme4c3dERwN7xNrC7wyDgbxF4bQ5aS9uNwaeXdXbWTeabh'
     setMessage('Minting NFT, wait...')
+    console.log('Minting NFT', txid, initid, donor, destin, amount, rate)
     const minted = await postApi('nft/mint', {txid, initid, donor, destin, amount, rate})
     console.log('Minted', minted)
     if(!minted?.success){
@@ -78,15 +81,14 @@ export default function DonationForm(props:any) {
     setMessage(`NFT minted successfully • <a href="${minted.image}" target="_blank">Image</a> • <a href="${minted.metadata}" target="_blank">Meta</a>`)
     return minted
   }
-
+*/
 
   // Contract call
   async function donate(contractId:string, from:string, amount:number) {
     try {
       console.log('-- Donating', contractId, from, amount)
-      const nettype = process.env.NEXT_PUBLIC_STELLAR_NETWORK||''
-      const network = nettype=='futurenet' ? networks.futurenet : networks.testnet
-      const opt = {contractId, ...network}
+      const net = network=='futurenet' ? networks.futurenet : networks.testnet
+      const opt = {contractId, ...net}
       console.log('NET', opt)
       const wei = BigInt(amount*10000000) // 7 decs
       const dat = {from, amount:wei}
@@ -129,7 +131,7 @@ export default function DonationForm(props:any) {
     console.log('Name:',     name)
     console.log('Email:',    email)
     console.log('Receipt:',  receipt)
-    //console.log('MintNFT:',  mintnft)
+    console.log('ContractID:', contractId)
     
     // Validate required data
     if(!parseInt(amount)){
@@ -153,8 +155,8 @@ export default function DonationForm(props:any) {
       setMessage('Error: no wallet in this organization for ' + chainName)
       return
     }
-    const address = orgwallet.address
-    console.log('Sending payment to', address)
+    const receiver = orgwallet.address
+    console.log('Sending payment to', receiver, 'in contract', contractId)
 
     const destinationTag = initiative.tag
     // if amount in USD convert by coin rate
@@ -182,9 +184,9 @@ export default function DonationForm(props:any) {
     }
 
     // Check user exists or create a new one
-    let userRes = await fetchApi('users?wallet='+donor)
-    console.log('USER', userRes)
-    let userInfo = userRes?.result
+    const userRes = await fetchApi('users?wallet='+donor)
+    let userInfo = userRes?.result || null
+    console.log('USER', userInfo)
     const userId = userInfo?.id || ''
     if(!userId){
       //const email = donor.substr(0,10).toLowerCase() + '@example.com'
@@ -226,6 +228,33 @@ export default function DonationForm(props:any) {
     }
     setMessage('Payment sent successfully')
 
+    // Save donation to DB
+    const catId = initiative.categoryId || organization.categoryId 
+    const donation = {
+      organizationId: organization.id,
+      initiativeId:   initiative.id,
+      categoryId:     catId,
+      userId:         userInfo?.id,
+      paytype:        'crypto',
+      chain:          chainName,
+      network:        network,
+      wallet:         userInfo.address,
+      amount:         coinValue,
+      usdvalue:       usdValue,
+      asset:          currency,
+      status:         1
+    }
+    console.log('DONATION', donation)
+    const res = await postApi('donations', donation)
+    console.log('RES', res)
+    if(!res.success){
+     setButtonText('ERROR')
+     setDisabled(true)
+     setMessage('Error saving donation in database')
+     return
+    }
+    //const donationId = res.data?.id
+
     // Send receipt
     if(receipt){
       //sendReceipt(name, email, organization, amount, currency, rate, issuer)
@@ -252,6 +281,7 @@ export default function DonationForm(props:any) {
         address: organization.mailingAddress,
         ein: organization.EIN
       },
+      initiativeId: initiative.id,
       tag: initiative.tag,
       image: initiative.defaultAsset,
       date: new Date(),
@@ -260,14 +290,15 @@ export default function DonationForm(props:any) {
       amountFiat: usdValue,
       fiatCurrencyCode: 'USD',
       donor: {
-        name: name || userInfo?.name || 'Anonymous',
-        address
+        address: donor,
+        name: name || userInfo?.name || 'Anonymous'
       },
+      receiver,
+      contractId,
       chainName,
       rate: usdRate,
       txid: result.txid
     }
-    //if(!mintnft){ NFTData.status = 'Rejected' }
     setDonation(NFTData)
     setButtonText('DONE')
     setDisabled(true)

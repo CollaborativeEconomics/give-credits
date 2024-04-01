@@ -4,12 +4,10 @@ use crate::events;
 use crate::storage::{
   read_balance, write_balance,
   read_bucket, write_bucket,
-  read_fees, write_fees,
   read_initiative, write_initiative,
   read_minimum, write_minimum,
   read_provider, write_provider,
   read_provider_fees, write_provider_fees,
-  read_treasury, write_treasury,
   read_vendor, write_vendor,
   read_vendor_fees, write_vendor_fees,
   read_xlm, write_xlm,
@@ -17,6 +15,7 @@ use crate::storage::{
 use soroban_sdk::{contract, contractimpl, token, Address, Env};
 
 //const xlmNative: &str = "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT";  // futurenet
+//const xlmNative: &str = "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";  // testnet
 
 
 #[contract]
@@ -29,12 +28,10 @@ impl Credits {
     write_administrator(&e, &admin);
     write_balance(&e, 0);
     write_bucket(&e, bucket);
-    write_fees(&e, 10);
     write_initiative(&e, initiative);
-    write_minimum(&e, 10000000);
+    write_minimum(&e, 1000000);
     write_provider(&e, &provider);
-    write_provider_fees(&e, 80);
-    write_treasury(&e, &admin);
+    write_provider_fees(&e, 90);
     write_vendor(&e, &vendor);
     write_vendor_fees(&e, 10);
     write_xlm(&e, &xlm);
@@ -51,20 +48,14 @@ impl Credits {
     let provider = read_provider(&e);
     let providerFees = read_provider_fees(&e);
     let vendorFees = read_vendor_fees(&e);
-    //let ourFees = read_fees(&e);
     let balance = read_balance(&e);
     let bucket = read_bucket(&e);
     let pfees = (amount * providerFees / 100) as i128;
     let vfees = (amount * vendorFees / 100) as i128;
-    let fees = amount - pfees - vfees; // get diff instead of calc to avoid rounding errors
-    //let fees = (amount * ourFees / 100) as i128;
     //instance_bump(&e);
-    let xlm = token::Client::new(&e, &read_xlm(&e));
+    let ctr = &read_xlm(&e);
+    let xlm = token::Client::new(&e, &ctr);
     xlm.transfer(&from, &thisctr, &amount); // From donor to contract
-    if fees > 0 {
-      let treasury = read_treasury(&e);
-      xlm.transfer(&thisctr, &treasury, &fees); // Our fees from contract to treasury
-    }
     if vfees > 0 {
       let vendor = read_vendor(&e);
       xlm.transfer(&thisctr, &vendor, &vfees); // Vendor fees from contract to vendor
@@ -92,16 +83,14 @@ impl Credits {
   }
 
   pub fn getContractBalance(e: Env) -> i128 {
-    let xlm = token::Client::new(&e, &read_xlm(&e));
-    xlm.balance(&e.current_contract_address())
+    let adr = e.current_contract_address();
+    let ctr = read_xlm(&e);
+    let xlm = token::Client::new(&e, &ctr);
+    xlm.balance(&adr)
   }
 
   pub fn getBucket(e: Env) -> i128 {
     read_bucket(&e)
-  }
-
-  pub fn getFees(e: Env) -> i128 {
-    read_fees(&e)
   }
 
   pub fn getInitiative(e: Env) -> u128 {
@@ -118,10 +107,6 @@ impl Credits {
 
   pub fn getProviderFees(e: Env) -> i128 {
     read_provider_fees(&e)
-  }
-
-  pub fn getTreasury(e: Env) -> Address {
-    read_treasury(&e)
   }
 
   pub fn getVendor(e: Env) -> Address {
@@ -154,14 +139,6 @@ impl Credits {
     events::bucket(&e, oldval, newval);
   }
 
-  pub fn setFees(e: Env, newval: i128) {
-    check_admin(&e);
-    //instance_bump(&e);
-    let oldval = read_fees(&e);
-    write_fees(&e, newval);
-    events::fees(&e, oldval, newval);
-  }
-
   pub fn setMinimum(e: Env, newval: i128) {
     check_admin(&e);
     //instance_bump(&e);
@@ -184,14 +161,6 @@ impl Credits {
     let oldval = read_provider_fees(&e);
     write_provider_fees(&e, newval);
     events::providerFees(&e, oldval, newval);
-  }
-
-  pub fn setTreasury(e: Env, newval: Address) {
-    check_admin(&e);
-    //instance_bump(&e);
-    let oldval = read_treasury(&e);
-    write_treasury(&e, &newval);
-    events::treasury(&e, oldval, newval);
   }
 
   pub fn setVendor(e: Env, newval: Address) {
@@ -217,6 +186,4 @@ impl Credits {
     write_xlm(&e, &newval);
     events::xlm(&e, oldval, newval);
   }
-
 }
-
