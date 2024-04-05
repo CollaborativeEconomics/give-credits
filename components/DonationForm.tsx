@@ -210,7 +210,7 @@ export default function DonationForm(props:any) {
     }
 
     // Check network
-    const useNetwork = process.env.NEXT_PUBLIC_STELLAR_NETWORK||''
+    const useNetwork = process.env.NEXT_PUBLIC_STELLAR_NETWORK || ''
     if(info.network!==useNetwork){
       console.log('Error: Wrong network', info.network)
       console.log('Expected network:', useNetwork)
