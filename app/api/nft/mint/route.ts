@@ -2,7 +2,7 @@ import upload from '@/libs/nft/upload'
 import mint from '@/libs/nft/mint'
 import fetchLedger from '@/libs/server/fetchLedger'
 import { newUser, newUserWallet, getUserByWallet, getOrganizationById, getInitiativeById, createNFT } from '@/utils/registry'
-import {init, runHook, Triggers} from '@cfce/registry-hooks/dist';
+import {init, runHook, Triggers} from '@cfce/registry-hooks';
 
 init({
   registryApiKey: process.env.CFCE_REGISTRY_API_KEY || '',
