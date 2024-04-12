@@ -15,7 +15,7 @@ import { Dictionary, getChainWallets, getChainsList, getChainsMap } from '@/libs
 import Chart from '@/components/carbonchart'
 import Progressbar from '@/components/progressbar'
 import Wallet from '@/libs/wallets/freighter'
-import {Contract, networks} from '@/contracts/credits/client'
+import { Contract, networks } from '@/contracts/credits/client'
 import { fetchApi, postApi } from '@/utils/api'
 
 
@@ -238,7 +238,7 @@ export default function DonationForm(props:any) {
       paytype:        'crypto',
       chain:          chainName,
       network:        network,
-      wallet:         userInfo.address,
+      wallet:         donor,
       amount:         coinValue,
       usdvalue:       usdValue,
       asset:          currency,
@@ -325,6 +325,7 @@ export default function DonationForm(props:any) {
   const [offset, setOffset]   = useState('0.00')
 
   function amountChanged(evt){
+    console.log('REF', amountInputRef)
     const currency = 'XLM'
     const amount = evt.target.value || '0'
     const amountNum = parseInt(amount)

@@ -5,34 +5,31 @@ import StoryCard from '@/components/StoryCard'
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer'
 import { Document } from '@contentful/rich-text-types'
 import { Separator } from '@/components/ui/separator'
-import { getInitiativeById, getInitiativesByOrganization } from '@/utils/registry'
 import OrganizationAvatar from '@/components/OrganizationAvatar'
 import DonationView from '@/components/DonationView'
-//import DonationForm from '@/components/DonationForm'
 import { ReceiptStatus } from '@/types/common'
 import InitiativeCardCompact from '@/components/InitiativeCardCompact'
 import NotFound  from '@/components/NotFound'
+import { getInitiativeById, getInitiativesByOrganization } from '@/utils/registry'
+import restoreContract from '@/contracts/credits/server/restore'
 import getRates from '@/utils/rates'
 
 export default async function Handler(props: any) {
-  //console.log('PROPS', props)
-  //const initId = props?.params?.id || null
-  //console.log('INITID', initId)
-
   const params = props.params
-  //console.log(params)
   const initiative = await getInitiativeById(params?.id) || null
   if(!initiative){ return <NotFound /> }
-  console.log(initiative)
-  const organization = initiative?.organization 
+  
+  // Restore credits contract
+  const contractId = initiative.contractcredit
+  restoreContract(contractId).then(result=>{
+    console.log('RESTORE', result)
+  })
+
+  const organization = initiative.organization 
   const initiatives = await getInitiativesByOrganization(organization.id)
-  const stories = initiative?.stories
-  //console.log('INITIATIVE', initiative)
-  //console.log('ORGANIZATION', organization)
-  //console.log('STORIES', stories.length, stories[0])
-  //console.log('INITIATIVES', initiatives)
+  const stories = initiative.stories
   const rate = await getRates('XLM')
-  console.log('RATE', rate)
+  //console.log('RATE', rate)
 
   const receipt = {
     status: ReceiptStatus.pending,

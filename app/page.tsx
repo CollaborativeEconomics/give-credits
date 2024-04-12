@@ -25,9 +25,12 @@ export default async function Home(props: any) {
 
   const initid = '30c0636f-b0f1-40d5-bb9c-a531dc4d69e2';
   const featured = '/initiatives/30c0636f-b0f1-40d5-bb9c-a531dc4d69e2';
-  const stories = await getRecentStories(4);
+  let stories = await getRecentStories(4);
+  if(stories?.error){
+    stories = null
+  }
   const credits = await getCreditsByInitiative(initid);
-  const credit = credits.length > 0 ? credits[0] : null;
+  const credit = credits?.length > 0 ? credits[0] : null;
   const goal = credit?.goal ?? 0;
   const current = credit?.current ?? 0;
   const percent = ((current * 100) / goal).toFixed(0);
@@ -36,7 +39,7 @@ export default async function Home(props: any) {
     day: 'numeric',
     year: 'numeric',
   });
-
+console.log('s', stories)
   return (
     <>
       <div className="w-full h-screen">
@@ -130,9 +133,13 @@ export default async function Home(props: any) {
                   Recent Carbon Credit Retirements
                 </h2>
                 <div className="container grid grid-cols-4">
-                  {stories.map(story => {
-                    return <StoryCard key={story.id} story={story} />;
-                  })}
+                  {stories ? 
+                    stories.map(story => {
+                      return <StoryCard key={story.id} story={story} />;
+                    })
+                  :
+                    <h1>No stories found</h1>
+                  }
                 </div>
               </div>
             </div>

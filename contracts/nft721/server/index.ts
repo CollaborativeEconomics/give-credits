@@ -239,3 +239,32 @@ export async function submit(network:any, secret:string, contractId:string, meth
     return {success:false, tokenId:'', error:err.message||'Error minting NFT'}
   }
 }
+
+export async function checkContract(network:any, secret:string, contractId:string, method:string, args:any) {
+  const source   = Keypair.fromSecret(secret)
+  const server   = new SorobanRpc.Server(network.rpcUrl)
+  const contract = new Contract(contractId)
+  const account  = await server.getAccount(source.publicKey())
+  console.log({network, contractId, method, args})
+
+  let op = contract.call(method, ...args)
+  let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })
+    .addOperation(op)
+    .setTimeout(30)
+    .build()
+
+  const sim = await server.simulateTransaction(tx);
+  if (!Api.isSimulationSuccess(sim)) {
+    throw sim
+  }
+  if (Api.isSimulationRestore(sim)) {
+    console.log('Contract needs to be restored')
+    const result = await restoreContract(source, contract)
+    console.log('RESULT', result)
+    return {ready:true}
+  } else {
+    console.log('Contract is ready')
+    return {ready:true}
+  }
+}
+

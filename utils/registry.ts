@@ -14,8 +14,8 @@ const fetchRegistry = async (endpoint: string) => {
       }
     }
     const response = await fetch(url, options)
-    const { data } = await response.json()
-    return data
+    const result = await response.json()
+    return result.data
   } catch(ex:any) {
     console.error(ex)
     return {error:ex.message}
