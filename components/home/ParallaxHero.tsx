@@ -80,9 +80,8 @@ const ParallaxExample: React.FC = () => {
           ) : (
             <Image
               src={layer.src}
-              layout="fill"
-              objectFit="cover"
               alt="jungle background"
+              fill
             />
           )}
         </ParallaxLayer>

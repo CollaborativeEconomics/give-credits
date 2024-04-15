@@ -11,7 +11,7 @@ const Title = ({
   children,
   ...rest
 }: TitleProps & HTMLProps<HTMLLabelElement>) => (
-  <label className={`my-0 pb-12 text-white text-2xl text-center uppercase ${className ?? ''}`} {...rest}>{children||text}</label>
+  <label className={`my-0 pb-12 text-2xl text-center uppercase ${className ?? ''}`} {...rest}>{children||text}</label>
 )
 
 export default Title

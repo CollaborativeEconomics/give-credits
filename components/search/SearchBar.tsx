@@ -24,10 +24,10 @@ export default function SearchBar(props:any) {
   }
 
   function search(){
-    console.log('SEARCHBAR', query, category, location)
+    //console.log('SEARCHBAR', query, category, location)
     const params = {query, category, location}
     const url = new URLSearchParams(params).toString()
-    console.log(url)
+    //console.log(url)
     if(params){
       router.push(`?${url}`)
       //router.push(`?search=${query}`)

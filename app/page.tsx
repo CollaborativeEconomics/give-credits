@@ -21,7 +21,7 @@ export default async function Home(props: any) {
   // const data = await getInitiatives();
   // const initiatives = data.filter((it: any) => !it.inactive);
 
-  console.log('SEARCH', query, category, location);
+  //console.log('SEARCH', query, category, location);
 
   const initid = '30c0636f-b0f1-40d5-bb9c-a531dc4d69e2';
   const featured = '/initiatives/30c0636f-b0f1-40d5-bb9c-a531dc4d69e2';
@@ -39,7 +39,7 @@ export default async function Home(props: any) {
     day: 'numeric',
     year: 'numeric',
   });
-console.log('s', stories)
+
   return (
     <>
       <div className="w-full h-screen">

@@ -11,7 +11,7 @@ export default function StoryCard(props:any) {
   const initiative = story.initiative
   const media = story.media.map((it:any)=>it.media) // flatten list
   media.unshift(story.image) // main image to the top
-  //console.log(media)
+
   return (
     <Card className="flex flex-col overflow-hidden">
       <CardHeader>

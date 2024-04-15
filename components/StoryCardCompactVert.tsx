@@ -1,7 +1,8 @@
-import Image from 'next/image';
-import { Card, CardContent, CardHeader } from './ui/card';
-import { DateDisplay } from './ui/date-posted';
-import OrganizationAvatar from './OrganizationAvatar';
+import Image from 'next/image'
+import Link from 'next/link'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { DateDisplay } from '@/components/ui/date-posted'
+import OrganizationAvatar from '@/components/OrganizationAvatar'
 
 export default function StoryCardCompactVert(props:any) {
   const story = props?.story
@@ -12,19 +13,21 @@ export default function StoryCardCompactVert(props:any) {
   return (
     <Card className="flex flex-col overflow-hidden h-auto mx-2">
       <div className="relative min-w-[150px] w-full h-[200px]">
-        <Image
-          className="object-cover"
-          src={story.image}
-          alt="IMG BG"
-          fill 
-          style={{objectFit: 'cover'}}
-        />
+        <Link href={'/stories/'+story.id}>
+          <Image
+            className="object-cover"
+            src={story.image}
+            alt="IMG BG"
+            style={{objectFit: 'cover'}}
+            fill 
+          />
+        </Link>
       </div>
       <CardContent className="flex flex-col overflow-hidden gap-3">
         <div className="inline-flex flex-wrap items-top pl-6 gap-x-4 pt-4">
           <OrganizationAvatar className="flex-wrap" name={organization?.name} image={organization?.image} />
           <p className="text-sm font-semibold truncate">
-            in <span className="underline"><a href={'/initiatives/'+initiative?.id}>{initiative?.title}</a></span>
+            in <span className="underline"><Link href={'/initiatives/'+initiative?.id}>{initiative?.title}</Link></span>
           </p>
         </div>
         <DateDisplay timestamp={story.created} className="pl-6" />
