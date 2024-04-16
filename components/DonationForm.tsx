@@ -63,26 +63,6 @@ export default function DonationForm(props:any) {
     }
   }
 
-/*
-  async function mintNFT(txid:string, initid:string, donor:string, destin:string, amount:number, rate:number){
-    // Mint NFT
-    //const imageuri = 'ipfs:QmdmPTsnJr2AwokcR1QC11s1T3NRUh9PK8jste1ngnuDzT'
-    //const metadata = 'ipfs:Qme4c3dERwN7xNrC7wyDgbxF4bQ5aS9uNwaeXdXbWTeabh'
-    //const imageurl = 'https://gateway.lighthouse.storage/ipfs/QmdmPTsnJr2AwokcR1QC11s1T3NRUh9PK8jste1ngnuDzT'
-    //const metaurl  = 'https://gateway.lighthouse.storage/ipfs/Qme4c3dERwN7xNrC7wyDgbxF4bQ5aS9uNwaeXdXbWTeabh'
-    setMessage('Minting NFT, wait...')
-    console.log('Minting NFT', txid, initid, donor, destin, amount, rate)
-    const minted = await postApi('nft/mint', {txid, initid, donor, destin, amount, rate})
-    console.log('Minted', minted)
-    if(!minted?.success){
-      setMessage('Error minting NFT')
-      return minted
-    }
-    setMessage(`NFT minted successfully • <a href="${minted.image}" target="_blank">Image</a> • <a href="${minted.metadata}" target="_blank">Meta</a>`)
-    return minted
-  }
-*/
-
   // Contract call
   async function donate(contractId:string, from:string, amount:number) {
     try {

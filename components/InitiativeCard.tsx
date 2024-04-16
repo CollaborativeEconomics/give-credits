@@ -15,10 +15,10 @@ export default function InitiativeCard({ ...props }) {
   const initiative = props?.data || {}
   const initurl = '/initiatives/' + (initiative?.id || 0)
   let image = dummyImgSrc
-  if (initiative?.imageUri) {
-    image = initiative?.imageUri.startsWith('ipfs')
-      ? 'https://ipfs.filebase.io/ipfs/' + initiative.imageUri.substr(5)
-      : initiative.imageUri
+  if (initiative?.defaultAsset) {
+    image = initiative?.defaultAsset.startsWith('ipfs')
+      ? 'https://ipfs.filebase.io/ipfs/' + initiative.defaultAsset.substr(5)
+      : initiative.defaultAsset
   }
   const startDate = new Date(initiative?.start).getTime()
   const progress = (initiative.donations / initiative.goal) * 100

@@ -31,6 +31,12 @@ const nextConfig = {
         hostname: 'partners.cfce.io',
         port: '',
         pathname: '/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'v8tqm1jlovjfn4gd.public.blob.vercel-storage.com',
+        port: '',
+        pathname: '/**'
       }
     ],
   }
