@@ -4,11 +4,14 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { DateDisplay } from '@/components/ui/date-posted'
 import OrganizationAvatar from '@/components/OrganizationAvatar'
 
+const IPFSURL = process.env.IPFS_GATEWAY_URL
+
 export default function StoryCardCompactVert(props:any) {
   const story = props?.story
   if(!story){ return }
   const organization = story.organization
   const initiative = story.initiative
+  const image = (story.image.startsWith('ipfs:') ? IPFSURL + story.image.substr(5) : story.image) ?? '/nopic.png'
 
   return (
     <Card className="flex flex-col overflow-hidden h-auto mx-2">
@@ -16,7 +19,7 @@ export default function StoryCardCompactVert(props:any) {
         <Link href={'/stories/'+story.id}>
           <Image
             className="object-cover"
-            src={story.image}
+            src={image}
             alt="IMG BG"
             style={{objectFit: 'cover'}}
             fill 

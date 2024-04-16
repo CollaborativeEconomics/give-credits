@@ -248,7 +248,7 @@ export async function checkContract(network:any, secret:string, contractId:strin
   const server   = new SorobanRpc.Server(network.rpcUrl)
   const contract = new Contract(contractId)
   const account  = await server.getAccount(source.publicKey())
-  console.log({network, contractId, method, args})
+  //console.log({network, contractId, method, args})
 
   let op = contract.call(method, ...args)
   let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })

@@ -9,7 +9,7 @@ import '@/styles/globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Giving Universe',
+  title: 'Give Credit',
   description: 'Watch your donations make an impact',
 };
 

@@ -31,7 +31,7 @@ const OrganizationAvatar = React.forwardRef<HTMLDivElement, Props>(
           <AvatarImage src={image} alt={name} />
           <AvatarFallback>OT</AvatarFallback>
         </Avatar>
-        <AvatarTitle size={avatarProps?.size} title={name ?? 'no name'} />
+        <AvatarTitle size={avatarProps?.size} title={name ?? 'no name'} className={className}/>
       </div>
     )
   }

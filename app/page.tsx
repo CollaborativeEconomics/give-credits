@@ -1,44 +1,32 @@
-//import Image from 'next/image'
-//import Link from 'next/link'
-//import Main from '@/components/ui/main'
-// import ImpactCarousel from '@/components/home/ImpactCarousel';
-import ActionBar from '@/components/home/ActionBar';
-import InstructionPanes from '@/components/home/InstructionPanes';
-// import VideoBackground from '@/components/home/VideoBackground';
-import ParallaxHero from '@/components/home/ParallaxHero';
-// import { getInitiatives } from '@/utils/registry';
-import Image from 'next/image';
-import Link from 'next/link';
-import MainChart from '@/components/mainchart';
-import StoryCard from '@/components/StoryCardCompactVert';
-import { getRecentStories, getCreditsByInitiative } from '@/utils/registry';
+import Image from 'next/image'
+import Link from 'next/link'
+import ActionBar from '@/components/home/ActionBar'
+import InstructionPanes from '@/components/home/InstructionPanes'
+import ParallaxHero from '@/components/home/ParallaxHero'
+import MainChart from '@/components/mainchart'
+import StoryCard from '@/components/StoryCardCompactVert'
+import { getRecentStories, getCreditsByInitiative } from '@/utils/registry'
 
 
 export default async function Home(props: any) {
-  const query = props?.searchParams?.query || '';
-  const category = props?.searchParams?.category || '';
-  const location = props?.searchParams?.location || '';
-  // const data = await getInitiatives();
-  // const initiatives = data.filter((it: any) => !it.inactive);
-
-  //console.log('SEARCH', query, category, location);
-
-  const initid = '30c0636f-b0f1-40d5-bb9c-a531dc4d69e2';
-  const featured = '/initiatives/30c0636f-b0f1-40d5-bb9c-a531dc4d69e2';
-  let stories = await getRecentStories(4);
+  const initid = '30c0636f-b0f1-40d5-bb9c-a531dc4d69e2'
+  const featured = '/initiatives/30c0636f-b0f1-40d5-bb9c-a531dc4d69e2'
+  let stories = await getRecentStories(4)
   if(stories?.error){
     stories = null
   }
-  const credits = await getCreditsByInitiative(initid);
-  const credit = credits?.length > 0 ? credits[0] : null;
-  const goal = credit?.goal ?? 0;
-  const current = credit?.current ?? 0;
-  const percent = ((current * 100) / goal).toFixed(0);
+
+  // Chart data
+  const credits = await getCreditsByInitiative(initid)
+  const credit = credits?.length > 0 ? credits[0] : null
+  const goal = credit?.goal ?? 0
+  const current = credit?.current ?? 0
+  const percent = ((current * 100) / goal).toFixed(0)
   const date = new Date().toLocaleDateString(undefined, {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
-  });
+  })
 
   return (
     <>
@@ -50,7 +38,6 @@ export default async function Home(props: any) {
 
         {/* HERO */}
         <div className="bg-white relative">
-          {/* <InstructionPanes /> */}
 
           {/* INTRO */}
           <div className="container flex flex-col">
@@ -135,7 +122,7 @@ export default async function Home(props: any) {
                 <div className="container grid grid-cols-4">
                   {stories ? 
                     stories.map(story => {
-                      return <StoryCard key={story.id} story={story} />;
+                      return <StoryCard key={story.id} story={story} />
                     })
                   :
                     <h1>No stories found</h1>
@@ -147,5 +134,5 @@ export default async function Home(props: any) {
         </div>
       </div>
     </>
-  );
+  )
 }

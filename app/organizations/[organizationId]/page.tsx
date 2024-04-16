@@ -13,37 +13,33 @@ import NotFound from '@/components/NotFound';
 import { getOrganizationById, getStoriesByOrganization } from '@/utils/registry'
 
 export default async function Home(props: any) {
-  //console.log('PROPS', props)
   const orgid = props?.params?.organizationId || null
   if(!orgid){ return <NotFound /> }
   const organization = await getOrganizationById(orgid) || null
   if(!organization){ return <NotFound /> }
-  //const initiatives = organization.initiative || []
   const stories = await getStoriesByOrganization(orgid) || []
   const initiatives = organization.initiative
-  console.log('ORGANIZATION', organization)
-  console.log('INITIATIVES', initiatives.length)
-  console.log('STORIES', stories.length)
 
   return (
     <main className="w-full bg-gradient-to-t from-slate-200">
       <div className="relative flex flex-col px-[5%] container mt-12 pt-24 w-full h-full">
-
         <div className="relative h-96">
           <Image
-            className="absolute -z-1"
+            className="hidden lg:block absolute -z-1"
             src={organization.image}
             alt="organization image"
             fill style={{ objectFit: 'cover' }}
           />
-          <div className="bg-gradient-to-t from-slate-800 to-transparent opacity-50 h-full w-full z-5" />
-          <div className="absolute flex flex-row items-center justify-between gap-y-5 w-full w-max-full px-[5%] -translate-y-[80%]">
-            <OrganizationAvatar name={organization.name} image={organization.image} avatarProps={{ size: "lg", title: organization.name }} />
-            <div className="flex flex-col items-center pb-5 ml-4">
-              <Button className="bg-white text-black w-48">Donate</Button>
+          
+          <div className="hidden lg:block lg:h-full bg-gradient-to-t from-slate-800 to-transparent opacity-50 w-full z-5" />
+          
+          <div className="flex flex-col lg:flex-row absolute justify-center lg:justify-between items-center justify-between gap-y-5 w-full w-max-full px-[5%] -translate-y-[0%] lg:-translate-y-[80%]">
+            <OrganizationAvatar name={organization.name} image={organization.image} avatarProps={{ size: "lg", title: organization.name }} className="text-black lg:text-white" />
+            <div className="flex flex-col items-center pb-5 ml-4 mt-4 lg:mt-0">
+              <Button className="text-white bg-green-500 lg:bg-white lg:text-black w-48">Donate</Button>
               {organization.url 
-                ? <p className="text-sm font-semibold text-white text-center">
-                    in <span className="underline"><Link href={organization?.url ?? 'https://example.com'}>{organization.name}</Link></span>
+                ? <p className="text-sm font-semibold text-black lg:text-white text-center mb-24 lg:mb-0">
+                    to <span className="underline"><Link href={organization?.url ?? 'https://example.com'}>{organization.name}</Link></span>
                   </p>
                 : <></>
               }
@@ -52,7 +48,7 @@ export default async function Home(props: any) {
         </div>
 
         <OrgSocials
-          className="pt-[25rem] ml-56 pl-[5%] gap-1 lg:gap-3"
+          className="pt-[25rem] lg:ml-56 pl-[5%] gap-1 lg:gap-3"
           twitterLabel={organization.twitter || ''}
           twitterAddress={organization.twitter || ''}
           facebookLabel={organization.facebook || ''}

@@ -18,6 +18,7 @@ export default async function Handler(props: any) {
   const params = props.params
   const initiative = await getInitiativeById(params?.id) || null
   if(!initiative){ return <NotFound /> }
+  //console.log('INIT', initiative)
   
   // Restore credits contract
   const contractId = initiative.contractcredit
@@ -28,6 +29,7 @@ export default async function Handler(props: any) {
   const organization = initiative.organization 
   const initiatives = await getInitiativesByOrganization(organization.id)
   const stories = initiative.stories
+  console.log('STORIES', stories.length)
   const rate = await getRates('XLM')
   //console.log('RATE', rate)
 

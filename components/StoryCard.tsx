@@ -15,7 +15,7 @@ export default function StoryCard(props:any) {
   return (
     <Card className="flex flex-col overflow-hidden">
       <CardHeader>
-        <OrganizationAvatar name={organization?.name} image={organization?.image} avatarProps={{ title: organization?.name }} />
+        <OrganizationAvatar name={organization?.name} image={organization?.image ?? '/nopic.png'} avatarProps={{ title: organization?.name }} />
         <p className="text-sm font-semibold">
           in <span className="underline"><a href={'/initiatives/'+initiative?.id}>{initiative?.title}</a></span>
         </p>
