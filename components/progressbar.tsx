@@ -5,7 +5,7 @@ export default function Progress(props){
   //console.log(value)
   //console.log(style)
   return (
-    <div className="w-[500px] mx-auto bg-gray-200 rounded">
+    <div className="max-w-[500px] w-full mx-auto bg-gray-200 rounded">
       <div className={style} style={width}>{value}%</div>
     </div>
   )
