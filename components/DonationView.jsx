@@ -10,7 +10,7 @@ export default function DonationView({initiative, receipt, rate}){
 
   return (
     <DonationContext.Provider value={{donation, setDonation}}>
-      <div className="flex flex-nowrap lg:flex-nowrap gap-10 items-start">
+      <div className="flex flex-col lg:flex-row flex-nowrap gap-10 items-start">
         <div className="w-full lg:w-[60%]">
           <DonationForm initiative={initiative} rate={rate} />
         </div>

@@ -25,13 +25,15 @@ const style = {
     gridTemplateRows: 'repeat(5, 1fr)',
     gridColumnGap: '0px',
     gridRowGap: '0px',
-    width: '500px',
+    width: 'auto',
+    maxWidth: '500px',
     margin: '0 auto'
   },
   ton: {
     boxSizing: 'border-box',
     display: 'inline-block',
-    width: '40px',
+    width: 'auto',
+    maxWidth: '40px',
     height: '20px',
     margin: '2px',
     border: '1px solid #666',
@@ -40,7 +42,8 @@ const style = {
   off: {
     boxSizing: 'border-box',
     display: 'inline-block',
-    width: '40px',
+    width: 'auto',
+    maxWidth: '40px',
     height: '20px',
     margin: '2px',
     border: '1px solid #666',
