@@ -85,7 +85,7 @@ function MainChart({ goal=100, value, max100=false }: ChartType) {
   //console.log('Arrs', offs.length, tons.length)
   return (
     <>
-      <div style={style.chart}>
+      <div className="max-w-[480px]">
         {offs.map(() => { return (<div style={style.off} key={Math.random()}></div>) } )}
         {dec>0 ? (<div style={prt}></div>) : <></> }
         {tons.map(() => { return (<div style={style.ton} key={Math.random()}></div>) } )}

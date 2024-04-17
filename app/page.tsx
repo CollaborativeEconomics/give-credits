@@ -46,7 +46,7 @@ export default async function Home(props: any) {
                 FEATURED PROJECT
               </h1>
             </div>
-            <div className="flex flex-row justify-center my-12">
+            <div className="flex flex-col lg:flex-row justify-center items-center my-12">
               <Image
                 src="/newui/logoleaf.png"
                 width={384}
@@ -72,7 +72,7 @@ export default async function Home(props: any) {
                   Once the carbon credit has been retired, an NFT showing the
                   number of credits retired is minted
                 </p>
-                <div className="flex flex-row mt-6">
+                <div className="flex flex-col items-start xl:flex-row  mt-6">
                   <Image
                     src="/newui/stellarcarbon.png"
                     width={300}
@@ -84,7 +84,7 @@ export default async function Home(props: any) {
                     width={500}
                     height={125}
                     alt="Public Node"
-                    className="ml-12"
+                    className="mt-4 xl:ml-12 mt-0"
                   />
                 </div>
               </div>
@@ -99,10 +99,10 @@ export default async function Home(props: any) {
             </div>
           </div>
 
-          <div className="flex flex-col mt-16 bg-[url('/newui/bg.jpg')] bg-center bg-bottom bg-no-repeat">
+          <div className="flex flex-col mt-16 bg-[url('/newui/bg.jpg')] bg-bottom bg-no-repeat">
             {/* CHART */}
-            <div className="container pt-24">
-              <div className="flex flex-col w-[920px] rounded-lg bg-slate-400 bg-[#00000022] justify-center items-center mx-auto mt-16 p-12 shadow-xl">
+            <div className="container lg:pt-24">
+              <div className="flex flex-col max-w-[920px] rounded-lg bg-slate-400 bg-[#00000022] justify-center items-center mx-auto mt-16 p-12 shadow-xl">
                 <h2 className="mb-12 text-white text-4xl font-bold">
                   {percent}% Carbon Neutral
                 </h2>
@@ -119,7 +119,7 @@ export default async function Home(props: any) {
                 <h2 className="mt-6 mb-12 text-white text-4xl font-bold">
                   Recent Carbon Credit Retirements
                 </h2>
-                <div className="container grid grid-cols-4">
+                <div className="container grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {stories ? 
                     stories.map(story => {
                       return <StoryCard key={story.id} story={story} />
