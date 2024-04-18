@@ -4,11 +4,11 @@ import fetchLedger from '@/libs/server/fetchLedger'
 import { newUser, newUserWallet, getUserByWallet, getOrganizationById, getInitiativeById, createNFT } from '@/utils/registry'
 import {init, runHook, Triggers} from '@cfce/registry-hooks';
 
+// Initialize the hook package
 init({
   registryApiKey: process.env.CFCE_REGISTRY_API_KEY || '',
-  registryBaseUrl: 'https://registry.staging.cfce.io/api',
-})
-
+  registryBaseUrl: process.env.CFCE_REGISTRY_BASE_URL || '',
+});
 
 //import getRates from 'utils/rates'
 
@@ -115,7 +115,7 @@ export async function POST(request: Request) {
 
     // runHook takes 3 params. 1. The Trigger name 2. The organizations to check and 3. Additional data that can be used by the the hook
     const extraMetadata = await runHook(Triggers.addMetadataToNFTReceipt, `${organizationId}`, {userId: `${userId}`, donor: `${donor}`, amountUSD: `${amountUSD}`});
-
+    console.log(extraMetadata);
     //if (opInfo?.asset_type !== 'native') {
     //  amountUSD = '0'
     //  coinCode = opInfo?.asset_code
