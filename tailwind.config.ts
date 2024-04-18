@@ -10,9 +10,16 @@ const config: Config = {
   theme: {
     container: {
       center: true,
-      padding: '2rem',
+      padding: {
+        DEFAULT: '1rem',
+        sm: '1rem',
+        md: '1rem',
+        lg: '2rem',
+        xl: '3rem',
+        xxl: '4rem',
+      },
       screens: {
-        sm: '480px',
+        sm: '640px',
         md: '800px',
         lg: '976px',
         xl: '1200px',
@@ -20,7 +27,7 @@ const config: Config = {
       },
     },
     screens: {
-      sm: '480px',
+      sm: '640px',
       md: '800px',
       lg: '976px',
       xl: '1200px',
