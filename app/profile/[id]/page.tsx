@@ -26,11 +26,11 @@ export default async function Profile(props: any) {
   const nopic = '/media/nopic.png'
 
   return (
-    <main className="flex min-h-screen flex-col items-stretch container py-24 mt-24">
-      <div className="flex flex-row justify-between">
+    <main className="container min-h-screen flex flex-col items-stretch py-24 mt-24">
+      <div className="flex flex-col lg:flex-row justify-between">
 
         {/* Avatar */}
-        <div className="border rounded-md p-8 w-1/3 bg-white">
+        <div className="border rounded-md p-8 w-full lg:w-2/4 bg-white">
           <div className="flex flex-row flex-start items-center rounded-full">
             <Image className="mr-8 rounded-full" src={user.image||nopic} width={100} height={100} alt="Avatar" />
             <div className="flex flex-col flex-start items-start rounded-full">
@@ -41,11 +41,8 @@ export default async function Profile(props: any) {
           </div>
         </div>
 
-        {/* Empty */}
-        <div className="p-4 w-1/3">&nbsp;</div>
-
         {/* Chains */}
-        <div className="flex flex-col items-center border rounded-md p-4 w-1/3 bg-white">
+        <div className="flex flex-col items-center border rounded-md mt-4 lg:mt-0 p-4 w-full lg:w-1/3 bg-white">
           {user.wallets ? (
             <>
               <h1>Active Chains</h1>
@@ -75,10 +72,10 @@ export default async function Profile(props: any) {
       </div>
 
       {/* Mid Section */}
-      <div className="mt-12 flex flex-row justify-between">
+      <div className="mt-12 flex flex-col lg:flex-row justify-between">
 
         {/* Sidebar */}
-        <div className="w-1/4 mr-12">
+        <div className="w-full lg:w-1/4 mr-12">
           
           {/* Fav Orgs */}
           <h1 className="text-2xl font-medium mb-4">Favorite Organizations</h1>
@@ -126,11 +123,10 @@ export default async function Profile(props: any) {
             <div className="text-gray-300">None</div>
           }
           </div>
-
         </div>
 
         {/* Table */}
-        <div className="w-3/4">
+        <div className="w-full lg:w-3/4">
           <h1 className="text-2xl font-medium mb-4">Donation Data</h1>
           <Tabs className="TabsRoot" defaultValue="tab1">
             <div className="flex flex-row justify-between items-center">

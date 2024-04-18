@@ -38,11 +38,13 @@ export default function SearchBar(props:any) {
 
   return (
     <CardContent className="p-3 w-full">
-      <div className="flex w-full space-x-2">
+      <div className="flex flex-col lg:flex-row w-full space-y-2 lg:space-y-0 lg:space-x-2">
         <InitiativeOrgSwitch />
         <Input type="search" placeholder="Search" className="flex-1" value={query} onChange={(evt)=>setQuery(evt.target.value)} onKeyDown={checkEnter} />
-        <CategorySelect onChange={(val:string)=>{setCategory(val)}} />
-        <LocationSelect onChange={(val:string)=>{setLocation(val)}} />
+        <div className="flex flex-row justify-between">
+          <CategorySelect onChange={(val:string)=>{setCategory(val)}} />
+          <LocationSelect onChange={(val:string)=>{setLocation(val)}} />
+        </div>
         <Button type="submit" onClick={search}>Search</Button>
       </div>
     </CardContent>
