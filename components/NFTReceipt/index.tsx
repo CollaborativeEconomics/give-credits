@@ -54,8 +54,8 @@ export default function NFTReceipt(props:any) {
 
   return (
     <div className="flex min-h-full w-full">
-      <div className="relative bg-white dark:bg-slate-500 p-6 h-auto shadow-xl border rounded-lg">
-        <div className="border-dotted border-t-2 border-b-2 border-gray-300 p-2">
+      <div className="relative bg-card p-6 h-auto shadow-xl border dark:border-slate-600 rounded-lg">
+        <div className="border-dotted border-t-2 border-b-2 p-2">
           <h3 className="text-3xl font-semibold uppercase text-center text-gray-500 dark:text-white">
             NFT Receipt
           </h3>
