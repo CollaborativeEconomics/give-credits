@@ -37,7 +37,7 @@ export default async function Home(props: any) {
         </div>
 
         {/* HERO */}
-        <div className="bg-white relative">
+        <div className="bg-background dark:bg-accent relative">
 
           {/* INTRO */}
           <div className="container flex flex-col">
@@ -90,16 +90,13 @@ export default async function Home(props: any) {
               </div>
             </div>
             <div className="text-center mb-12">
-              <Link
-                href={featured}
-                className="px-12 py-4 text-2xl text-green-600 rounded-full border shadow-xl"
-              >
+              <Link href={featured} className="bg-lime-600 text-white px-12 py-4 text-2xl rounded-full border shadow-xl">
                 Contribute Now
               </Link>
             </div>
           </div>
 
-          <div className="flex flex-col mt-16 bg-[url('/newui/bg.jpg')] bg-bottom bg-no-repeat">
+          <div className="flex flex-col mt-16 bg-[url('/newui/bg.jpg')] bg-bottom bg-cover bg-no-repeat">
             {/* CHART */}
             <div className="container lg:pt-24">
               <div className="flex flex-col max-w-[920px] rounded-lg bg-slate-400 bg-[#00000022] justify-center items-center mx-auto mt-16 p-12 shadow-xl">
