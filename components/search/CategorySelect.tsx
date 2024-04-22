@@ -1,4 +1,5 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { cn } from '@/libs/shadCnUtil';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,7 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
+  CommandList,
   CommandInput,
   CommandItem,
 } from '@/components/ui/command';
@@ -15,6 +17,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { CheckCircledIcon, ChevronDownIcon } from '@radix-ui/react-icons';
+
 
 /*
 const categories = [
@@ -55,8 +58,8 @@ export default function CategorySelect(props:any) {
     async function loadCategories(){
       const res = await fetch('/api/categories?distinct='+distinct)
       const list = await res.json()
-      setCategories(list)
       console.log('CATS', list)
+      setCategories(list)
     }
     loadCategories()
   },[])
@@ -86,20 +89,23 @@ export default function CategorySelect(props:any) {
           <CommandInput placeholder="Search category..." />
           <CommandEmpty>No category found.</CommandEmpty>
           <CommandGroup>
-            {categories.map((item:CategoryType) => {
-              //console.log('ITEM', item)
-              // TODO: Fix duplicate category key
+            {categories.map(item => {
               return (
                 <CommandItem
                   key={item?.value}
                   onSelect={(currentValue) => {
-                    console.log('CAT', currentValue, 'OLD', 'value')
+                    console.log('CAT', currentValue, 'OLD', value||'?')
                     setValue(item?.value);
                     onChange(item?.value);
                     setOpen(false);
                   }}
                 >
-                  <CheckCircledIcon className={cn('mr-2 h-4 w-4', value === item?.value ? 'opacity-100' : 'opacity-0')} />
+                  <CheckCircledIcon
+                    className={cn(
+                      'mr-2 h-4 w-4',
+                      value === item?.value ? 'opacity-100' : 'opacity-0',
+                    )}
+                  />
                   {item?.label}
                 </CommandItem>
               )
