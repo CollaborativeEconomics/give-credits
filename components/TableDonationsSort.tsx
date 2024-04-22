@@ -1,5 +1,6 @@
 "use client"
-import { useState } from "react"
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { localDate } from '@/utils/date'
 import { coinFromChain } from '@/utils/chain'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
@@ -25,6 +26,7 @@ type Donation = {
 type Dictionary = { [key: string]: any }
 
 export default function TableDonationsSort(props:any){
+  const router = useRouter()
   const donations:[Dictionary] = props?.donations || []
   const recs = donations.map(rec => { 
     return {
@@ -77,6 +79,14 @@ export default function TableDonationsSort(props:any){
 
   const list = table.getRowModel().rows
 
+  function clicked(evt){
+    const rowid = evt.target.parentNode.dataset.id
+    const nftid = data[rowid].id
+    console.log('CLICKED', rowid, nftid)
+    console.log('DATA', data[rowid])
+    router.push('/donations/'+nftid)
+  }
+
   return (
     <Table id="table-donations" className="w-full">
       <TableHeader>
@@ -110,10 +120,10 @@ export default function TableDonationsSort(props:any){
           </TableRow>
         ))}
       </TableHeader>
-      <TableBody>
+      <TableBody onClick={clicked}>
         { list.length>0 ? list.map((row) => {
           return (
-            <TableRow key={row.id}>
+            <TableRow key={row.id} data-id={row.id}>
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
                   { flexRender(cell.column.columnDef.cell, cell.getContext()) }

@@ -73,8 +73,10 @@ export const getCreditsByInitiative = (id: string) => fetchRegistry(`credits?ini
 export const getCreditsByProvider = (id: string) => fetchRegistry(`credits?providerid=${id}`)
 
 export const createNFT = (body: Dictionary) => postRegistry('nft', body)
-export const getNFTs = (id: string) => fetchRegistry(`nft`)
-export const getAllNFTs = (id: string) => fetchRegistry(`nft`)
+export const getNFTs = () => fetchRegistry(`nft`)
+export const getAllNFTs = () => fetchRegistry(`nft`)
+export const getNFTById = (id: string) => fetchRegistry(`nft?id=${id}`)
+export const getNFTByTokenId = (id: string) => fetchRegistry(`nft?tokenid=${id}`)
 export const getNFTsByAccount = (id: string) => fetchRegistry(`nft?userid=${id}`)
 export const getNFTsByWallet = (id: string) => fetchRegistry(`nft?address=${id}`)
 export const getNFTsByOrganization = (id: string) => fetchRegistry(`nft?orgid=${id}`)
@@ -99,6 +101,7 @@ export const getLocations = () => fetchRegistry('locations')
 
 export const newDonation = (body: Dictionary) => postRegistry('donations', body)
 export const getDonations = () => fetchRegistry('donations')
+export const getDonationById = (id: string) => fetchRegistry('donations?id='+id)
 export const getDonationsByUser = (id: string) => fetchRegistry('donations?userid='+id)
 
 export const getFavoriteOrganizations = (userid: string) => fetchRegistry('donations?favs='+userid)
