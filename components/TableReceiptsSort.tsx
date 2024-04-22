@@ -1,5 +1,6 @@
 "use client"
-import { useState } from "react"
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 //import { ChevronUp, ChevronDown } from 'lucide-react'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
@@ -26,6 +27,7 @@ type Receipt = {
 type Dictionary = { [key: string]: any }
 
 export default function TableReceipts(props:any){
+  const router = useRouter()
   const receipts:[Dictionary] = props?.receipts || []
   const recs = receipts.map(rec => { 
     return {
@@ -79,6 +81,14 @@ export default function TableReceipts(props:any){
 
   const list = table.getRowModel().rows
 
+  function clicked(evt){
+    const rowid = evt.target.parentNode.dataset.id
+    const nftid = data[rowid].id
+    console.log('CLICKED', rowid, nftid)
+    console.log('DATA', data[rowid])
+    router.push('/nft/'+nftid)
+  }
+
   return (
     <Table id="table-nfts" className="w-full">
       <TableHeader>
@@ -112,10 +122,10 @@ export default function TableReceipts(props:any){
           </TableRow>
         ))}
       </TableHeader>
-      <TableBody>
+      <TableBody onClick={clicked}>
         { list.length>0 ? list.map((row) => {
           return (
-            <TableRow key={row.id}>
+            <TableRow key={row.id} data-id={row.id}>
               {row.getVisibleCells().map((cell) => { 
                 //console.log('CELL', cell)
                 return (
