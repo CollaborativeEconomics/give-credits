@@ -30,7 +30,7 @@ if (typeof window !== 'undefined') {
 export const networks = {
     futurenet: {
         networkPassphrase: "Test SDF Future Network ; October 2022",
-        rpcUrl: 'https://rpc-futurenet.stellar.org:443'
+        rpcUrl: 'https://rpc-futurenet.stellar.org'
     },
     testnet: {
         networkPassphrase: 'Test SDF Network ; September 2015',

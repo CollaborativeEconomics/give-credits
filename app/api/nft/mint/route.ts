@@ -2,6 +2,14 @@ import upload from '@/libs/nft/upload'
 import mint from '@/libs/nft/mint'
 import fetchLedger from '@/libs/server/fetchLedger'
 import { newUser, newUserWallet, getUserByWallet, getOrganizationById, getInitiativeById, createNFT } from '@/utils/registry'
+import {init, runHook, Triggers} from '@cfce/registry-hooks';
+
+// Initialize the hook package
+init({
+  registryApiKey: process.env.CFCE_REGISTRY_API_KEY || '',
+  registryBaseUrl: process.env.CFCE_REGISTRY_BASE_URL || '',
+});
+
 //import getRates from 'utils/rates'
 
 /*
@@ -96,6 +104,7 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Organization info not found' }, {status:500})
     }
     const organizationId = organization?.id
+    console.log(organizationId);
     const organizationName = organization?.name
 
     //const amount = opInfo.amount
@@ -104,6 +113,9 @@ export async function POST(request: Request) {
     const coinCode = 'XLM'
     const coinIssuer = 'Stellar'
 
+    // runHook takes 3 params. 1. The Trigger name 2. The organizations to check and 3. Additional data that can be used by the the hook
+    const extraMetadata = await runHook(Triggers.addMetadataToNFTReceipt, `${organizationId}`, {userId: `${userId}`, donor: `${donor}`, amountUSD: `${amountUSD}`});
+    console.log(extraMetadata);
     //if (opInfo?.asset_type !== 'native') {
     //  amountUSD = '0'
     //  coinCode = opInfo?.asset_code
@@ -130,6 +142,8 @@ export async function POST(request: Request) {
 
     // Save metadata
     const metadata = {
+      creditValue: offsetTxt,
+      ...(extraMetadata?.output ?? {}),
       mintedBy: 'CFCE via GiveCredit',
       created: created,
       donorAddress: donor,
@@ -141,9 +155,9 @@ export async function POST(request: Request) {
       coinIssuer: coinIssuer,
       coinValue: amountCUR,
       usdValue: amountUSD,
-      creditValue: offsetTxt,
-      operation: opid
+      operation: opid,
     }
+
     console.log('META', metadata)
     const fileId = 'meta-' + opid // unique file id
     const bytes = Buffer.from(JSON.stringify(metadata, null, 2))
