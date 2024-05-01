@@ -4,6 +4,9 @@ import Header from '@/components/header';
 import Footer from '@/components/footer';
 import Providers from '@/components/providers';
 import { ConfigProvider } from '@/components/config'
+import { Toaster } from "@/components/ui/toaster"
+import ErrorComponent from '@/components/ErrorComponent';
+import { ErrorBoundary } from 'react-error-boundary';
 import '@/styles/globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -14,14 +17,18 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}){
+  // const { toast } = useToast();
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={ inter.className + ' bg-gradient-to-b from-white min-h-screen to-gray-50 dark:from-accent dark:to-secondary' }>
         <ConfigProvider>
           <Providers attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <ErrorBoundary FallbackComponent={ErrorComponent}>
             <Header />
             {children}
             <Footer />
+            <Toaster />
+            </ErrorBoundary>
           </Providers>
         </ConfigProvider>
       </body>

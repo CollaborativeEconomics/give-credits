@@ -7,7 +7,7 @@ import {init, runHook, Triggers} from '@cfce/registry-hooks';
 // Initialize the hook package
 init({
   registryApiKey: process.env.CFCE_REGISTRY_API_KEY || '',
-  registryBaseUrl: process.env.CFCE_REGISTRY_BASE_URL || '',
+  registryBaseUrl: process.env.CFCE_REGISTRY_BASE_URL || '', 
 });
 
 //import getRates from 'utils/rates'

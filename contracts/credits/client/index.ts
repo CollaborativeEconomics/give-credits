@@ -35,6 +35,10 @@ export const networks = {
     testnet: {
         networkPassphrase: 'Test SDF Network ; September 2015',
         rpcUrl: 'https://soroban-testnet.stellar.org'
+    },
+    mainnet: {
+        networkPassphrase: 'Public Global Stellar Network ; September 2015',
+        rpcUrl: 'https://rpc.ankr.com/stellar_soroban/ffc84872338d6e54774c09ab81a15766367d081b5e0a585a13af3134e61afc0d'
     }
 } as const
 
