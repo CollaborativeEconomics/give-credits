@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster"
 import ErrorComponent from '@/components/ErrorComponent';
 import { ErrorBoundary } from 'react-error-boundary';
 import '@/styles/globals.css';
+import ProblemChild from '@/components/ErrorComponenttest';
 
 const inter = Inter({ subsets: ['latin'] });
 
