@@ -52,16 +52,16 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 
   render() {
-    if (this.state.hasError) {
-      return (
-        <div>
-          <h2>Oops, there is an error!</h2>
-          <button onClick={() => this.setState({ hasError: false })}>
-            Try again?
-          </button>
-        </div>
-      );
-    }
+    // if (this.state.hasError) {
+    //   return (
+    //     <div>
+    //       <h2>Oops, there is an error!</h2>
+    //       <button onClick={() => this.setState({ hasError: false })}>
+    //         Try again?
+    //       </button>
+    //     </div>
+    //   );
+    // }
     return this.props.children;
   }
 }

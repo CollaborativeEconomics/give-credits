@@ -5,8 +5,9 @@ import Footer from '@/components/footer';
 import Providers from '@/components/providers';
 import { ConfigProvider } from '@/components/config'
 import { Toaster } from "@/components/ui/toaster"
-import ErrorBoundary from "react-error-boundary";
+import ErrorBoundary from "@/components/ErrorComponent";
 import '@/styles/globals.css';
+import TestComponent from '@/components/testComponent';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({children}: {children: React.ReactNode}){
           <Providers attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <ErrorBoundary>
             <Header />
+            <TestComponent />
             {children}
             <Footer />
             <Toaster />
