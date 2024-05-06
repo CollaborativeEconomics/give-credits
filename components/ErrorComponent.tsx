@@ -22,33 +22,53 @@ import withToast from './withToast';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
-  toast: any; 
+  toast: any;
 }
 
 interface ErrorBoundaryState {
   hasError: boolean;
 }
 
-class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
+  errorListener: EventListenerOrEventListenerObject;
+
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
+    this.errorListener = event => {
+      console.log('errorListener', event);
+      this.props.toast({
+        title: 'An error occurred',
+        description: event.message,
+      });
+    };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
-    console.log("Error caught in getDerivedStateFromError:", error);
+    console.log('Error caught in getDerivedStateFromError:', error);
     return { hasError: true };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.log("Error caught by ErrorBoundary:", error);
-    console.log("Error info:", errorInfo);
+    console.log('Error caught by ErrorBoundary:', error);
+    console.log('Error info:', errorInfo);
     this.setState({ hasError: true });
     this.props.toast({
       title: 'An error occurred',
       description: error.message,
     });
     console.log({ error, errorInfo });
+  }
+
+  componentDidMount(): void {
+    window.addEventListener('error', this.errorListener);
+  }
+
+  componentWillUnmount(): void {
+    window.removeEventListener('error', this.errorListener);
   }
 
   render() {
