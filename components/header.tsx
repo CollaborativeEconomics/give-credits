@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { SessionProvider } from 'next-auth/react';
 import { NavMenu } from './navigation-menu';
+import { useTheme } from 'next-themes';
+import Logo from './Logo';
 
 export default function Header() {
   const [y, setY] = useState(0);
@@ -21,6 +23,8 @@ export default function Header() {
     };
   }, []);
 
+  const { resolvedTheme } = useTheme();
+
   return (
     <header
       className={`w-full py-10 pb-7.5 fixed top-0 z-50 transition-all ${
@@ -29,14 +33,7 @@ export default function Header() {
     >
       <div className="flex justify-between container">
         <Link href="/">
-          <Image
-            src="/newui/logo.png"
-            alt="Give Credit"
-            className="dark:invert"
-            width={300}
-            height={60}
-            priority
-          />
+          <Logo />
         </Link>
         <div className="flex flex-row items-center">
           <SessionProvider>

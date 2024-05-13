@@ -38,7 +38,7 @@ export function NavMenu() {
       <div className="flex-row gap-3 items-center hidden md:flex">
         <NavigationMenu>
           <NavigationMenuList>
-            <NavigationMenuItem>
+            {/* <NavigationMenuItem>
               <NavigationMenuTrigger>Partners</NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid gap-3 p-4 md:w-[400px] xl:w-[500px] xl:grid-cols-[.75fr_1fr]">
@@ -54,8 +54,8 @@ export function NavMenu() {
                   </ListItem>
                 </ul>
               </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
+            </NavigationMenuItem> */}
+            {/* <NavigationMenuItem>
               {status=='authenticated'
               ?
                 <NavigationMenuLink className={navigationMenuTriggerStyle()} href={userurl}>
@@ -66,7 +66,7 @@ export function NavMenu() {
                   Sign In
                 </NavigationMenuLink>
               }
-            </NavigationMenuItem>
+            </NavigationMenuItem> */}
           </NavigationMenuList>
         </NavigationMenu>
         <DarkModeSwitcher />

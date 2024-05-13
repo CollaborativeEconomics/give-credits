@@ -1,6 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import Logo from './Logo'
 
 export default function Footer() {
   return (
@@ -8,14 +9,7 @@ export default function Footer() {
       <div className="flex flex-col lg:flex-row justify-between container">
         <div className="text-center lg:text-left">
           <Link href="/" className='block text-center'>
-            <Image
-              src="/newui/logo.png"
-              alt="Give Credit"
-              className="dark:invert mx-auto"
-              width={300}
-              height={60}
-              priority
-            />
+            <Logo />
           </Link>
           <p className="ml-0 lg:ml-16">by Center For Collaborative Economics</p>
         </div>
