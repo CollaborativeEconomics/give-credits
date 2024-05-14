@@ -80,7 +80,7 @@ export default function NFTReceipt(props: any) {
     <div
       className="flex min-h-full w-full"
       style={{
-        '-webkit-mask':
+        'mask':
           'conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/20px 100%',
       }}
     >

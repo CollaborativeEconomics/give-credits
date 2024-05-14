@@ -1,6 +1,6 @@
 import { Address, nativeToScVal }  from "@stellar/stellar-sdk"
 import { Contract, networks } from '@/contracts/credits/client'
-import { submit } from '@/contracts/credits/server'
+import { checkContract, submit } from '@/contracts/credits/server'
 
 export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
@@ -15,7 +15,8 @@ export async function GET(request: Request) {
     const method  = 'donate'
     const amount  = nativeToScVal('100', { type: 'i128' }) // 100 stroops to allow percent fees
     const args    = [from, amount]
-    const result  = await submit(network, secret, contract, method, args)
+    const result  = await checkContract(network, secret, contract, method, args)
+    //const result  = await submit(network, secret, contract, method, args)
     console.log('RESTORED', result)
     return Response.json(result)
   } catch(ex:any) {
