@@ -1,4 +1,4 @@
-import * as StellarSDK from 'stellar-sdk'
+import * as StellarSdk from '@stellar/stellar-sdk'
 import {isConnected, getNetwork, getPublicKey, signTransaction} from "@stellar/freighter-api"
 
 export default class Wallet {
@@ -25,8 +25,8 @@ export default class Wallet {
   async connect() {
     try {
       console.log('CONNECT...')
-      this.soroban = new StellarSDK.Server(this.sorobanUrl)
-      this.horizon = new StellarSDK.Server(this.horizonUrl)
+      this.soroban = new StellarSdk.Horizon.Server(this.sorobanUrl)
+      this.horizon = new StellarSdk.Horizon.Server(this.horizonUrl)
       this.account = await getPublicKey()
       this.network = (await getNetwork() || '').toLowerCase()
       return {success:true, account:this.account, network:this.network}
@@ -49,37 +49,37 @@ export default class Wallet {
       console.log('Paying', amt, 'XLM to', dst, 'Memo', memo)
       let act = await this.horizon.loadAccount(pub)
       let fee = await this.horizon.fetchBaseFee() // 100
-      let opr = StellarSDK.Operation.payment({
+      let opr = StellarSdk.Operation.payment({
         destination: dst,
-        asset: StellarSDK.Asset.native(),
+        asset: StellarSdk.Asset.native(),
         amount: amt
       })
       // TODO: fix type error: TransactionBuilderOptions <<<
       const opt = { fee, network:nwk, networkPassphrase:net }
-      let txn = new StellarSDK.TransactionBuilder(act, opt)
+      let txn = new StellarSdk.TransactionBuilder(act, opt)
        //.setNetworkPassphrase(net)
        .addOperation(opr)
        .setTimeout(30)
-      if(memo) { txn.addMemo(StellarSDK.Memo.text(memo)) }
+      if(memo) { txn.addMemo(StellarSdk.Memo.text(memo)) }
       const built = txn.build()
       const txid  = built.hash().toString('hex')
       const xdr   = built.toXDR()
       console.log('XDR:', xdr)
       const sgn   = await signTransaction(xdr, {networkPassphrase:net})
       console.log('SGN:', sgn)
-      //const env   = StellarSDK.xdr.Transaction.fromXDR(sgn, 'base64')
-      //const env   = StellarSDK.xdr.TransactionEnvelope.fromXDR(sgn, 'base64')
+      //const env   = StellarSdk.xdr.Transaction.fromXDR(sgn, 'base64')
+      //const env   = StellarSdk.xdr.TransactionEnvelope.fromXDR(sgn, 'base64')
       //console.log('ENV:', env)
-      //const env = JSON.stringify(StellarSDK.xdr.TransactionEnvelope.fromXDR(sgn, 'base64'))
-      //const env = StellarSDK.xdr.TransactionResult.fromXDR(xdr, 'base64')
-      //const env = StellarSDK.xdr.TransactionMeta.fromXDR(xdr, 'base64')
+      //const env = JSON.stringify(StellarSdk.xdr.TransactionEnvelope.fromXDR(sgn, 'base64'))
+      //const env = StellarSdk.xdr.TransactionResult.fromXDR(xdr, 'base64')
+      //const env = StellarSdk.xdr.TransactionMeta.fromXDR(xdr, 'base64')
       //console.log('ENX:', JSON.stringify(env))
       //const final = await this.submit(env)
-      //const txs = new StellarSDK.Transaction(sgn)
+      //const txs = new StellarSdk.Transaction(sgn)
       //console.log('TXS', txs)
 
-      //const txs = new StellarSDK.TransactionBuilder.fromXDR(sgn, this.horizonUrl)
-      const txs = StellarSDK.TransactionBuilder.fromXDR(sgn, net)
+      //const txs = new StellarSdk.TransactionBuilder.fromXDR(sgn, this.horizonUrl)
+      const txs = StellarSdk.TransactionBuilder.fromXDR(sgn, net)
       console.log('TXS', txs)
       const result = await this.horizon.submitTransaction(txs)
       console.log('RES', result)
@@ -99,7 +99,7 @@ export default class Wallet {
 
   async fetchLedger(query:string){
     try {
-      let url = this.soroban + query
+      let url = this.horizon + query
       console.log('FETCH', url)
       let options = {
         method: 'GET',
