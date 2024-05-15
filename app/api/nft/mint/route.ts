@@ -131,7 +131,8 @@ export async function POST(request: Request) {
       const creditVal = initiative?.credits[0].value || 0
       const creditTon = creditVal / (rate||1)
       offsetVal = creditTon>0 ? (+amountUSD / creditTon) : 0
-      offsetTxt = offsetVal.toFixed(2) + ' Tons'
+      if(offsetVal<0.00005){ offsetVal = 0.0001 } // Round up
+      offsetTxt = offsetVal.toFixed(4) + ' Tons'
       console.log('CREDITVAL', creditVal)
       console.log('CREDITTON', creditTon)
       console.log('OFFSETVAL', offsetVal)
