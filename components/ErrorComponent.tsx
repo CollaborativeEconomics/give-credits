@@ -20,7 +20,7 @@ class ErrorBoundary extends React.Component<
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
-    this.errorListener = event => {
+    this.errorListener = (event: ErrorEvent) => {
       this.props.toast({
         title: 'An error occurred',
         description: event.message,
