@@ -12,10 +12,12 @@ export default async function restoreContract(contractId) {
     const method  = 'donate'
     const amount  = nativeToScVal('100', { type: 'i128' }) // 100 stroops to allow percent fees
     const args    = [from, amount]
+    //const args    = {from, amount}
     const result  = await checkContract(network, secret, contractId, method, args)
+    console.log('Restore Result', result)
     return result
   } catch(ex:any) {
-    console.error(ex)
+    console.error('Error restoring', ex)
     return {success:false, error:ex.message}
   }
 }

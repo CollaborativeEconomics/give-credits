@@ -1,34 +1,41 @@
-import { useState, createContext } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import StoryCard from '@/components/StoryCard'
-import { Separator } from '@/components/ui/separator'
-import OrganizationAvatar from '@/components/OrganizationAvatar'
-import DonationView from '@/components/DonationView'
-import { ReceiptStatus } from '@/types/common'
-import InitiativeCardCompact from '@/components/InitiativeCardCompact'
-import NotFound  from '@/components/NotFound'
-import { getInitiativeById, getInitiativesByOrganization } from '@/utils/registry'
-import restoreContract from '@/contracts/credits/server/restore'
-import getRates from '@/utils/rates'
+import { useState, createContext } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import StoryCard from '@/components/StoryCard';
+import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
+import { Document } from '@contentful/rich-text-types';
+import { Separator } from '@/components/ui/separator';
+import OrganizationAvatar from '@/components/OrganizationAvatar';
+import DonationView from '@/components/DonationView';
+import { ReceiptStatus } from '@/types/common';
+import InitiativeCardCompact from '@/components/InitiativeCardCompact';
+import NotFound from '@/components/NotFound';
+import {
+  getInitiativeById,
+  getInitiativesByOrganization,
+} from '@/utils/registry';
+import restoreContract from '@/contracts/credits/server/restore';
+import getRates from '@/utils/rates';
 
 export default async function Handler(props: any) {
-  const params = props.params
-  const initiative = await getInitiativeById(params?.id) || null
-  if(!initiative){ return <NotFound /> }
+  const params = props.params;
+  const initiative = (await getInitiativeById(params?.id)) || null;
+  if (!initiative) {
+    return <NotFound />;
+  }
   //console.log('INIT', initiative)
-  
-  // Restore credits contract
-  const contractId = initiative.contractcredit
-  restoreContract(contractId).then(result=>{
-    console.log('RESTORE', result)
-  })
 
-  const organization = initiative.organization 
-  const initiatives = await getInitiativesByOrganization(organization.id)
-  const stories = initiative.stories
-  console.log('STORIES', stories.length)
-  const rate = await getRates('XLM')
+  // Restore credits contract
+  const contractId = initiative.contractcredit;
+  restoreContract(contractId).then(result => {
+    console.log('RESTORE', result);
+  });
+
+  const organization = initiative.organization;
+  const initiatives = await getInitiativesByOrganization(organization.id);
+  const stories = initiative.stories;
+  console.log('STORIES', stories.length);
+  const rate = await getRates('XLM');
   //console.log('RATE', rate)
 
   const receipt = {
@@ -47,7 +54,7 @@ export default async function Handler(props: any) {
     donor: {
       name: 'Anonymous',
     },
-  }
+  };
 
   return (
     <main className="w-full bg-gradient-to-t from-slate-200 mt-12">
@@ -80,20 +87,23 @@ export default async function Handler(props: any) {
                 {initiative.description}
               </span>
             </div>
-            {initiatives.length>1 &&
+            {initiatives.length > 1 && (
               <Link className="px-[5%] font-bold hover:underline" href="#more">
-                See more initiatives 
+                See more initiatives
               </Link>
-            }
-            {stories?.length>0 &&
-              <Link className="px-[5%] font-bold hover:underline" href="#stories">
+            )}
+            {stories?.length > 0 && (
+              <Link
+                className="px-[5%] font-bold hover:underline"
+                href="#stories"
+              >
                 See impact storyline
               </Link>
-            }
+            )}
           </div>
         </div>
 
-        <Separator className='mb-6' />
+        <Separator className="mb-6" />
 
         <div className="md:flex md:flex-col items-center">
           <DonationView initiative={initiative} receipt={receipt} rate={rate} />
@@ -101,12 +111,18 @@ export default async function Handler(props: any) {
 
         <div className="mb-10 pt-10 flex justify-center w-full">
           <div className="flex flex-wrap md:flex-nowrap justify-center gap-9 xl:max-w-screen-xl">
-            { initiatives.length>1 && 
-              <div className="flex flex-col gap-5 w-full min-w-[400px]">  {/* md:w-2/6 */}
-                <p className="text-3xl font-semibold"><a id="more">Other Initiatives</a></p>
+            {initiatives.length > 1 && (
+              <div className="flex flex-col gap-5 w-full min-w-[400px]">
+                {' '}
+                {/* md:w-2/6 */}
+                <p className="text-3xl font-semibold">
+                  <a id="more">Other Initiatives</a>
+                </p>
                 {initiatives?.length > 0 ? (
-                  initiatives.map((item: any) => { 
-                    if(item.id==initiative.id){ return }
+                  initiatives.map((item: any) => {
+                    if (item.id == initiative.id) {
+                      return;
+                    }
                     return (
                       <InitiativeCardCompact
                         key={item.id}
@@ -119,28 +135,30 @@ export default async function Handler(props: any) {
                         name={organization.name}
                         avatarImg={organization.image}
                       />
-                    )
+                    );
                   })
                 ) : (
                   <h1 className="m-4">No initiatives found</h1>
                 )}
               </div>
-            }
-            <div className="flex flex-col gap-5 md:w-4/6">
-              <p className="text-3xl font-semibold"><a id="stories">Stories</a></p>
-              {stories?.length > 0 ? (
-                stories.map((story: any) => {
-                  return (
-                    <StoryCard key={story.id} story={story} />
-                  )
-                })
-              ) : (
-                <h1 className="m-4">No stories found</h1>
-              )}
+            )}
+            <div>
+              <p className="text-3xl font-semibold py-6">
+                <a id="stories">Stories</a>
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {stories?.length > 0 ? (
+                  stories.map((story: any) => {
+                    return <StoryCard key={story.id} story={story} />;
+                  })
+                ) : (
+                  <h1 className="m-4">No stories found</h1>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
     </main>
-  )
+  );
 }

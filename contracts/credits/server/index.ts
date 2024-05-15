@@ -17,10 +17,12 @@ function sleep(ms:number) {
 
 //---- SUBMIT TX
 
-const RPC_SERVER = "https://rpc-futurenet.stellar.org:443";
+//const RPC_SERVER = process.env.NEXT_PUBLIC_STELLAR_HORIZON;
+const RPC_SERVER = process.env.NEXT_PUBLIC_STELLAR_SOROBAN;
+//const RPC_SERVER = "https://rpc-futurenet.stellar.org:443";
 //const RPC_SERVER = "https://soroban-testnet.stellar.org/";
 const server = new SorobanRpc.Server(RPC_SERVER);
-
+//console.log('>Server Loaded', server)
 /*
 // Submits a tx and then polls for its status until a timeout is reached.
 async function submitTx2(tx){
@@ -244,11 +246,13 @@ export async function submit(network:any, secret:string, contractId:string, meth
 }
 
 export async function checkContract(network:any, secret:string, contractId:string, method:string, args:any) {
+  //console.log(network, secret, contractId, method)
   const source   = Keypair.fromSecret(secret)
-  const server   = new SorobanRpc.Server(network.rpcUrl)
+  const pubkey   = source.publicKey()
+  const rpcurl   = network.rpcUrl
   const contract = new Contract(contractId)
-  const account  = await server.getAccount(source.publicKey())
-  //console.log({network, contractId, method, args})
+  //const server   = new SorobanRpc.Server(rpcurl)
+  const account  = await server.getAccount(pubkey)
 
   let op = contract.call(method, ...args)
   let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })

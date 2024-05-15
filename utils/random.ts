@@ -26,7 +26,7 @@ function randomNumber(len=8){
 
 // 4665b011-55d6-48ff-8128-bd1a86ecf0dd
 function UUID() {
-  let buf = crypto.getRandomValues(new Uint8Array(16))
+  let buf = getRandomValues(new Uint8Array(16))
   let hex = Array.from(buf).map(x=>{return x.toString(16).padStart(2,'0')}).join('')
   let ret = `${hex.substr(0,8)}-${hex.substr(8,4)}-${hex.substr(12,4)}-${hex.substr(16,4)}-${hex.substr(20)}`
   return ret

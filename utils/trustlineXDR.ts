@@ -1,10 +1,9 @@
-import * as StellarSdk from 'stellar-sdk'
-
+import * as StellarSdk from '@stellar/stellar-sdk'
 
 export default async function trustlineXDR(account:string, code:string, issuer:string){
   console.log('Trustline for:', account)
   console.log('Code/issuer:', code, issuer)
-  const horizon = new StellarSdk.Server(process.env.NEXT_PUBLIC_STELLAR_HORIZON||'')
+  const horizon = new StellarSdk.Horizon.Server(process.env.NEXT_PUBLIC_STELLAR_HORIZON||'')
   const myNFT  = new StellarSdk.Asset(code, issuer)
   const destin = await horizon.loadAccount(account)
   const phrase = process.env.NEXT_PUBLIC_STELLAR_PASSPHRASE||''
