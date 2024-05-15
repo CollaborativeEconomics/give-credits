@@ -7,7 +7,6 @@ import { ConfigProvider } from '@/components/config';
 import { Toaster } from '@/components/ui/toaster';
 import ErrorBoundary from '@/components/ErrorComponent';
 import '@/styles/globals.css';
-import TestComponent from '@/components/testComponent';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -38,7 +37,6 @@ export default function RootLayout({
           >
             <ErrorBoundary>
               <Header />
-              <TestComponent />
               {children}
               <Footer />
               <Toaster />
