@@ -21,7 +21,7 @@ import { fetchApi, postApi } from '@/utils/api'
 
 export default function DonationForm(props:any) {
   //console.log('Props', props)
-  const network = process.env.NEXT_PUBLIC_STELLAR_NETWORK||''
+  const network = process.env.NEXT_PUBLIC_STELLAR_NETWORK || ''
   const initiative = props.initiative
   const contractId = initiative.contractcredit
   const organization = initiative.organization
