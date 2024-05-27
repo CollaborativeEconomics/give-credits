@@ -1,5 +1,5 @@
 import * as StellarSDK from '@stellar/stellar-sdk'
-import {isConnected, getNetwork, getNetworkDetails, getPublicKey, signTransaction} from "@stellar/freighter-api"
+import {isConnected, getNetwork, getNetworkDetails, requestAccess, signTransaction} from "@stellar/freighter-api"
 
 export default class Wallet {
   neturl     = ''
@@ -30,7 +30,7 @@ export default class Wallet {
     try {
       console.log('CONNECT...')
       this.horizon = new StellarSDK.Horizon.Server(this.horizonurl || '')
-      this.myaccount = await getPublicKey()
+      this.myaccount = await requestAccess()
       this.network = (await getNetwork() || '').toLowerCase()
       this.netinfo = await getNetworkDetails()
       console.log('FNET', this.network)
