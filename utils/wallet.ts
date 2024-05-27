@@ -1,16 +1,15 @@
 import * as StellarSdk from '@stellar/stellar-sdk'
-import {isConnected, getNetwork, getPublicKey, signTransaction} from "@stellar/freighter-api"
+import {isConnected, getNetwork, getNetworkDetails, getPublicKey, signTransaction} from "@stellar/freighter-api"
 
 export default class Wallet {
   account = ''
   network = ''
+  netinfo = {}
   horizon:any = null
-  soroban:any = null
   horizonUrl  = process.env.NEXT_PUBLIC_STELLAR_HORIZON||''
-  sorobanUrl  = process.env.NEXT_PUBLIC_STELLAR_SOROBAN||''
   
   constructor() {
-    console.log('FREIGHT INIT')
+    console.log('WALLET INIT')
   }
 
   async init() {
@@ -25,10 +24,11 @@ export default class Wallet {
   async connect() {
     try {
       console.log('CONNECT...')
-      this.soroban = new StellarSdk.Horizon.Server(this.sorobanUrl)
       this.horizon = new StellarSdk.Horizon.Server(this.horizonUrl)
       this.account = await getPublicKey()
       this.network = (await getNetwork() || '').toLowerCase()
+      this.netinfo = await getNetworkDetails()
+      console.log('NETINFO', this.netinfo)
       return {success:true, account:this.account, network:this.network}
     } catch(ex) {
       console.error(ex)

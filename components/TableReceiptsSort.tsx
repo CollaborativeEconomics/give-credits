@@ -82,7 +82,12 @@ export default function TableReceipts(props:any){
   const list = table.getRowModel().rows
 
   function clicked(evt){
-    const rowid = evt.target.parentNode.dataset.id
+    let rowid = ''
+    if(evt.target.parentNode.tagName=='TD'){
+      rowid = evt.target.parentNode.parentNode.dataset.id
+    } else {
+      rowid = evt.target.parentNode.dataset.id
+    }
     const nftid = data[rowid].id
     console.log('CLICKED', rowid, nftid)
     console.log('DATA', data[rowid])

@@ -1,17 +1,16 @@
 import * as StellarSDK from '@stellar/stellar-sdk'
-import {isConnected, getNetwork, getPublicKey, signTransaction} from "@stellar/freighter-api"
+import {isConnected, getNetwork, getNetworkDetails, getPublicKey, signTransaction} from "@stellar/freighter-api"
 
 export default class Wallet {
   neturl     = ''
   explorer   = ''
   network    = ''
+  netinfo    = {}
   chainId    = '0x0'
   accounts?:[string] = undefined
   myaccount:string  = ''
   horizon?:any = null
-  soroban?:any = null
   horizonurl = process.env.NEXT_PUBLIC_STELLAR_HORIZON || ''
-  sorobanurl = process.env.NEXT_PUBLIC_STELLAR_SOROBAN || ''
   provider   = null
   
   constructor() {
@@ -30,10 +29,12 @@ export default class Wallet {
   async connect() {
     try {
       console.log('CONNECT...')
-      //this.soroban = new StellarSDK.Soroban(this.sorobanurl || '')
       this.horizon = new StellarSDK.Horizon.Server(this.horizonurl || '')
       this.myaccount = await getPublicKey()
       this.network = (await getNetwork() || '').toLowerCase()
+      this.netinfo = await getNetworkDetails()
+      console.log('FNET', this.network)
+      console.log('FINF', this.netinfo)
       return {success:true, account:this.myaccount, network:this.network}
     } catch(ex) {
       console.error(ex)
@@ -101,7 +102,6 @@ export default class Wallet {
 
   async fetchLedger(query:string){
     try {
-      //let url = this.soroban + query
       let url = this.horizon + query
       console.log('FETCH', url)
       let options = {
@@ -141,4 +141,5 @@ export default class Wallet {
     }
     return result
   }
+
 }

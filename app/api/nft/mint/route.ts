@@ -2,16 +2,14 @@ import upload from '@/libs/nft/upload'
 import mint from '@/libs/nft/mint'
 import fetchLedger from '@/libs/server/fetchLedger'
 import { newUser, newUserWallet, getUserByWallet, getOrganizationById, getInitiativeById, createNFT } from '@/utils/registry'
-import {init, runHook, Triggers} from '@cfce/registry-hooks';
+import {init, runHook, Triggers} from '@cfce/registry-hooks'
 
 // Initialize the hook package
 init({
-  registryApiKey: process.env.CFCE_REGISTRY_API_KEY || '',
-  registryBaseUrl: process.env.CFCE_REGISTRY_API_URL || '',
-});
+  registryApiKey:  process.env.CFCE_REGISTRY_API_KEY || '',
+  registryBaseUrl: process.env.CFCE_REGISTRY_API_URL || ''
+})
 
-
-//import getRates from 'utils/rates'
 
 /*
 function getTagFromMemo(memo){
@@ -23,6 +21,17 @@ function getTagFromMemo(memo){
   return ''
 }
 */
+
+// FOR TESTING ONLY - REMOVE WHEN READY
+// api/nft/mint
+//export async function GET(request: Request) {
+//  const contractId = 'CBZ6RVZUN3P57LWI6LJTG4BM5NV5RGCROD6UHRPZEJYSFSJG5BBROLYN'
+//  const donor = 'GAU2AJNUVZ47Q4ZJUVAOQFLN3EE3XJUTV34N2EXGKXRBFZ2MWCN2TZGO'
+//  const uriMeta  = 'ipfs:QmimgvsGUGykGyDqjL6zjbKjtqNntYZqNzQrFa6UnyZF1n'
+//  const result = await mint(contractId, donor, uriMeta)
+//  console.log('RESMINT', result)
+//  return Response.json(result)
+//}
 
 // POST /api/nft/mint {paymentId}
 // On donation:
@@ -45,14 +54,14 @@ export async function POST(request: Request) {
       console.log('ERROR', 'Transaction not valid')
       return Response.json({ error: 'Transaction not valid' }, {status:500})
     }
-    console.log('TXINFO', txInfo)
+    //console.log('TXINFO', txInfo)
     const page = BigInt(txInfo.paging_token) + BigInt(1)
     const opid = page.toString()
     //const tag  = getTagFromMemo(txInfo.memo)
 
     // Get op info
     const opInfo = await fetchLedger('/operations/'+opid)
-    console.log('OPINFO', opInfo)
+    //console.log('OPINFO', opInfo)
     if(!opInfo || opInfo?.status==404) {
       console.log('ERROR', 'Operation not found')
       return Response.json({ error: 'Operation info not found' }, {status:500})
@@ -80,7 +89,7 @@ export async function POST(request: Request) {
     // Get user data
     console.log('Donor', donor)
     let userInfo = await getUserByWallet(donor) // Should exist user by now
-    console.log('USER', userInfo)
+    //console.log('USER', userInfo)
     const userId = userInfo?.id || ''
     if(!userId){
       console.log('ERROR', 'User not found')
@@ -175,7 +184,7 @@ export async function POST(request: Request) {
 
     // Mint NFT
     const contractId = initiative.contractnft
-    const resMint = await mint(contractId, donor, uriMeta)
+    const resMint = await mint(contractId, donor, uriMeta)   //// <<<<<<<< FIX
     console.log('RESMINT', resMint)
     if (!resMint) {
       return Response.json({ error: 'Error minting NFT' }, {status:500})

@@ -1,8 +1,8 @@
 // Mints NFT and returns tokenId
 //   metauri: uri to metadata
 import { Address }  from "@stellar/stellar-sdk"
-import { networks } from 'contracts/nft721/client'
-import { submit }   from 'contracts/nft721/server'
+import { networks } from '@/contracts/networks'
+import { submit }   from '@/contracts/nft721/server'
 
 export default async function mint(contractId:string, to:string, uri:string){
   console.log('-- Minting...')
@@ -11,7 +11,7 @@ export default async function mint(contractId:string, to:string, uri:string){
   try {
     const nettype = process.env.NEXT_PUBLIC_STELLAR_NETWORK||''
     // @ts-ignore: I hate this
-    const network = nettype=='futurenet' ? networks?.futurenet : networks?.testnet
+    const network = nettype=='mainnet' ? networks?.mainnet : networks?.testnet
     console.log('NET', network)
     const secret  = process.env.CFCE_MINTER_WALLET_SECRET||''
     const method  = 'mint'
@@ -33,7 +33,8 @@ export default async function mint(contractId:string, to:string, uri:string){
 import * as StellarSdk from 'stellar-sdk'
 //import * as SorobanClient  from 'soroban-client'
 //import * as SorobanClient1 from 'soroban-client'
-import {Contract, networks} from 'contracts/nft721/client'
+import { networks } from '@/contracts/networks'
+import { Contract } from '@/contracts/nft721/client'
 
 interface MintResponse {
   success?: boolean;
@@ -46,7 +47,7 @@ export default async function mint(adr, uri){
   console.log('ADR', adr)
   console.log('URI', uri)
   const nettype = process.env.NEXT_PUBLIC_STELLAR_NETWORK
-  const network = nettype=='futurenet' ? networks.futurenet : networks.testnet
+  const network = nettype=='mainnet' ? networks.mainnet : networks.testnet
   console.log('NET', network)
   const contract = new Contract({...network})
   //console.log('CTR', contract.spec)

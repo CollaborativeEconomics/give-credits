@@ -8,8 +8,10 @@ import StoryCard from '@/components/StoryCardCompactVert';
 import { getRecentStories, getCreditsByInitiative } from '@/utils/registry';
 
 export default async function Home(props: any) {
+  const appMode = process.env.NODE_ENV || 'development'
+  console.log(`App running in ${appMode} mode`)
   const initid = '30c0636f-b0f1-40d5-bb9c-a531dc4d69e2';
-  const featured = '/initiatives/30c0636f-b0f1-40d5-bb9c-a531dc4d69e2';
+  const featured = '/initiatives/'+initid;
   let stories = await getRecentStories(4);
   if (stories?.error) {
     stories = null;
@@ -18,8 +20,8 @@ export default async function Home(props: any) {
   // Chart data
   const credits = await getCreditsByInitiative(initid);
   const credit = credits?.length > 0 ? credits[0] : null;
-  const goal = credit?.goal ?? 0;
-  const current = credit?.current ?? 0;
+  const goal = credit?.goal || 1;
+  const current = credit?.current || 0;
   const percent = ((current * 100) / goal).toFixed(0);
   const date = new Date().toLocaleDateString(undefined, {
     month: 'long',
@@ -95,6 +97,7 @@ export default async function Home(props: any) {
                 </Link>
               </div>
             </div>
+
             {/* CHART */}
             <div className="container">
               <div className="flex flex-col max-w-[920px] rounded-lg bg-slate-400 bg-[#00000022] justify-center items-center mx-auto mt-16 p-12 shadow-xl">
@@ -103,28 +106,28 @@ export default async function Home(props: any) {
                 </h2>
                 <MainChart goal={goal} value={current} />
                 <p className="mt-4 text-white">
-                  {current} out of {goal} tons of carbon offset as of {date}
+                  {current} out of {goal} ton{goal==1?'':'s'} of carbon offset as of {date}
                 </p>
               </div>
             </div>
 
             {/* CREDITS */}
-            <div className="flex flex-col mt-24 pb-24">
-              <div className="text-center">
-                <h2 className="mt-6 mb-12 text-white text-4xl font-bold">
-                  Recent Carbon Credit Retirements
-                </h2>
-                <div className="container grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {stories ? (
-                    stories.map(story => {
-                      return <StoryCard key={story.id} story={story} />;
-                    })
-                  ) : (
-                    <h1>No stories found</h1>
-                  )}
+            {stories.length && 
+              <div className="flex flex-col mt-24 pb-24">
+                <div className="text-center">
+                  <h2 className="mt-6 mb-12 text-white text-4xl font-bold">
+                    Recent Carbon Credit Retirements
+                  </h2>
+                  <div className="container grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    { stories.map(story => {
+                        return <StoryCard key={story.id} story={story} />
+                      })
+                    }
+                  </div>
                 </div>
               </div>
-            </div>
+            }
+            <div className="text-center">{appMode}</div>
           </div>
         </div>
       </div>

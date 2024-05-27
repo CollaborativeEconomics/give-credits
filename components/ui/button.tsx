@@ -84,6 +84,17 @@ function createClaimButton(status: string): React.JSX.Element {
           <p className="text-slate-200 text-center w-full">{claimText}</p>
         </button>
       )
+    case ReceiptStatus.minting:
+      claimText = 'Minting'
+      return (
+        <button
+          type="button"
+          className="inline-flex rounded-md bg-blue-600 hover:bg-blue-500 px-3 py-2 text-sm font-semibold w-[200px] disabled:pointer-events-none disabled:opacity-50"
+          disabled={true}
+        >
+          <p className="text-white text-center w-full">{claimText}</p>
+        </button>
+      )
     case ReceiptStatus.minted:
       claimText = 'Minted'
       return (

@@ -1,6 +1,7 @@
-import { Address }  from "@stellar/stellar-sdk"
-import { Contract, networks } from '@/contracts/nft721/client'
-import { submit } from '@/contracts/nft721/server'
+import { Address, Contract }  from '@stellar/stellar-sdk'
+import { networks } from '@/contracts/networks'
+import { submit }   from '@/contracts/nft721/server'
+//import { Contract } from '@/contracts/nft721/client'
 
 export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {

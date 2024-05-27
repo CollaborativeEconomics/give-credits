@@ -4,7 +4,7 @@ Use in server:
 
 ```JS
 import { Address }  from "@stellar/stellar-sdk"
-import { networks } from '@/contracts/credits/client'
+import { networks } from '@/contracts/networks'
 import { submit }   from '@/contracts/credits/server'
 
 async function donate(from, amount){

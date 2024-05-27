@@ -31,6 +31,7 @@ class StellarClass{
     gasprice: '250000000',
     explorer: '',
     rpcurl: 'https://horizon-testnet.stellar.org',
+    soroban: 'https://soroban-testnet.stellar.org',
     wssurl: ''
   }
   futurenet  = {

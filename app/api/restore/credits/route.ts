@@ -1,6 +1,7 @@
-import { Address, nativeToScVal }  from "@stellar/stellar-sdk"
-import { Contract, networks } from '@/contracts/credits/client'
+import { Address, nativeToScVal, Contract } from '@stellar/stellar-sdk'
+import { networks } from '@/contracts/networks'
 import { checkContract, submit } from '@/contracts/credits/server'
+//import { Contract } from '@/contracts/credits/client'
 
 export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {

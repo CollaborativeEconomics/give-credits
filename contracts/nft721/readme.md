@@ -4,7 +4,7 @@ Use in server:
 
 ```JS
 import { Address }  from "@stellar/stellar-sdk"
-import { networks } from '@/contracts/nft721/client'
+import { networks } from '@/contracts/networks'
 import { submit }   from '@/contracts/nft721/server'
 
 const network  = networks.futurenet

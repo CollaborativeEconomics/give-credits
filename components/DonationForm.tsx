@@ -15,15 +15,22 @@ import { Dictionary, getChainWallets, getChainsList, getChainsMap } from '@/libs
 import Chart from '@/components/carbonchart'
 import Progressbar from '@/components/progressbar'
 import Wallet from '@/libs/wallets/freighter'
-import { Contract, networks } from '@/contracts/credits/client'
+import { networks } from '@/contracts/networks'
 import { fetchApi, postApi } from '@/utils/api'
+import {signTransaction} from "@stellar/freighter-api"
+import { BASE_FEE, Account, Address, Asset, Contract, Horizon, Keypair, Networks, Operation, SorobanRpc, Transaction, TransactionBuilder, nativeToScVal, scValToNative } from '@stellar/stellar-sdk'
+//import { Contract } from '@/contracts/credits/client'
 
 
 export default function DonationForm(props:any) {
   //console.log('Props', props)
-  const network = process.env.NEXT_PUBLIC_STELLAR_NETWORK||''
+  const network = process.env.NEXT_PUBLIC_STELLAR_NETWORK||'testnet'
+  console.log('NETENV', network)
   const initiative = props.initiative
   const contractId = initiative.contractcredit
+  //const contractId = 'CBZ62WGTRYNMCNNRBQHGGEDBPIA4VXCHNFSICDKLP3CFNGF3H4WD3OQC' // mainnet
+  //const contractId = 'CAE5MDQ7IZSWPC2P2SPH3V65HYZKN55RY74S7IQ24WL4BXOIFCJPM36N' // futurenet
+  //const contractId = 'CCUZYZPNVGXH7TDKRRC25KMZ3DIM6JDLLU2SLZ6LIWFKS6XYQQKQZAV3' // testnet
   const organization = initiative.organization
   const {donation, setDonation} = useContext(DonationContext)
   const usdRate = props.rate || 0
@@ -63,23 +70,196 @@ export default function DonationForm(props:any) {
     }
   }
 
+//type Tx = Transaction<Memo<MemoType>, Operation[]>
+
   // Contract call
   async function donate(contractId:string, from:string, amount:number) {
     try {
       console.log('-- Donating', contractId, from, amount)
-      const net = network=='futurenet' ? networks.futurenet : networks.testnet
-      const opt = {contractId, ...net}
-      console.log('NET', opt)
-      const wei = BigInt(amount*10000000) // 7 decs
-      const dat = {from, amount:wei}
+      const net = networks[network]
+      const rpc = net.soroban
+      const url = net.horizon
+      console.log('NET', net)
+      const adr = new Address(from).toScVal()
+      //const wei = BigInt(amount*10000000) // 7 decs
+      const wei = nativeToScVal(amount*10000000, { type: 'i128' })
+      //const args = {from:adr, amount:wei}
+      const args = [adr, wei]
+      console.log('ARGS', args)
+      const ctr = new Contract(contractId)
+      console.log('CTR', ctr)
+      const op = ctr.call('donate', ...args)
+      //const op = ctr.call('donate', args)
+      console.log('OP', op)
+      const horizon = new Horizon.Server(url, { allowHttp: true })
+      const soroban = new SorobanRpc.Server(rpc, { allowHttp: true })
+      //const account = await horizon.loadAccount(from)
+      const account = await soroban.getAccount(from)
+      console.log('ACT', account)
+      const base = await horizon.fetchBaseFee()
+      const fee = base.toString()
+      const trx = new TransactionBuilder(account, {fee, networkPassphrase: net.passphrase})
+        .addOperation(op)
+        .setTimeout(30)
+        .build()
+      console.log('TRX', trx)
+      const sim = await soroban.simulateTransaction(trx);
+      console.log('SIM', sim)
+      if (SorobanRpc.Api.isSimulationSuccess(sim) && sim.result !== undefined) {
+        console.log('RES', sim.result)
+        // Now prepare it???
+        const txp = await soroban.prepareTransaction(trx)
+        console.log('TXP',txp)
+        const xdr = txp.toXDR()
+        console.log('XDR', xdr)
+        // Now sign it???
+        const opx = {networkPassphrase: net.passphrase}
+        //const opx = {network:net.name, networkPassphrase: net.passphrase, accountToSign: from}
+        console.log('OPX', opx)
+        //const res = await wallet.signAndSend(xdr, opx)
+        const sgn = await signTransaction(xdr, opx)
+        console.log('SGN', sgn)
+        // Now send it?
+        const txs = TransactionBuilder.fromXDR(sgn, net.passphrase) // as Tx
+        console.log('TXS', txs)
+        //const six = await soroban.simulateTransaction(txs)
+        //console.log('SIX', six)
+        //const prep = await soroban.prepareTransaction(six)
+        //console.log('PREP', prep)
+        ////const res = await soroban.sendTransaction(sgn)
+        //const res = await soroban.sendTransaction(txs)
+        const res = await soroban.sendTransaction(txs)
+        console.log('RES', res)
+        console.log('JSN', JSON.stringify(res,null,2))
+
+        const txid = res?.hash || ''
+        console.log('TXID', txid)
+        if(res?.status.toString() == 'SUCCESS'){
+          return {success:true, txid, error:null}
+        } else {
+          // Wait for confirmation
+          const secs = 1000
+          const wait = [2,2,2,3,3,3,4,4,4,5,5,5] // 42 secs / 12 loops
+          let count = 0
+          let info = null
+          while(count < wait.length){
+            console.log('Retry', count)
+            await new Promise(res => setTimeout(res, wait[count]*secs))
+            count++
+            info = await soroban.getTransaction(txid)
+            console.log('INFO', info)
+            if(info.status=='NOT_FOUND' || info.status=='PENDING') {
+              continue // Not ready in blockchain?
+            }
+            if(info.status=='SUCCESS'){
+              return {success:true, txid, error:null}
+            } else if(info.status!=='PENDING') {
+              return {success:false, txid:'', error:'Error sending payment (951)'} // get error
+            }
+          }
+          return {success:false, txid:'', error:'Error sending payment (952)'} // get error
+        }
+      } else {
+        console.log('BAD', sim)
+        return {success:false, txid:'', error:'Error sending payment (953)'} // get error
+      }
+    } catch(ex) {
+      console.log('ERROR', ex)
+      return {error:ex.message}
+    }
+  }
+
+/*
+  async function donateX(contractId:string, from:string, amount:number) {
+    try {
+      console.log('-- Donating', contractId, from, amount)
+      const net = networks[network]
+      console.log('NET', net)
+      //const net = networks.mainnet
+      //const svr = new SorobanRpc.Server(net.soroban)
+      //const svr = new SorobanRpc.Server(net.soroban, { allowHttp: net.soroban.startsWith('http:') })
+      //const act = await svr.getAccount(from)
+      //console.log('ACT', act)
+      //const seq = act.sequence.toString()
+      //console.log('SEQ', seq)
+
+      //const opt = {...net, contractId}
+      const opt = {networkPassphrase:net.passphrase, rpcUrl:net.soroban, contractId, signTransaction:(xdr: string) => signTransaction(xdr, 'testnet')}
+      console.log('OPT', opt)
       const ctr = new Contract(opt)
+      //const ctr = new Contract(contractId)
+      console.log('CTR', ctr)
+      const wei = BigInt(amount*10000000) // 7 decs
+      //const dat = [from, wei]
+      const dat = {from, amount:wei}
+      console.log('DAT', dat)
+
+      //const adr = new Address(from).toScVal()
+      //const wey = nativeToScVal(amount*10000000, { type: 'i128' })
+      //const args = {from:adr, amount:wey}
+      //const args = [adr, wei]
+
+
       const trx = await ctr.donate(dat)
-      const res = await trx.signAndSend() // Wallet call
+      console.log('TRX', trx)
+      //trx.raw.source = act
+      //const opr = trx.raw.operations[0];
+      //console.log('OPR', opr)
+      //const arg = new Address(target).toScVal()
+      //const opy = ctr.call('method', dat)
+      //console.log('OPy', opy)
+
+      //trx.raw = new TransactionBuilder(act, {
+      //  fee: trx.raw.baseFee,
+      //  networkPassphrase: trx.options.networkPassphrase,
+      //})
+      //  .setTimeout(30)
+      //  .addOperation(Operation.invokeHostFunction({ opr, auth: opr.auth ?? [] }))
+      //  .build();
+      //await trx.simulate()
+
+      //const txb = new TransactionBuilder(act, { fee: BASE_FEE, networkPassphrase: net.passphrase })
+      //  .addOperation(opr)
+      //  .setTimeout(30)
+      //  .build()
+      
+      const soroban = new SorobanRpc.Server(net.soroban, { allowHttp: true })
+      const sim = await trx.simulate()
+      //const sim = await soroban.simulateTransaction(trx);
+      //console.log('SIM', sim)
+      
+      const trp = await soroban.prepareTransaction(trx.built)
+      console.log('TRP', trp)
+
+      const xdr = trp.toXDR()
+      console.log('XDR', xdr)
+      
+      //const opx = {network:net.name, networkPassphrase: net.passphrase, accountToSign: from}
+      const opx = {networkPassphrase: net.passphrase}
+      console.log('OPX', opx)
+      
+      //trx.raw.source = act
+      //const sin = await trx.simulate()
+      //console.log('SIN', sin)
+      //const xdr = sin.raw.build().toXDR()
+      //trx.built.addSignature(from, signature)
+      //const xdr = trx.raw.build().toXDR()
+
+      //const res = await wallet.signAndSend(xdr, opx)
+      //const res = await trx.signAndSend()
+      
+      const sgn = await signTransaction(xdr, opx)
+      console.log('SGN', sgn)
+      // Now send it?
+      const txs = TransactionBuilder.fromXDR(sgn, net.passphrase) as Tx
+      console.log('TXS', txs)
+      const res = await soroban.sendTransaction(txs)
+      console.log('RES', res)
       console.log('JSN', JSON.stringify(res,null,2))
-      console.log('RES1', res)
-      console.log('RES2', res.sendTransactionResponse)
-      console.log('RES3', res.getTransactionResponse)
-      console.log('RES4', res.getTransactionResponse?.status)
+
+      //console.log('RES2', res.sendTransactionResponse)
+      //console.log('RES3', res.getTransactionResponse)
+      //console.log('RES4', res.getTransactionResponse?.status)
       let txid = ''
       if(res?.getTransactionResponse?.status == 'SUCCESS'){
         txid = res?.sendTransactionResponse?.hash || ''
@@ -92,7 +272,7 @@ export default function DonationForm(props:any) {
       return {success:false, error:ex?.message || 'Error sending payment', txid:''}
     }
   }
-
+*/
 
   async function onAction(){
     //sendPayment(contractId, name, email, organization, initiativeId, amount, currency, usdRate, issuer, destinationTag, yesReceipt, yesNFT)
@@ -148,13 +328,27 @@ export default function DonationForm(props:any) {
       : `${coinValue.toFixed(2)} ${currency} at ${usdRate.toFixed(2)} ${currency}/USD`
     console.log('AMT', showUSD, coinValue, usdValue)
     setRateMessage(rateMsg)
-    const weiValue = Math.trunc(coinValue * 1000000).toString()
+    const weiValue = Math.trunc(coinValue * 10000000).toString()
     console.log('WEI', weiValue)
     const amountStr = coinValue.toFixed(7)
 
     await wallet.init()
     const info = await wallet.connect()
     console.log('WALLET', info)
+    // Check network
+    const stellarNet = process.env.NEXT_PUBLIC_STELLAR_NETWORK||''
+    const useNetwork = stellarNet=='mainnet' ? 'public' : stellarNet
+    //if(info.network!==useNetwork){
+    //  if(stellarNet=='mainnet'){
+    //    console.log('Error: Wrong network', info.network)
+    //    console.log('Expected network:', useNetwork)
+    //    setButtonText('DONATE')
+    //    setDisabled(false)
+    //    setMessage('Select '+stellarNet+' network in Freighter Wallet')
+    //    return
+    //  }
+    //}
+
     const donor = info?.account
     console.log('DONOR', donor)
     if(!donor){
@@ -166,7 +360,7 @@ export default function DonationForm(props:any) {
     // Check user exists or create a new one
     const userRes = await fetchApi('users?wallet='+donor)
     let userInfo = userRes?.result || null
-    console.log('USER', userInfo)
+    //console.log('USER', userInfo)
     const userId = userInfo?.id || ''
     if(!userId){
       //const email = donor.substr(0,10).toLowerCase() + '@example.com'
@@ -189,16 +383,6 @@ export default function DonationForm(props:any) {
       }
     }
 
-    // Check network
-    const useNetwork = process.env.NEXT_PUBLIC_STELLAR_NETWORK || ''
-    if(info.network!==useNetwork){
-      console.log('Error: Wrong network', info.network)
-      console.log('Expected network:', useNetwork)
-      setButtonText('DONATE')
-      setDisabled(false)
-      setMessage('Select '+useNetwork+' network in Freighter Wallet')
-      return
-    }
     //const memo = destinTag ? 'tag:'+destinTag : ''
     const result = await donate(contractId, donor, amountNum)
     console.log('UI RESULT', result)

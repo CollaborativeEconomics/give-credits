@@ -19,13 +19,13 @@ export default async function upload(fileId:string, bytes:Buffer, mimeType:strin
     let client = new S3Client(config)
     let action = new PutObjectCommand(params)
     let result = await client.send(action)
-    console.log('PUT', result)
+    //console.log('PUT', result)
     if(!result?.ETag){
       return {error:'Error uploading file, no eTag'}
     }
     let head = new HeadObjectCommand({Bucket: process.env.AWS_NFT_BUCKET||'', Key: fileId})
     let data = await client.send(head)
-    console.log('GET', data)
+    //console.log('GET', data)
     //data.$metadata.httpStatusCode === 200
     if(!data?.Metadata?.cid){
       return {error:'Error retrieving file info'}

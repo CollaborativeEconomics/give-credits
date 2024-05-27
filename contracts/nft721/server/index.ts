@@ -1,14 +1,6 @@
 import { Address, BASE_FEE, Contract, FeeBumpTransaction, Keypair, nativeToScVal, Networks, Operation, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, xdr } from "@stellar/stellar-sdk";
 const { Api, assembleTransaction } = SorobanRpc;
 
-const networks = {
-  futurenet: {
-    contractId: '',
-    networkPassphrase: "Test SDF Future Network ; October 2022",
-    rpcUrl: 'https://rpc-futurenet.stellar.org:443'
-  }
-}
-
 function sleep(ms:number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -16,8 +8,10 @@ function sleep(ms:number) {
 
 //---- SUBMIT TX
 
-const RPC_SERVER = "https://rpc-futurenet.stellar.org:443";
+const RPC_SERVER = process.env.STELLAR_SOROBAN
+//const RPC_SERVER = "https://rpc-futurenet.stellar.org:443";
 //const RPC_SERVER = "https://soroban-testnet.stellar.org/";
+console.log('RPC', RPC_SERVER)
 const server = new SorobanRpc.Server(RPC_SERVER);
 
 /*
@@ -66,8 +60,8 @@ async function submitTx(tx:Transaction) {
         console.log("Waiting for transaction confirmation...");
         // See if the transaction is complete
         result = await server.getTransaction(response.hash);
-        // Wait one second
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Wait two seconds
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
       //console.log(`getTransaction response: ${JSON.stringify(result)}`);
       console.log(`Status:`, result.status);
@@ -84,6 +78,7 @@ async function submitTx(tx:Transaction) {
         //console.log(`Return value: ${returnValue}`);
         return {success:true, value:returnValue, meta:transactionMeta, txid};
       } else {
+        //console.log('RESULTX:', JSON.stringify(result,null,2));
         console.log('ERROR IN TRANSACTION:', JSON.stringify(result.resultXdr,null,2));
         throw `Transaction failed: ${result.resultXdr}`;
       }
@@ -94,7 +89,7 @@ async function submitTx(tx:Transaction) {
   } catch (err:any) {
     // Catch and report any errors we've thrown
     console.log("Sending transaction failed");
-    console.log(err);
+    console.log('Error:', err);
     console.log(JSON.stringify(err));
     return {success:false, error:err.message};
   }
@@ -122,11 +117,11 @@ async function submitOrRestoreAndRetry(signer: Keypair, tx: Transaction) {
     //prepTx.sign(signer);
 
     let prepTx = await server.prepareTransaction(tx);
-    console.log(prepTx)
+    console.log('PREPTX',prepTx)
     prepTx.sign(signer)
-
-    const rest = await submitTx(prepTx);
-    //console.log(rest)
+    console.log('SIGNTX',prepTx)
+    const rest = await submitTx(prepTx)
+    console.log(rest)
     return rest
   }
 
@@ -139,7 +134,7 @@ async function submitOrRestoreAndRetry(signer: Keypair, tx: Transaction) {
   fee += parseInt(sim.restorePreamble.minResourceFee);
 
   const restoreTx = new TransactionBuilder(account, { fee: fee.toString() })
-    .setNetworkPassphrase(Networks.FUTURENET)
+    .setNetworkPassphrase(tx.networkPassphrase)
     .setSorobanData(sim.restorePreamble.transactionData.build())
     .addOperation(Operation.restoreFootprint({}))
     .setTimeout(30)
@@ -180,14 +175,14 @@ async function submitOrRestoreAndRetry(signer: Keypair, tx: Transaction) {
 
 //---- RESTORE
 
-async function restoreContract(signer:Keypair, c:Contract){
+async function restoreContract(signer:Keypair, c:Contract, network:any){
   const instance = c.getFootprint();
   const account = await server.getAccount(signer.publicKey());
   const wasmEntry = await server.getLedgerEntries(getWasmLedgerKey(instance));
   // @ts-ignore: types suck donkey balls
   const data = new SorobanDataBuilder().setReadWrite([instance, wasmEntry]).build();
   const restoreTx = new TransactionBuilder(account, { fee: BASE_FEE })
-    .setNetworkPassphrase(Networks.FUTURENET)
+    .setNetworkPassphrase(network.passphrase)
     .setSorobanData(data) // Set the restoration footprint (remember, it should be in the read-write part!)
     .addOperation(Operation.restoreFootprint({}))
     .build();
@@ -209,13 +204,13 @@ function getWasmLedgerKey(entry: any) {
 
 export async function submit(network:any, secret:string, contractId:string, method:string, args:any) {
   const source   = Keypair.fromSecret(secret)
-  const server   = new SorobanRpc.Server(network.rpcUrl)
+  //const server   = new SorobanRpc.Server(network.soroban)
   const contract = new Contract(contractId)
   const account  = await server.getAccount(source.publicKey())
   console.log('SUBMIT', {network, contractId, method, args})
 
   let op = contract.call(method, ...args)
-  let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })
+  let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.passphrase })
     .addOperation(op)
     .setTimeout(30)
     .build()
@@ -242,13 +237,13 @@ export async function submit(network:any, secret:string, contractId:string, meth
 
 export async function checkContract(network:any, secret:string, contractId:string, method:string, args:any) {
   const source   = Keypair.fromSecret(secret)
-  const server   = new SorobanRpc.Server(network.rpcUrl)
+  //const server   = new SorobanRpc.Server(network.soroban)
   const contract = new Contract(contractId)
   const account  = await server.getAccount(source.publicKey())
   console.log({network, contractId, method, args})
 
   let op = contract.call(method, ...args)
-  let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })
+  let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.passphrase })
     .addOperation(op)
     .setTimeout(30)
     .build()
@@ -259,7 +254,7 @@ export async function checkContract(network:any, secret:string, contractId:strin
   }
   if (Api.isSimulationRestore(sim)) {
     console.log('Contract needs to be restored')
-    const result = await restoreContract(source, contract)
+    const result = await restoreContract(source, contract, network)
     console.log('RESULT', result)
     return {ready:true}
   } else {

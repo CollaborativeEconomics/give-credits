@@ -33,7 +33,7 @@ export default function Signin() {
         fetch('/api/users?wallet='+address).then(res=>{
           res.json().then(async data=>{
             const user = data.result
-            console.log('User', user)
+            //console.log('User', user)
             if(user){
               console.log('UserId', user.id)
               setUserId(user.id)

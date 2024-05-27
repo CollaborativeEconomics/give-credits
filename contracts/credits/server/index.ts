@@ -1,14 +1,6 @@
-import { Address, BASE_FEE, Contract, FeeBumpTransaction, Keypair, nativeToScVal, Networks, Operation, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, xdr } from "@stellar/stellar-sdk";
+import { Address, BASE_FEE, Contract, FeeBumpTransaction, Keypair, Horizon, nativeToScVal, Networks, Operation, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, xdr } from "@stellar/stellar-sdk";
 const { Api, assembleTransaction } = SorobanRpc;
 import * as SorobanClient from 'soroban-client'
-
-const networks = {
-  futurenet: {
-    contractId: "",
-    networkPassphrase: "Test SDF Future Network ; October 2022",
-    rpcUrl: 'https://rpc-futurenet.stellar.org:443'
-  }
-}
 
 function sleep(ms:number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -17,11 +9,16 @@ function sleep(ms:number) {
 
 //---- SUBMIT TX
 
-//const RPC_SERVER = process.env.NEXT_PUBLIC_STELLAR_HORIZON;
-const RPC_SERVER = process.env.NEXT_PUBLIC_STELLAR_SOROBAN;
-//const RPC_SERVER = "https://rpc-futurenet.stellar.org:443";
-//const RPC_SERVER = "https://soroban-testnet.stellar.org/";
-const server = new SorobanRpc.Server(RPC_SERVER);
+const HORIZON_URL = process.env.NEXT_PUBLIC_STELLAR_HORIZON
+const SOROBAN_URL = process.env.STELLAR_SOROBAN
+//const SOROBAN_URL = 'https://small-shy-borough.stellar-mainnet.quiknode.pro/53e6763ed40e4bc3202a8792d6d2d51706052755/'
+//const SOROBAN_URL = 'https://mainnet.stellar.validationcloud.io/v1/QW6tYBRenqUwP8d9ZJds44Dm-txH1497oDXcdC07xDo'
+//const SOROBAN_URL = 'https://soroban-mainnet.nownodes.io/32b582fb-d83b-44fc-8788-774de28395cb'
+
+//const SOROBAN_URL = "https://rpc-futurenet.stellar.org:443";
+//const SOROBAN_URL = "https://soroban-testnet.stellar.org/";
+const server = new SorobanRpc.Server(SOROBAN_URL);
+//const server = new SorobanRpc.Server(QUIKNODE_URL);
 //console.log('>Server Loaded', server)
 /*
 // Submits a tx and then polls for its status until a timeout is reached.
@@ -145,7 +142,7 @@ async function submitOrRestoreAndRetry(signer: Keypair, tx: Transaction) {
   fee += parseInt(sim.restorePreamble.minResourceFee);
 
   const restoreTx = new TransactionBuilder(account, { fee: fee.toString() })
-    .setNetworkPassphrase(Networks.FUTURENET)
+    .setNetworkPassphrase(tx.networkPassphrase)
     .setSorobanData(sim.restorePreamble.transactionData.build())
     .addOperation(Operation.restoreFootprint({}))
     .setTimeout(30)
@@ -186,14 +183,14 @@ async function submitOrRestoreAndRetry(signer: Keypair, tx: Transaction) {
 
 //---- RESTORE CONTRACT
 
-async function restoreContract(signer:Keypair, c:Contract){
+async function restoreContract(signer:Keypair, c:Contract, network:any){
   const instance = c.getFootprint();
   const account = await server.getAccount(signer.publicKey());
   const wasmEntry = await server.getLedgerEntries(getWasmLedgerKey(instance));
   // @ts-ignore: types suck donkey balls
   const data = new SorobanDataBuilder().setReadWrite([instance, wasmEntry]).build();
   const restoreTx = new TransactionBuilder(account, { fee: BASE_FEE })
-    .setNetworkPassphrase(Networks.FUTURENET)
+    .setNetworkPassphrase(network.networkPassphrase)
     .setSorobanData(data) // Set the restoration footprint (remember, it should be in the read-write part!)
     .addOperation(Operation.restoreFootprint({}))
     .build();
@@ -214,7 +211,7 @@ function getWasmLedgerKey(entry: any) {
 
 export async function submit(network:any, secret:string, contractId:string, method:string, args:any) {
   const source   = Keypair.fromSecret(secret)
-  const server   = new SorobanRpc.Server(network.rpcUrl)
+  const server   = new SorobanRpc.Server(network.soroban)
   const contract = new Contract(contractId)
   const account  = await server.getAccount(source.publicKey())
   console.log({network, contractId, method, args})
@@ -246,32 +243,46 @@ export async function submit(network:any, secret:string, contractId:string, meth
 }
 
 export async function checkContract(network:any, secret:string, contractId:string, method:string, args:any) {
-  //console.log(network, secret, contractId, method)
-  const source   = Keypair.fromSecret(secret)
-  const pubkey   = source.publicKey()
-  const rpcurl   = network.rpcUrl
-  const contract = new Contract(contractId)
-  //const server   = new SorobanRpc.Server(rpcurl)
-  const account  = await server.getAccount(pubkey)
+  try {
+    console.log('CHECK', network, secret, contractId, method)
+    const source   = Keypair.fromSecret(secret)
+    const pubkey   = source.publicKey()
+    const rpcurl   = network.soroban
+    console.log('CHECK1:', pubkey)
+    console.log('CHECK2:', rpcurl)
+    const contract = new Contract(contractId)
+    console.log('CHECK3')
+    const horizon  = new Horizon.Server(HORIZON_URL)
+    const account  = await horizon.loadAccount(pubkey)
 
-  let op = contract.call(method, ...args)
-  let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })
-    .addOperation(op)
-    .setTimeout(30)
-    .build()
+    console.log('CHECK4:', account)
+    let op = contract.call(method, ...args)
+    let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })
+      .addOperation(op)
+      .setTimeout(30)
+      .build()
 
-  const sim = await server.simulateTransaction(tx);
-  if (!Api.isSimulationSuccess(sim)) {
-    throw sim
-  }
-  if (Api.isSimulationRestore(sim)) {
-    console.log('Contract needs to be restored')
-    const result = await restoreContract(source, contract)
-    console.log('RESTORED', result)
-    return {ready:true}
-  } else {
-    console.log('Contract is ready')
-    return {ready:true}
+    console.log('CHECK5:', tx)
+    const sim = await server.simulateTransaction(tx);
+    console.log('CHECK6:', sim)
+    if (!Api.isSimulationSuccess(sim)) {
+      console.log('Error: Contract could not be restored')
+      console.log('SIM:', sim)
+      return {ready:false}
+      //throw sim
+    }
+    if (Api.isSimulationRestore(sim)) {
+      console.log('Contract needs to be restored')
+      const result = await restoreContract(source, contract, network)
+      console.log('RESTORED', result)
+      return {ready:true}
+    } else {
+      console.log('Contract is ready')
+      return {ready:true}
+    }
+  } catch(ex) {
+    console.error('Restore Error:', ex)
+    return {ready:false}
   }
 }
 
