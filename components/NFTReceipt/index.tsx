@@ -12,7 +12,8 @@ import money from '@/utils/money';
 export default function NFTReceipt(props: any) {
   const receipt = props.data;
   const { donation, setDonation } = useContext(DonationContext);
-  const [message, setMessage] = useState('Claim your NFT');
+  const [ message, setMessage ] = useState('Claim your NFT');
+  const [ disabled, setDisabled ] = useState(true);
   //console.log('Receipt:', receipt)
   //console.log('Donation', donation)
 
@@ -55,6 +56,10 @@ export default function NFTReceipt(props: any) {
       return;
     }
     console.log('Claiming...', donation);
+    //setDisabled(true)
+    const state = structuredClone(donation)
+    state.status = 'Minting'
+    setDonation(state)
     setMessage('Minting NFT, wait a moment...');
     const minted = await mintNFT(
       donation.txid,

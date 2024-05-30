@@ -55,7 +55,7 @@ export function NavMenu() {
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem> */}
-            {/* <NavigationMenuItem>
+            <NavigationMenuItem>
               {status=='authenticated'
               ?
                 <NavigationMenuLink className={navigationMenuTriggerStyle()} href={userurl}>
@@ -66,7 +66,7 @@ export function NavMenu() {
                   Sign In
                 </NavigationMenuLink>
               }
-            </NavigationMenuItem> */}
+            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
         <DarkModeSwitcher />

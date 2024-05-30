@@ -10,33 +10,33 @@ import DonationView from '@/components/DonationView';
 import { ReceiptStatus } from '@/types/common';
 import InitiativeCardCompact from '@/components/InitiativeCardCompact';
 import NotFound from '@/components/NotFound';
-import {
-  getInitiativeById,
-  getInitiativesByOrganization,
-} from '@/utils/registry';
+import { getInitiativeById, getInitiativesByOrganization } from '@/utils/registry';
 import restoreContract from '@/contracts/credits/server/restore';
 import getRates from '@/utils/rates';
 
 export default async function Handler(props: any) {
   const params = props.params;
   const initiative = (await getInitiativeById(params?.id)) || null;
+  //console.log('INIT', initiative)
   if (!initiative) {
     return <NotFound />;
   }
-  //console.log('INIT', initiative)
 
   // Restore credits contract
-  const contractId = initiative.contractcredit;
-  restoreContract(contractId).then(result => {
-    console.log('RESTORE', result);
-  });
+  //console.log('RESTORING...');
+  //const contractId = initiative.contractcredit;
+  //restoreContract(contractId).then(result => {
+  //  console.log('RESTORED', result);
+  //});
+  //return <>TESTING...</>
 
   const organization = initiative.organization;
   const initiatives = await getInitiativesByOrganization(organization.id);
   const stories = initiative.stories;
   console.log('STORIES', stories.length);
   const rate = await getRates('XLM');
-  //console.log('RATE', rate)
+  //const rate = await fetch('/api/rates?coin=XLM')
+  console.log('RATE', rate)
 
   const receipt = {
     status: ReceiptStatus.pending,
@@ -63,7 +63,7 @@ export default async function Handler(props: any) {
           <div className="relative w-full md:w-[45%] h-[200px] md:h-[300px] mb-12 md:mb-2">
             <Image
               className="h-[300px] rounded-lg"
-              src={initiative.defaultAsset}
+              src={initiative.defaultAsset||'noimage.png'}
               alt="IMG BG"
               fill
               style={{
@@ -127,7 +127,7 @@ export default async function Handler(props: any) {
                       <InitiativeCardCompact
                         key={item.id}
                         timestamp={item.created}
-                        imgSrc={item.defaultAsset}
+                        imgSrc={item.defaultAsset||'noimage.png'}
                         title={item.title}
                         description={item.description}
                         amountRaised={item.received}
@@ -142,6 +142,7 @@ export default async function Handler(props: any) {
                 )}
               </div>
             )}
+            {/*
             <div>
               <p className="text-3xl font-semibold py-6">
                 <a id="stories">Stories</a>
@@ -156,6 +157,7 @@ export default async function Handler(props: any) {
                 )}
               </div>
             </div>
+            */}
           </div>
         </div>
       </div>

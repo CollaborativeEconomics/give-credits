@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     if(!wallet){ return Response.json({success:false, error:'Wallet not provided'}, {status:500}) }
     console.log('User Wallet', wallet)
     const res = await getUserByWallet(wallet)
-    console.log('Response', res)
+    //console.log('Response', res)
     return Response.json({success:true, result:res})
   } catch(ex:any) {
     console.error(ex)
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const body:any = await request.json()
     console.log('BODY', body)
     const res = await newUser(body)
-    console.log('Response', res)
+    //console.log('Response', res)
     return Response.json(res)
   } catch(ex:any) {
     console.error(ex)

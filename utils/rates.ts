@@ -12,7 +12,7 @@ export default async function getRates(symbol:string, server:boolean=false){
       headers: {
         'accept': 'application/json',
         'content-type': 'application/json',
-        'X-CMC_PRO_API_KEY': process.env.NEXT_PUBLIC_TICKER_API_KEY||''
+        'X-CMC_PRO_API_KEY': process.env.TICKER_API_KEY||''
       }
     }
     res = await fetch(url, opt)

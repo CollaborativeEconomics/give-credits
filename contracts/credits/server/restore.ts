@@ -1,5 +1,5 @@
-import { Address, nativeToScVal }  from "@stellar/stellar-sdk"
-import { networks } from '@/contracts/credits/client'
+import { Address, nativeToScVal }  from '@stellar/stellar-sdk'
+import { networks } from '@/contracts/networks'
 import { checkContract } from '@/contracts/credits/server'
 
 export default async function restoreContract(contractId) {
@@ -10,9 +10,8 @@ export default async function restoreContract(contractId) {
     const from    = new Address(process.env.CFCE_MINTER_WALLET_ADDRESS).toScVal()
     const secret  = process.env.CFCE_MINTER_WALLET_SECRET
     const method  = 'donate'
-    const amount  = nativeToScVal('100', { type: 'i128' }) // 100 stroops to allow percent fees
+    const amount  = nativeToScVal('10000000', { type: 'i128' }) // 100 stroops to allow percent fees
     const args    = [from, amount]
-    //const args    = {from, amount}
     const result  = await checkContract(network, secret, contractId, method, args)
     console.log('Restore Result', result)
     return result

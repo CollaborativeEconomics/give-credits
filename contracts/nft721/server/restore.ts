@@ -1,5 +1,5 @@
-import { Address }  from "@stellar/stellar-sdk"
-import { networks } from '@/contracts/nft721/client'
+import { Address }  from '@stellar/stellar-sdk'
+import { networks } from '@/contracts/networks'
 import { checkContract } from '@/contracts/nft721/server'
 
 export default async function restoreContract(contractId) {

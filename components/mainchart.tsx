@@ -110,6 +110,8 @@ function MainChart({ goal = 100, value, max100 = false }: ChartType) {
   const tons = Array(rst).fill(0);
   //console.log('Tons', num, int, mod, fix, dec, rst)
   //console.log('Arrs', offs.length, tons.length)
+  function keyRand(){ return Math.random().toString().substr(2) }
+
   return (
     <>
       <div className="max-w-[480px]">
@@ -117,7 +119,7 @@ function MainChart({ goal = 100, value, max100 = false }: ChartType) {
           return (
             <div
               style={style.off}
-              key={`offs=${i}`}
+              key={keyRand()}
               className="bg-gradient-to-br from-lime-500 to-lime-700 border-lime-700 rounded-lg shadow-lg border"
             ></div>
           );
@@ -127,7 +129,7 @@ function MainChart({ goal = 100, value, max100 = false }: ChartType) {
           return (
             <div
               style={style.ton}
-              key={`tons-${i}`}
+              key={keyRand()}
               className="bg-gradient-to-br from-slate-100 to-slate-200"
             ></div>
           );

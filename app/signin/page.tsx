@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link  from 'next/link'
 import { getProviders, signIn } from "next-auth/react"
-import { isConnected, getPublicKey } from "@stellar/freighter-api"
+import { isConnected, requestAccess } from "@stellar/freighter-api"
 import { ConfigContext } from '@/components/config' 
 import ButtonWallet from '@/components/ButtonWallet'
 import { fetchApi, postApi } from '@/utils/api'
@@ -22,7 +22,7 @@ export default function Signin() {
   async function onLogin(){
     console.log('LOGIN')
     if(!logged){
-      getPublicKey().then(address=>{
+      requestAccess().then(address=>{
         console.log('Wallet', address)
         const chainName = 'Stellar'
         const chainid   = '0'
@@ -33,7 +33,7 @@ export default function Signin() {
         fetch('/api/users?wallet='+address).then(res=>{
           res.json().then(async data=>{
             const user = data.result
-            console.log('User', user)
+            //console.log('User', user)
             if(user){
               console.log('UserId', user.id)
               setUserId(user.id)

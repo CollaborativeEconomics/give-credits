@@ -1,6 +1,7 @@
 //import * as StellarSdk from '@stellar/stellar-sdk'
 import { WalletProvider } from '@/types/common'
-import { Contract, networks } from '@/contracts/nft721/client/index'
+import { networks } from '@/contracts/networks'
+//import { Contract } from '@/contracts/nft721/client/index'
 
 interface MintResponse {
   success?: boolean;
@@ -24,7 +25,7 @@ class StellarServer {
     gasprice: '',
     explorer: '',
     rpcurl: 'https://horizon.stellar.org',
-    soroban: 'https://horizon-futurenet.stellar.org',
+    soroban: process.env.STELLAR_SOROBAN,
     phrase: 'Public Global Stellar Network ; September 2015',
     wssurl: ''
   }

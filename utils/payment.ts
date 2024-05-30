@@ -3,7 +3,6 @@ import * as StellarSdk from '@stellar/stellar-sdk'
 export default async function PaymentXDR(source:string, destin:string, amount:number, currency:string, issuer:string, memo:string='') {
   console.log('PAYMENT', source, destin, amount, currency, issuer, memo)
   const horizon = new StellarSdk.Horizon.Server(process.env.NEXT_PUBLIC_STELLAR_HORIZON||'')
-  //const soroban = new StellarSdk.Soroban.Server(process.env.NEXT_PUBLIC_STELLAR_SOROBAN||'')
   const account = await horizon.loadAccount(source)
   //const baseFee = await server.fetchBaseFee()
   const network = process.env.NEXT_PUBLIC_STELLAR_PASSPHRASE||''
