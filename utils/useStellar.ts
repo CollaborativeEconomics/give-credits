@@ -1,3 +1,4 @@
+/*
 import { useEffect } from 'react';
 import StellarClient from 'stellar-sdk';
 
@@ -7,6 +8,7 @@ const client = new StellarClient(process.env.NEXT_PUBLIC_STELLAR_HORIZON||'', {
   maxConnectionAttempts: 4,
   connectAttemptTimeoutSeconds: 10
 });
+
 const useStellar = () => {
   useEffect(() => {
     client.ready().then(() => {
@@ -17,3 +19,4 @@ const useStellar = () => {
 };
 
 export default useStellar;
+*/

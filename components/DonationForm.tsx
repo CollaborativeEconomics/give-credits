@@ -16,16 +16,20 @@ import Chart from '@/components/carbonchart'
 import Progressbar from '@/components/progressbar'
 import Wallet from '@/libs/wallets/freighter'
 import { networks } from '@/contracts/networks'
+//import registerUser from "@/contracts/register"
 import { fetchApi, postApi } from '@/utils/api'
-import {signTransaction} from "@stellar/freighter-api"
-import { BASE_FEE, Account, Address, Asset, Contract, Horizon, Keypair, Networks, Operation, SorobanRpc, Transaction, TransactionBuilder, nativeToScVal, scValToNative } from '@stellar/stellar-sdk'
-//import { Contract } from '@/contracts/credits/client'
-
+import { signTransaction } from "@stellar/freighter-api"
+import { BASE_FEE, Account, Address, Asset, Contract, Horizon, Keypair, Networks, Operation, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, nativeToScVal, scValToNative } from '@stellar/stellar-sdk'
 
 export default function DonationForm(props:any) {
   //console.log('Props', props)
-  const network = process.env.NEXT_PUBLIC_STELLAR_NETWORK||'testnet'
-  console.log('NETENV', network)
+  const netname = process.env.NEXT_PUBLIC_STELLAR_NETWORK||'testnet'
+  console.log('NETENV', netname)
+  const network = networks[netname]
+  console.log('NETWORK', network)
+  const horizon = new Horizon.Server(network.horizon, { allowHttp: true })
+  const soroban = new SorobanRpc.Server(network.soroban, { allowHttp: true })
+
   const initiative = props.initiative
   const contractId = initiative.contractcredit
   //const contractId = 'CBZ62WGTRYNMCNNRBQHGGEDBPIA4VXCHNFSICDKLP3CFNGF3H4WD3OQC' // mainnet
@@ -72,14 +76,9 @@ export default function DonationForm(props:any) {
 
 //type Tx = Transaction<Memo<MemoType>, Operation[]>
 
-  // Contract call
-  async function donate(contractId:string, from:string, amount:number) {
+  async function donate(contractId:string, from:string, amount:number, firstTime:boolean) {
     try {
       console.log('-- Donating', contractId, from, amount)
-      const net = networks[network]
-      const rpc = net.soroban
-      const url = net.horizon
-      console.log('NET', net)
       const adr = new Address(from).toScVal()
       //const wei = BigInt(amount*10000000) // 7 decs
       const wei = nativeToScVal(amount*10000000, { type: 'i128' })
@@ -91,36 +90,70 @@ export default function DonationForm(props:any) {
       const op = ctr.call('donate', ...args)
       //const op = ctr.call('donate', args)
       console.log('OP', op)
-      const horizon = new Horizon.Server(url, { allowHttp: true })
-      const soroban = new SorobanRpc.Server(rpc, { allowHttp: true })
       //const account = await horizon.loadAccount(from)
       const account = await soroban.getAccount(from)
       console.log('ACT', account)
-      const base = await horizon.fetchBaseFee()
-      const fee = base.toString()
-      const trx = new TransactionBuilder(account, {fee, networkPassphrase: net.passphrase})
+      //const base = await horizon.fetchBaseFee()
+      //const fee = base.toString()
+      const fee = BASE_FEE
+      const trx = new TransactionBuilder(account, {fee, networkPassphrase: network.passphrase})
         .addOperation(op)
         .setTimeout(30)
         .build()
       console.log('TRX', trx)
+      //window.trx = trx
       const sim = await soroban.simulateTransaction(trx);
       console.log('SIM', sim)
+      //window.sim = sim
       if (SorobanRpc.Api.isSimulationSuccess(sim) && sim.result !== undefined) {
         console.log('RES', sim.result)
         // Now prepare it???
-        const txp = await soroban.prepareTransaction(trx)
-        console.log('TXP',txp)
-        const xdr = txp.toXDR()
+        let xdr = ''
+        if(firstTime){
+          // Increment tx resources to avoid first time bug
+          console.log('FIRST')
+          //const sorobanData = new SorobanDataBuilder()
+          const sorobanData = sim.transactionData
+          console.log('SDATA1', sorobanData)
+          //window.sdata1 = sorobanData
+          //sorobanData.readBytes += '60'
+          const rBytes = sorobanData['_data'].resources().readBytes() + 60
+          const rFee = (parseInt(sorobanData['_data'].resourceFee()) + 100).toString()
+          sorobanData['_data'].resources().readBytes(rBytes)
+          sorobanData.setResourceFee(rFee)
+          const sdata = sorobanData.build()
+          //window.sdata2 = sorobanData
+          console.log('SDATA2', sorobanData)
+          const fee2 = (parseInt(sim.minResourceFee) + 100).toString()
+          //const fee2 = (parseInt(BASE_FEE) + 100).toString()
+          console.log('FEE2',fee2)
+          //const trz = trx.setSorobanData(sdata).setTransactionFee(fee2).build()
+          const account2 = await soroban.getAccount(from)
+          const trz = new TransactionBuilder(account2, {fee:fee2, networkPassphrase: network.passphrase})
+            .setSorobanData(sdata)
+            .addOperation(op)
+            .setTimeout(30)
+            .build()
+          console.log('TRZ',trz)
+          //window.trz = trz
+          const txz = await soroban.prepareTransaction(trz)
+          console.log('TXZ',txz)
+          xdr = txz.toXDR()
+        } else {
+          const txp = await soroban.prepareTransaction(trx)
+          console.log('TXP',txp)
+          xdr = txp.toXDR()
+        }
         console.log('XDR', xdr)
         // Now sign it???
-        const opx = {networkPassphrase: net.passphrase}
-        //const opx = {network:net.name, networkPassphrase: net.passphrase, accountToSign: from}
+        const opx = {networkPassphrase: network.passphrase}
+        //const opx = {network:network.name, networkPassphrase: network.passphrase, accountToSign: from}
         console.log('OPX', opx)
         //const res = await wallet.signAndSend(xdr, opx)
         const sgn = await signTransaction(xdr, opx)
         console.log('SGN', sgn)
         // Now send it?
-        const txs = TransactionBuilder.fromXDR(sgn, net.passphrase) // as Tx
+        const txs = TransactionBuilder.fromXDR(sgn, network.passphrase) // as Tx
         console.log('TXS', txs)
         //const six = await soroban.simulateTransaction(txs)
         //console.log('SIX', six)
@@ -134,12 +167,17 @@ export default function DonationForm(props:any) {
 
         const txid = res?.hash || ''
         console.log('TXID', txid)
+        if(res?.status.toString() == 'ERROR'){
+          console.log('TX ERROR')
+          return {success:false, txid, error:'Error sending payment (950)'} // get error
+        }
         if(res?.status.toString() == 'SUCCESS'){
+          console.log('TX SUCCESS')
           return {success:true, txid, error:null}
         } else {
           // Wait for confirmation
           const secs = 1000
-          const wait = [2,2,2,3,3,3,4,4,4,5,5,5] // 42 secs / 12 loops
+          const wait = [2,2,2,3,3,3,4,4,4,5,5,5,6,6,6] // 60 secs / 15 loops
           let count = 0
           let info = null
           while(count < wait.length){
@@ -148,20 +186,26 @@ export default function DonationForm(props:any) {
             count++
             info = await soroban.getTransaction(txid)
             console.log('INFO', info)
+            if(info.status=='ERROR') {
+              console.log('TX FAILED')
+              return {success:false, txid, error:'Error sending payment (951)', extra:info} // get error
+            }
             if(info.status=='NOT_FOUND' || info.status=='PENDING') {
               continue // Not ready in blockchain?
             }
             if(info.status=='SUCCESS'){
+              console.log('TX SUCCESS2')
               return {success:true, txid, error:null}
-            } else if(info.status!=='PENDING') {
-              return {success:false, txid:'', error:'Error sending payment (951)'} // get error
+            } else {
+              console.log('TX FAILED2')
+              return {success:false, txid, error:'Error sending payment (952)', extra:info} // get error
             }
           }
-          return {success:false, txid:'', error:'Error sending payment (952)'} // get error
+          return {success:false, txid, error:'Error sending payment - timeout (953)'} // get error
         }
       } else {
         console.log('BAD', sim)
-        return {success:false, txid:'', error:'Error sending payment (953)'} // get error
+        return {success:false, txid:'', error:'Error sending payment - bad simulation (954)'} // get error
       }
     } catch(ex) {
       console.log('ERROR', ex)
@@ -176,15 +220,15 @@ export default function DonationForm(props:any) {
       const net = networks[network]
       console.log('NET', net)
       //const net = networks.mainnet
-      //const svr = new SorobanRpc.Server(net.soroban)
-      //const svr = new SorobanRpc.Server(net.soroban, { allowHttp: net.soroban.startsWith('http:') })
+      //const svr = new SorobanRpc.Server(network.soroban)
+      //const svr = new SorobanRpc.Server(network.soroban, { allowHttp: network.soroban.startsWith('http:') })
       //const act = await svr.getAccount(from)
       //console.log('ACT', act)
       //const seq = act.sequence.toString()
       //console.log('SEQ', seq)
 
       //const opt = {...net, contractId}
-      const opt = {networkPassphrase:net.passphrase, rpcUrl:net.soroban, contractId, signTransaction:(xdr: string) => signTransaction(xdr, 'testnet')}
+      const opt = {networkPassphrase:network.passphrase, rpcUrl:network.soroban, contractId, signTransaction:(xdr: string) => signTransaction(xdr, 'testnet')}
       console.log('OPT', opt)
       const ctr = new Contract(opt)
       //const ctr = new Contract(contractId)
@@ -218,12 +262,12 @@ export default function DonationForm(props:any) {
       //  .build();
       //await trx.simulate()
 
-      //const txb = new TransactionBuilder(act, { fee: BASE_FEE, networkPassphrase: net.passphrase })
+      //const txb = new TransactionBuilder(act, { fee: BASE_FEE, networkPassphrase: network.passphrase })
       //  .addOperation(opr)
       //  .setTimeout(30)
       //  .build()
       
-      const soroban = new SorobanRpc.Server(net.soroban, { allowHttp: true })
+      const soroban = new SorobanRpc.Server(network.soroban, { allowHttp: true })
       const sim = await trx.simulate()
       //const sim = await soroban.simulateTransaction(trx);
       //console.log('SIM', sim)
@@ -234,8 +278,8 @@ export default function DonationForm(props:any) {
       const xdr = trp.toXDR()
       console.log('XDR', xdr)
       
-      //const opx = {network:net.name, networkPassphrase: net.passphrase, accountToSign: from}
-      const opx = {networkPassphrase: net.passphrase}
+      //const opx = {network:network.name, networkPassphrase: network.passphrase, accountToSign: from}
+      const opx = {networkPassphrase: network.passphrase}
       console.log('OPX', opx)
       
       //trx.raw.source = act
@@ -251,7 +295,7 @@ export default function DonationForm(props:any) {
       const sgn = await signTransaction(xdr, opx)
       console.log('SGN', sgn)
       // Now send it?
-      const txs = TransactionBuilder.fromXDR(sgn, net.passphrase) as Tx
+      const txs = TransactionBuilder.fromXDR(sgn, network.passphrase) as Tx
       console.log('TXS', txs)
       const res = await soroban.sendTransaction(txs)
       console.log('RES', res)
@@ -356,13 +400,20 @@ export default function DonationForm(props:any) {
       console.log('Error: Signature rejected by user')
       return
     }
-
+//---->
+//    const ok = await registerUser(contractId, donor) // FIX: Bug in Soroban, register user in contract on first use
+//    console.log('REG', ok)
+//    setMessage('Registered? '+ok)
+//    return
+//----<
     // Check user exists or create a new one
+    let firstTime = false
     const userRes = await fetchApi('users?wallet='+donor)
     let userInfo = userRes?.result || null
-    //console.log('USER', userInfo)
+    console.log('USER', userInfo)
     const userId = userInfo?.id || ''
     if(!userId){
+      firstTime = true
       //const email = donor.substr(0,10).toLowerCase() + '@example.com'
       const user = await postApi('users', {
         name: 'Anonymous', 
@@ -381,10 +432,15 @@ export default function DonationForm(props:any) {
         setMessage('Error: User could not be created')
         return
       }
+      //const ok1 = await registerUser(contractId, donor) // FIX: Bug in Soroban, register user in contract on first use
+      //console.log('REG', ok1)
+      /*
+        per discord: sorobanData.readBytes += 60; sorobanData.resourceFee +=  100; tx.fee += 100
+      */
     }
 
     //const memo = destinTag ? 'tag:'+destinTag : ''
-    const result = await donate(contractId, donor, amountNum)
+    const result = await donate(contractId, donor, amountNum, firstTime)
     console.log('UI RESULT', result)
     if(!result?.success){
       setMessage('Error sending payment')
@@ -401,7 +457,7 @@ export default function DonationForm(props:any) {
       userId:         userInfo?.id,
       paytype:        'crypto',
       chain:          chainName,
-      network:        network,
+      network:        netname,
       wallet:         donor,
       amount:         coinValue,
       usdvalue:       usdValue,

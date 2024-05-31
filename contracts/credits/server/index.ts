@@ -1,6 +1,5 @@
-import { Address, BASE_FEE, Contract, FeeBumpTransaction, Keypair, Horizon, nativeToScVal, Networks, Operation, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, xdr } from "@stellar/stellar-sdk";
-const { Api, assembleTransaction } = SorobanRpc;
-import * as SorobanClient from 'soroban-client'
+import { Address, BASE_FEE, Contract, FeeBumpTransaction, Keypair, Horizon, nativeToScVal, scValToNative, Networks, Operation, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, xdr } from "@stellar/stellar-sdk";
+const { Api, assembleTransaction } = SorobanRpc
 
 function sleep(ms:number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -229,7 +228,7 @@ export async function submit(network:any, secret:string, contractId:string, meth
       //const meta:any = resp.meta
       //console.log('META', JSON.stringify(meta,null,2))
       //console.log('Return value:', resp?.value)
-      const resval = SorobanClient.scValToNative(resp?.value)
+      const resval = scValToNative(resp?.value)
       console.log('Return value:', resval)
       return {success:true, value:resval, error:null}
     } else {
