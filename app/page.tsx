@@ -8,9 +8,9 @@ import StoryCard from '@/components/StoryCardCompactVert';
 import { getRecentStories, getCreditsByInitiative } from '@/utils/registry';
 
 export default async function Home(props: any) {
-  const appMode = process.env.NODE_ENV || 'development'
-  console.log(`App running in ${appMode} mode`)
-  const initid = '30c0636f-b0f1-40d5-bb9c-a531dc4d69e2';
+  const appMode = process.env.NODE_ENV || 'development';
+  console.log(`App running in ${appMode} mode`);
+  const initid = process.env.FEATURED_INITIATIVE;
   const featured = '/initiatives/'+initid;
   let stories = await getRecentStories(4);
   if (stories?.error) {
@@ -23,6 +23,7 @@ export default async function Home(props: any) {
   const goal = credit?.goal || 1;
   const current = credit?.current || 0;
   const percent = ((current * 100) / goal).toFixed(0);
+  console.log('CREDIT', goal, current, percent)
   const date = new Date().toLocaleDateString(undefined, {
     month: 'long',
     day: 'numeric',

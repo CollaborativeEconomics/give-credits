@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useState, useContext } from 'react'
+import { useContext, useEffect, useRef, useState} from 'react'
 import { useForm } from 'react-hook-form'
 import { Card } from './ui/card'
 import { Input } from './ui/input'
@@ -32,9 +32,6 @@ export default function DonationForm(props:any) {
 
   const initiative = props.initiative
   const contractId = initiative.contractcredit
-  //const contractId = 'CBZ62WGTRYNMCNNRBQHGGEDBPIA4VXCHNFSICDKLP3CFNGF3H4WD3OQC' // mainnet
-  //const contractId = 'CAE5MDQ7IZSWPC2P2SPH3V65HYZKN55RY74S7IQ24WL4BXOIFCJPM36N' // futurenet
-  //const contractId = 'CCUZYZPNVGXH7TDKRRC25KMZ3DIM6JDLLU2SLZ6LIWFKS6XYQQKQZAV3' // testnet
   const organization = initiative.organization
   const {donation, setDonation} = useContext(DonationContext)
   const usdRate = props.rate || 0
@@ -44,6 +41,29 @@ export default function DonationForm(props:any) {
   const creditValue = credit?.value ?? 0
   const creditPercent = (creditValue * 100 / creditGoal).toFixed(0)
   const creditDate = new Date().toLocaleDateString(undefined, {month:'long', day:'numeric', year:'numeric'})
+
+  const chains = getChainsList()
+  const chainLookup = getChainsMap()
+  const chainWallets = getChainWallets(chains[0].symbol)
+  const chainName = 'Stellar'
+  const currency  = 'XLM'
+
+  const [showXLM, toggleShowXLM] = useState(false)
+  const [currentChain, setCurrentChain] = useState('Stellar')
+  const [wallets, setWallets] = useState(chainWallets)
+  const [currentWallet, setCurrentWallet] = useState(wallets[0])
+  const amountInputRef = useRef(null)
+  const [disabled, setDisabled] = useState(false)
+  const [buttonText, setButtonText] = useState('Donate')
+  const [message, setMessage] = useState('One wallet confirmation required')
+  const [rateMessage, setRateMessage] = useState(`0 USD at ${usdRate.toFixed(2)} XLM/USD`)
+  const [chartTitle, setChartTitle] = useState('Total estimated carbon emissions retired')
+  const [chartValue, setChartValue] = useState(creditCurrent) // TODO: calc aggregate from db
+  const [percent, setPercent] = useState('0')
+  const [offset, setOffset]   = useState('0.00')
+  const [amount, setAmount]   = useState(0)
+
+
   const wallet = new Wallet()
 
   function $(id:string){ return document.getElementById(id) as HTMLInputElement }
@@ -213,117 +233,7 @@ export default function DonationForm(props:any) {
     }
   }
 
-/*
-  async function donateX(contractId:string, from:string, amount:number) {
-    try {
-      console.log('-- Donating', contractId, from, amount)
-      const net = networks[network]
-      console.log('NET', net)
-      //const net = networks.mainnet
-      //const svr = new SorobanRpc.Server(network.soroban)
-      //const svr = new SorobanRpc.Server(network.soroban, { allowHttp: network.soroban.startsWith('http:') })
-      //const act = await svr.getAccount(from)
-      //console.log('ACT', act)
-      //const seq = act.sequence.toString()
-      //console.log('SEQ', seq)
-
-      //const opt = {...net, contractId}
-      const opt = {networkPassphrase:network.passphrase, rpcUrl:network.soroban, contractId, signTransaction:(xdr: string) => signTransaction(xdr, 'testnet')}
-      console.log('OPT', opt)
-      const ctr = new Contract(opt)
-      //const ctr = new Contract(contractId)
-      console.log('CTR', ctr)
-      const wei = BigInt(amount*10000000) // 7 decs
-      //const dat = [from, wei]
-      const dat = {from, amount:wei}
-      console.log('DAT', dat)
-
-      //const adr = new Address(from).toScVal()
-      //const wey = nativeToScVal(amount*10000000, { type: 'i128' })
-      //const args = {from:adr, amount:wey}
-      //const args = [adr, wei]
-
-
-      const trx = await ctr.donate(dat)
-      console.log('TRX', trx)
-      //trx.raw.source = act
-      //const opr = trx.raw.operations[0];
-      //console.log('OPR', opr)
-      //const arg = new Address(target).toScVal()
-      //const opy = ctr.call('method', dat)
-      //console.log('OPy', opy)
-
-      //trx.raw = new TransactionBuilder(act, {
-      //  fee: trx.raw.baseFee,
-      //  networkPassphrase: trx.options.networkPassphrase,
-      //})
-      //  .setTimeout(30)
-      //  .addOperation(Operation.invokeHostFunction({ opr, auth: opr.auth ?? [] }))
-      //  .build();
-      //await trx.simulate()
-
-      //const txb = new TransactionBuilder(act, { fee: BASE_FEE, networkPassphrase: network.passphrase })
-      //  .addOperation(opr)
-      //  .setTimeout(30)
-      //  .build()
-      
-      const soroban = new SorobanRpc.Server(network.soroban, { allowHttp: true })
-      const sim = await trx.simulate()
-      //const sim = await soroban.simulateTransaction(trx);
-      //console.log('SIM', sim)
-      
-      const trp = await soroban.prepareTransaction(trx.built)
-      console.log('TRP', trp)
-
-      const xdr = trp.toXDR()
-      console.log('XDR', xdr)
-      
-      //const opx = {network:network.name, networkPassphrase: network.passphrase, accountToSign: from}
-      const opx = {networkPassphrase: network.passphrase}
-      console.log('OPX', opx)
-      
-      //trx.raw.source = act
-      //const sin = await trx.simulate()
-      //console.log('SIN', sin)
-      //const xdr = sin.raw.build().toXDR()
-      //trx.built.addSignature(from, signature)
-      //const xdr = trx.raw.build().toXDR()
-
-      //const res = await wallet.signAndSend(xdr, opx)
-      //const res = await trx.signAndSend()
-      
-      const sgn = await signTransaction(xdr, opx)
-      console.log('SGN', sgn)
-      // Now send it?
-      const txs = TransactionBuilder.fromXDR(sgn, network.passphrase) as Tx
-      console.log('TXS', txs)
-      const res = await soroban.sendTransaction(txs)
-      console.log('RES', res)
-      console.log('JSN', JSON.stringify(res,null,2))
-
-      //console.log('RES2', res.sendTransactionResponse)
-      //console.log('RES3', res.getTransactionResponse)
-      //console.log('RES4', res.getTransactionResponse?.status)
-      let txid = ''
-      if(res?.getTransactionResponse?.status == 'SUCCESS'){
-        txid = res?.sendTransactionResponse?.hash || ''
-        return {success:true, txid, error:null}
-      } else {
-        return {success:false, txid:'', error:'Error sending payment'} // get error?
-      }
-    } catch(ex:any) {
-      console.error('ERROR', ex)
-      return {success:false, error:ex?.message || 'Error sending payment', txid:''}
-    }
-  }
-*/
-
   async function onAction(){
-    //sendPayment(contractId, name, email, organization, initiativeId, amount, currency, usdRate, issuer, destinationTag, yesReceipt, yesNFT)
-    //const wallet    = currentWallet?.value || ''
-    //const chainName = currentChain
-    const chainName = 'Stellar'
-    const currency  = 'XLM'
     const amount    = $('amount')?.value || '0'
     const name      = $('name-input')?.value || ''
     const email     = $('email-input')?.value || ''
@@ -365,12 +275,12 @@ export default function DonationForm(props:any) {
     const destinationTag = initiative.tag
     // if amount in USD convert by coin rate
     const amountNum = parseInt(amount||'0')
-    const coinValue = showUSD ? amountNum : (amountNum / usdRate)
-    const usdValue  = showUSD ? (amountNum * usdRate) : amountNum
-    const rateMsg   = showUSD 
+    const coinValue = showXLM ? amountNum : (amountNum / usdRate)
+    const usdValue  = showXLM ? (amountNum * usdRate) : amountNum
+    const rateMsg   = showXLM 
       ? `USD ${usdValue.toFixed(2)} at ${usdRate.toFixed(2)} ${currency}/USD` 
       : `${coinValue.toFixed(2)} ${currency} at ${usdRate.toFixed(2)} ${currency}/USD`
-    console.log('AMT', showUSD, coinValue, usdValue)
+    console.log('AMT', showXLM, coinValue, usdValue)
     setRateMessage(rateMsg)
     const weiValue = Math.trunc(coinValue * 10000000).toString()
     console.log('WEI', weiValue)
@@ -400,20 +310,19 @@ export default function DonationForm(props:any) {
       console.log('Error: Signature rejected by user')
       return
     }
-//---->
-//    const ok = await registerUser(contractId, donor) // FIX: Bug in Soroban, register user in contract on first use
-//    console.log('REG', ok)
-//    setMessage('Registered? '+ok)
-//    return
-//----<
+
     // Check user exists or create a new one
-    let firstTime = false
+    let firstTime = true
     const userRes = await fetchApi('users?wallet='+donor)
     let userInfo = userRes?.result || null
     console.log('USER', userInfo)
     const userId = userInfo?.id || ''
-    if(!userId){
-      firstTime = true
+    if(userId){
+      // Check donations
+      const userDon = await fetchApi('donations?userid='+userId)
+      console.log('DONS', userDon)
+      if(userDon?.result?.length>0){ firstTime = false }
+    } else {
       //const email = donor.substr(0,10).toLowerCase() + '@example.com'
       const user = await postApi('users', {
         name: 'Anonymous', 
@@ -525,40 +434,27 @@ export default function DonationForm(props:any) {
     setMessage('Thank you for your donation!')
   }
 
-  const chains = getChainsList()
-  const chainLookup = getChainsMap()
-  const chainWallets = getChainWallets(chains[0].symbol)
+  useEffect(() => {
+    console.log('SWITCH')
+    recalc()
+  }, [showXLM])
 
-  // TODO: currentChain should be currently selected chain in wallet instead of first one
-  const [showUSD, toggleShowUSD] = useState(false)
-  const [currentChain, setCurrentChain] = useState('Stellar')
-  const [wallets, setWallets] = useState(chainWallets)
-  const [currentWallet, setCurrentWallet] = useState(wallets[0])
-  const amountInputRef = useRef(null)
-  const [disabled, setDisabled] = useState(false)
-  const [buttonText, setButtonText] = useState('Donate')
-  const [message, setMessage] = useState('One wallet confirmation required')
-  const [rateMessage, setRateMessage] = useState(`0 USD at ${usdRate.toFixed(2)} XLM/USD`)
-  const [chartTitle, setChartTitle] = useState('Total estimated carbon emissions retired')
-  const [chartValue, setChartValue] = useState(creditCurrent) // TODO: calc aggregate from db
-  const [percent, setPercent] = useState('0')
-  const [offset, setOffset]   = useState('0.00')
-
-  function amountChanged(evt){
-    console.log('REF', amountInputRef)
-    const currency = 'XLM'
-    const amount = evt.target.value || '0'
-    const amountNum = parseInt(amount)
-    const coinValue = showUSD ? amountNum : (amountNum / usdRate)
-    const usdValue  = showUSD ? (amountNum * usdRate) : amountNum
-    const rateMsg   = showUSD 
+  function recalc(){
+    console.log('RECALC')
+    //const amountInp = evt.target.value || '0'
+    const amountInp = $('amount')?.value || '0'
+    const amountNum = parseInt(amountInp)
+    const coinValue = showXLM ? amountNum : (amountNum / usdRate)
+    const usdValue  = showXLM ? (amountNum * usdRate) : amountNum
+    const rateMsg   = showXLM 
       ? `${usdValue.toFixed(2)} USD at ${usdRate.toFixed(2)} USD/${currency}` 
       : `${coinValue.toFixed(2)} ${currency} at ${usdRate.toFixed(2)} USD/${currency}`
-    console.log('AMT', showUSD, coinValue, usdValue)
+    console.log('USD', usdValue, 'XLM', coinValue, showXLM?'ON':'OFF')
     setRateMessage(rateMsg)
-    const retire = (amount / creditValue).toFixed(2)
-    const pct = ((amount>creditValue) ? 100 : (amount / creditValue * 100)).toFixed(2)
-    console.log('Amount changed', amount, retire, pct)
+    const retire = (usdValue / creditValue).toFixed(2)
+    const pct = ((usdValue>creditValue) ? 100 : (usdValue / creditValue * 100)).toFixed(2)
+    console.log('Changed', amountInp)
+    console.log('Retire', usdValue, retire, pct)
     setOffset(retire)
     setPercent(pct)
   }
@@ -611,9 +507,9 @@ export default function DonationForm(props:any) {
                 <Label htmlFor="show-usd-toggle">USD</Label>
                 <Switch
                   id="show-usd-toggle"
-                  valueBasis={showUSD}
+                  valueBasis={showXLM}
                   handleToggle={() => {
-                    toggleShowUSD(!showUSD)
+                    toggleShowXLM(!showXLM)
                   }}
                 />
                 <Label>{chainLookup[currentChain]?.symbol}</Label>
@@ -624,9 +520,9 @@ export default function DonationForm(props:any) {
                 className="pl-4"
                 type="text"
                 id="amount"
-                text={ showUSD ? '| ' + chainLookup[currentChain]?.symbol : '| USD' }
+                text={ showXLM ? '| ' + chainLookup[currentChain]?.symbol : '| USD' }
                 divRef={amountInputRef}
-                onChange={amountChanged}
+                onChange={recalc}
               />
             </div>
             <Label className="block mt-2 text-right">{rateMessage}</Label>
