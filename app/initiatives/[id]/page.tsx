@@ -13,7 +13,6 @@ import NotFound from '@/components/NotFound';
 import { getInitiativeById, getInitiativesByOrganization } from '@/utils/registry';
 import restoreContract from '@/contracts/credits/server/restore';
 import getRates from '@/utils/rates';
-//import getCarbon from '@/utils/carbon'; // moved to registry cron
 
 export default async function Handler(props: any) {
   const params = props.params;
