@@ -13,6 +13,7 @@ import NotFound from '@/components/NotFound';
 import { getInitiativeById, getInitiativesByOrganization } from '@/utils/registry';
 import restoreContract from '@/contracts/credits/server/restore';
 import getRates from '@/utils/rates';
+//import getCarbon from '@/utils/carbon'; // moved to registry cron
 
 export default async function Handler(props: any) {
   const params = props.params;
@@ -35,8 +36,13 @@ export default async function Handler(props: any) {
   const stories = initiative.stories;
   console.log('STORIES', stories.length);
   const rate = await getRates('XLM');
-  //const rate = await fetch('/api/rates?coin=XLM')
+  //const carbon = await getCarbon();
+  let carbon = '0'
+  if(initiative.credits.length>0){
+    carbon = initiative.credits[0].value
+  }
   console.log('RATE', rate)
+  console.log('CARBON', carbon)
 
   const receipt = {
     status: ReceiptStatus.pending,
@@ -106,7 +112,7 @@ export default async function Handler(props: any) {
         <Separator className="mb-6" />
 
         <div className="md:flex md:flex-col items-center">
-          <DonationView initiative={initiative} receipt={receipt} rate={rate} />
+          <DonationView initiative={initiative} receipt={receipt} rate={rate} carbon={carbon} />
         </div>
 
         <div className="mb-10 pt-10 flex justify-center w-full">

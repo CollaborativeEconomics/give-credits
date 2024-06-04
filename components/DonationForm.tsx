@@ -35,12 +35,19 @@ export default function DonationForm(props:any) {
   const organization = initiative.organization
   const {donation, setDonation} = useContext(DonationContext)
   const usdRate = props.rate || 0
+  const usdCarbon = props.carbon || 0
   const credit = initiative?.credits?.length>0 ? initiative?.credits[0] : null
-  const creditGoal = credit?.goal ?? 0
+  const creditGoal = credit?.goal ?? 1
   const creditCurrent = credit?.current ?? 0
   const creditValue = credit?.value ?? 0
   const creditPercent = (creditValue * 100 / creditGoal).toFixed(0)
   const creditDate = new Date().toLocaleDateString(undefined, {month:'long', day:'numeric', year:'numeric'})
+  console.log('CREDIT', creditValue)
+  
+  let maxGoal = creditGoal/1000 // 1 ton = 1000 kgs
+  //let maxGoal = 30
+  if(maxGoal>100){ maxGoal = 100 }
+  console.log('MAXGOAL', maxGoal)
 
   const chains = getChainsList()
   const chainLookup = getChainsMap()
@@ -274,7 +281,7 @@ export default function DonationForm(props:any) {
 
     const destinationTag = initiative.tag
     // if amount in USD convert by coin rate
-    const amountNum = parseInt(amount||'0')
+    const amountNum = parseFloat(amount||'0')
     const coinValue = showXLM ? amountNum : (amountNum / usdRate)
     const usdValue  = showXLM ? (amountNum * usdRate) : amountNum
     const rateMsg   = showXLM 
@@ -440,10 +447,10 @@ export default function DonationForm(props:any) {
   }, [showXLM])
 
   function recalc(){
-    console.log('RECALC')
+    console.log('--RECALC')
     //const amountInp = evt.target.value || '0'
     const amountInp = $('amount')?.value || '0'
-    const amountNum = parseInt(amountInp)
+    const amountNum = parseFloat(amountInp)
     const coinValue = showXLM ? amountNum : (amountNum / usdRate)
     const usdValue  = showXLM ? (amountNum * usdRate) : amountNum
     const rateMsg   = showXLM 
@@ -457,6 +464,17 @@ export default function DonationForm(props:any) {
     console.log('Retire', usdValue, retire, pct)
     setOffset(retire)
     setPercent(pct)
+    const data = {...donation, amount:coinValue, amountFiat:usdValue, ticker:'XLM'}
+    setDonation(data)
+    console.log('DATA', data)
+  }
+
+  function refresh(){
+    const name = $('name-input').value || 'Anonymous'
+    console.log('NAME', name)
+    const data = {...donation, donor:{address:donation.donor.address, name}}
+    setDonation(data)
+    console.log('DATA', data)
   }
 
   return (
@@ -496,9 +514,10 @@ export default function DonationForm(props:any) {
         <Separator />
         <div className="px-6">
           <div className="my-10 text-center">
-            <Chart title={chartTitle} goal={creditGoal} value={chartValue} />
-            <p className="mt-12 mb-4">Your donation will offset {offset} tons of carbon</p>
+            <Chart title={chartTitle} goal={maxGoal} value={chartValue} />
+            <p className="mt-4 mb-4">Your donation will offset {offset} ton{parseInt(offset)==1?'':'s'} of carbon</p>
             <Progressbar value={percent} />
+            <p className="mt-2 mb-4">1 ton of carbon = USD {creditValue}</p>
           </div>
           <div className="w-full my-6">
             <div className="flex flex-row justify-between items-center mb-2">
@@ -528,7 +547,7 @@ export default function DonationForm(props:any) {
             <Label className="block mt-2 text-right">{rateMessage}</Label>
           </div>
           <Label htmlFor="name-input" className="mb-2">Name (optional)</Label>
-          <Input type="text" className="pl-4 mb-6" id="name-input" />
+          <Input type="text" className="pl-4 mb-6" id="name-input" onChange={refresh} />
           <Label htmlFor="email-input" className="mb-2">Email address (optional)</Label>
           <Input type="text" className="pl-4 mb-6" id="email-input" />
           <CheckboxWithText id="receipt-check" text="I'd like to receive an emailed receipt" className="mb-2" />
