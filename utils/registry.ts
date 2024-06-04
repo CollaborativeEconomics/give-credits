@@ -15,7 +15,7 @@ const fetchRegistry = async (url:string) => {
     }
     const response = await fetch(url, options)
     const result = await response.json()
-    //console.log('RESULT', result)
+    //console.log('DBRES', result)
     return result.data
   } catch(ex:any) {
     console.error(ex)
