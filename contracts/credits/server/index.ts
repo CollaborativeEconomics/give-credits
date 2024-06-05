@@ -216,7 +216,7 @@ export async function submit(network:any, secret:string, contractId:string, meth
   console.log({network, contractId, method, args})
 
   let op = contract.call(method, ...args)
-  let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })
+  let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.passphrase })
     .addOperation(op)
     .setTimeout(30)
     .build()
@@ -254,9 +254,9 @@ export async function checkContract(network:any, secret:string, contractId:strin
     const horizon  = new Horizon.Server(HORIZON_URL)
     const account  = await horizon.loadAccount(pubkey)
 
-    console.log('CHECK4:', account)
+    console.log('CHECK4:', account?.id)
     let op = contract.call(method, ...args)
-    let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })
+    let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.passphrase })
       .addOperation(op)
       .setTimeout(30)
       .build()

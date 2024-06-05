@@ -23,12 +23,11 @@ export default async function Handler(props: any) {
   }
 
   // Restore credits contract
-  //console.log('RESTORING...');
-  //const contractId = initiative.contractcredit;
-  //restoreContract(contractId).then(result => {
-  //  console.log('RESTORED', result);
-  //});
-  //return <>TESTING...</>
+  console.log('RESTORING...');
+  const contractId = initiative.contractcredit;
+  restoreContract(contractId).then(result => {
+    console.log('RESTORED', result);
+  });
 
   const organization = initiative.organization;
   const initiatives = await getInitiativesByOrganization(organization.id);

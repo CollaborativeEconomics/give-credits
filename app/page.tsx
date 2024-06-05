@@ -21,7 +21,7 @@ export default async function Home(props: any) {
   const credits = await getCreditsByInitiative(initid);
   const credit = credits?.length > 0 ? credits[0] : null;
   let goal = credit?.goal / 1000 || 1;
-  if(goal > 100){ goal = 100 }
+  if(goal > 100){ goal = 30 }
   const current = credit?.current || 0;
   const percent = ((current * 100) / goal).toFixed(0);
   console.log('CREDIT', goal, current, percent)
@@ -129,7 +129,7 @@ export default async function Home(props: any) {
                 </div>
               </div>
             }
-            <div className="text-center">{appMode}</div>
+            {/*<div className="text-center">{appMode}</div>*/}
           </div>
         </div>
       </div>

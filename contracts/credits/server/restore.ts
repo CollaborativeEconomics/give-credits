@@ -7,6 +7,7 @@ export default async function restoreContract(contractId) {
     console.log('Restore Credits Contract', contractId)
     if(!contractId){ return {success:false, error:'Contract id not provided'} }
     const network = networks[process.env.NEXT_PUBLIC_STELLAR_NETWORK]
+  console.log('NET', network)
     const from    = new Address(process.env.CFCE_MINTER_WALLET_ADDRESS).toScVal()
     const secret  = process.env.CFCE_MINTER_WALLET_SECRET
     const method  = 'donate'
