@@ -44,9 +44,9 @@ export default function DonationForm(props:any) {
   const creditDate = new Date().toLocaleDateString(undefined, {month:'long', day:'numeric', year:'numeric'})
   console.log('CREDIT', creditValue)
   
-  let maxGoal = creditGoal/1000 // 1 ton = 1000 kgs
-  //let maxGoal = 30
-  if(maxGoal>100){ maxGoal = 100 }
+  let maxGoal = 30
+  //let maxGoal = creditGoal/1000 // 1 ton = 1000 kgs
+  //if(maxGoal>100){ maxGoal = 100 }
   console.log('MAXGOAL', maxGoal)
 
   const chains = getChainsList()
@@ -464,11 +464,11 @@ export default function DonationForm(props:any) {
     console.log('Retire', usdValue, retire, pct)
     setOffset(retire)
     setPercent(pct)
-    const data = {...donation, amount:coinValue, amountFiat:usdValue, ticker:'XLM'}
-    setDonation(data)
-    console.log('DATA', data)
+    //const data = {...donation, amount:coinValue, amountFiat:usdValue, ticker:'XLM'}
+    //setDonation(data)
+    //console.log('DATA', data)
   }
-
+/*
   function refresh(){
     const name = $('name-input').value || 'Anonymous'
     console.log('NAME', name)
@@ -476,7 +476,7 @@ export default function DonationForm(props:any) {
     setDonation(data)
     console.log('DATA', data)
   }
-
+*/
   return (
     <div className="flex min-h-full w-full">
       <Card className="py-6 w-full">
@@ -547,7 +547,7 @@ export default function DonationForm(props:any) {
             <Label className="block mt-2 text-right">{rateMessage}</Label>
           </div>
           <Label htmlFor="name-input" className="mb-2">Name (optional)</Label>
-          <Input type="text" className="pl-4 mb-6" id="name-input" onChange={refresh} />
+          <Input type="text" className="pl-4 mb-6" id="name-input" />
           <Label htmlFor="email-input" className="mb-2">Email address (optional)</Label>
           <Input type="text" className="pl-4 mb-6" id="email-input" />
           <CheckboxWithText id="receipt-check" text="I'd like to receive an emailed receipt" className="mb-2" />
