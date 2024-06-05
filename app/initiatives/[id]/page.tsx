@@ -62,7 +62,7 @@ export default async function Handler(props: any) {
   };
 
   return (
-    <main className="w-full bg-gradient-to-t from-slate-200 mt-12">
+    <main className="w-full bg-gradient-to-t from-slate-200 dark:from-slate-950 mt-12">
       <div className="relative flex flex-col px-[5%] container pt-24 w-full h-full">
         <div className="flex overflow-hidden mb-4 flex-col md:flex-row">
           <div className="relative w-full md:w-[45%] h-[200px] md:h-[300px] mb-12 md:mb-2">
