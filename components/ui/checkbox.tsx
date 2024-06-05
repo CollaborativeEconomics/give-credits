@@ -47,7 +47,7 @@ const CheckboxWithText = React.forwardRef<
     >
       <label className="flex flex-row gap-3">
         <Checkbox id={id} />
-        <Label>{text}</Label>
+        <Label htmlFor={id}>{text}</Label>
       </label>
     </div>
   )

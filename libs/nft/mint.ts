@@ -31,8 +31,6 @@ export default async function mint(contractId:string, to:string, uri:string){
 /* OLD JAN 2024
 
 import * as StellarSdk from 'stellar-sdk'
-//import * as SorobanClient  from 'soroban-client'
-//import * as SorobanClient1 from 'soroban-client'
 import { networks } from '@/contracts/networks'
 import { Contract } from '@/contracts/nft721/client'
 

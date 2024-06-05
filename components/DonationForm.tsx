@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useState, useContext } from 'react'
+import { useContext, useEffect, useRef, useState} from 'react'
 import { useForm } from 'react-hook-form'
 import { Card } from './ui/card'
 import { Input } from './ui/input'
@@ -16,30 +16,61 @@ import Chart from '@/components/carbonchart'
 import Progressbar from '@/components/progressbar'
 import Wallet from '@/libs/wallets/freighter'
 import { networks } from '@/contracts/networks'
+//import registerUser from "@/contracts/register"
 import { fetchApi, postApi } from '@/utils/api'
-import {signTransaction} from "@stellar/freighter-api"
-import { BASE_FEE, Account, Address, Asset, Contract, Horizon, Keypair, Networks, Operation, SorobanRpc, Transaction, TransactionBuilder, nativeToScVal, scValToNative } from '@stellar/stellar-sdk'
-//import { Contract } from '@/contracts/credits/client'
-
+import { signTransaction } from "@stellar/freighter-api"
+import { BASE_FEE, Account, Address, Asset, Contract, Horizon, Keypair, Networks, Operation, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, nativeToScVal, scValToNative } from '@stellar/stellar-sdk'
 
 export default function DonationForm(props:any) {
   //console.log('Props', props)
-  const network = process.env.NEXT_PUBLIC_STELLAR_NETWORK||'testnet'
-  console.log('NETENV', network)
+  const netname = process.env.NEXT_PUBLIC_STELLAR_NETWORK||'testnet'
+  console.log('NETENV', netname)
+  const network = networks[netname]
+  console.log('NETWORK', network)
+  const horizon = new Horizon.Server(network.horizon, { allowHttp: true })
+  const soroban = new SorobanRpc.Server(network.soroban, { allowHttp: true })
+
   const initiative = props.initiative
   const contractId = initiative.contractcredit
-  //const contractId = 'CBZ62WGTRYNMCNNRBQHGGEDBPIA4VXCHNFSICDKLP3CFNGF3H4WD3OQC' // mainnet
-  //const contractId = 'CAE5MDQ7IZSWPC2P2SPH3V65HYZKN55RY74S7IQ24WL4BXOIFCJPM36N' // futurenet
-  //const contractId = 'CCUZYZPNVGXH7TDKRRC25KMZ3DIM6JDLLU2SLZ6LIWFKS6XYQQKQZAV3' // testnet
   const organization = initiative.organization
   const {donation, setDonation} = useContext(DonationContext)
   const usdRate = props.rate || 0
+  const usdCarbon = props.carbon || 0
   const credit = initiative?.credits?.length>0 ? initiative?.credits[0] : null
-  const creditGoal = credit?.goal ?? 0
+  const creditGoal = credit?.goal ?? 1
   const creditCurrent = credit?.current ?? 0
   const creditValue = credit?.value ?? 0
   const creditPercent = (creditValue * 100 / creditGoal).toFixed(0)
   const creditDate = new Date().toLocaleDateString(undefined, {month:'long', day:'numeric', year:'numeric'})
+  console.log('CREDIT', creditValue)
+  
+  let maxGoal = 30
+  //let maxGoal = creditGoal/1000 // 1 ton = 1000 kgs
+  //if(maxGoal>100){ maxGoal = 100 }
+  console.log('MAXGOAL', maxGoal)
+
+  const chains = getChainsList()
+  const chainLookup = getChainsMap()
+  const chainWallets = getChainWallets(chains[0].symbol)
+  const chainName = 'Stellar'
+  const currency  = 'XLM'
+
+  const [showXLM, toggleShowXLM] = useState(false)
+  const [currentChain, setCurrentChain] = useState('Stellar')
+  const [wallets, setWallets] = useState(chainWallets)
+  const [currentWallet, setCurrentWallet] = useState(wallets[0])
+  const amountInputRef = useRef(null)
+  const [disabled, setDisabled] = useState(false)
+  const [buttonText, setButtonText] = useState('Donate')
+  const [message, setMessage] = useState('One wallet confirmation required')
+  const [rateMessage, setRateMessage] = useState(`0 USD at ${usdRate.toFixed(2)} XLM/USD`)
+  const [chartTitle, setChartTitle] = useState('Total estimated carbon emissions retired')
+  const [chartValue, setChartValue] = useState(creditCurrent) // TODO: calc aggregate from db
+  const [percent, setPercent] = useState('0')
+  const [offset, setOffset]   = useState('0.00')
+  const [amount, setAmount]   = useState(0)
+
+
   const wallet = new Wallet()
 
   function $(id:string){ return document.getElementById(id) as HTMLInputElement }
@@ -72,14 +103,9 @@ export default function DonationForm(props:any) {
 
 //type Tx = Transaction<Memo<MemoType>, Operation[]>
 
-  // Contract call
-  async function donate(contractId:string, from:string, amount:number) {
+  async function donate(contractId:string, from:string, amount:number, firstTime:boolean) {
     try {
       console.log('-- Donating', contractId, from, amount)
-      const net = networks[network]
-      const rpc = net.soroban
-      const url = net.horizon
-      console.log('NET', net)
       const adr = new Address(from).toScVal()
       //const wei = BigInt(amount*10000000) // 7 decs
       const wei = nativeToScVal(amount*10000000, { type: 'i128' })
@@ -91,36 +117,70 @@ export default function DonationForm(props:any) {
       const op = ctr.call('donate', ...args)
       //const op = ctr.call('donate', args)
       console.log('OP', op)
-      const horizon = new Horizon.Server(url, { allowHttp: true })
-      const soroban = new SorobanRpc.Server(rpc, { allowHttp: true })
       //const account = await horizon.loadAccount(from)
       const account = await soroban.getAccount(from)
       console.log('ACT', account)
-      const base = await horizon.fetchBaseFee()
-      const fee = base.toString()
-      const trx = new TransactionBuilder(account, {fee, networkPassphrase: net.passphrase})
+      //const base = await horizon.fetchBaseFee()
+      //const fee = base.toString()
+      const fee = BASE_FEE
+      const trx = new TransactionBuilder(account, {fee, networkPassphrase: network.passphrase})
         .addOperation(op)
         .setTimeout(30)
         .build()
       console.log('TRX', trx)
+      //window.trx = trx
       const sim = await soroban.simulateTransaction(trx);
       console.log('SIM', sim)
+      //window.sim = sim
       if (SorobanRpc.Api.isSimulationSuccess(sim) && sim.result !== undefined) {
         console.log('RES', sim.result)
         // Now prepare it???
-        const txp = await soroban.prepareTransaction(trx)
-        console.log('TXP',txp)
-        const xdr = txp.toXDR()
+        let xdr = ''
+        if(firstTime){
+          // Increment tx resources to avoid first time bug
+          console.log('FIRST')
+          //const sorobanData = new SorobanDataBuilder()
+          const sorobanData = sim.transactionData
+          console.log('SDATA1', sorobanData)
+          //window.sdata1 = sorobanData
+          //sorobanData.readBytes += '60'
+          const rBytes = sorobanData['_data'].resources().readBytes() + 60
+          const rFee = (parseInt(sorobanData['_data'].resourceFee()) + 100).toString()
+          sorobanData['_data'].resources().readBytes(rBytes)
+          sorobanData.setResourceFee(rFee)
+          const sdata = sorobanData.build()
+          //window.sdata2 = sorobanData
+          console.log('SDATA2', sorobanData)
+          const fee2 = (parseInt(sim.minResourceFee) + 100).toString()
+          //const fee2 = (parseInt(BASE_FEE) + 100).toString()
+          console.log('FEE2',fee2)
+          //const trz = trx.setSorobanData(sdata).setTransactionFee(fee2).build()
+          const account2 = await soroban.getAccount(from)
+          const trz = new TransactionBuilder(account2, {fee:fee2, networkPassphrase: network.passphrase})
+            .setSorobanData(sdata)
+            .addOperation(op)
+            .setTimeout(30)
+            .build()
+          console.log('TRZ',trz)
+          //window.trz = trz
+          const txz = await soroban.prepareTransaction(trz)
+          console.log('TXZ',txz)
+          xdr = txz.toXDR()
+        } else {
+          const txp = await soroban.prepareTransaction(trx)
+          console.log('TXP',txp)
+          xdr = txp.toXDR()
+        }
         console.log('XDR', xdr)
         // Now sign it???
-        const opx = {networkPassphrase: net.passphrase}
-        //const opx = {network:net.name, networkPassphrase: net.passphrase, accountToSign: from}
+        const opx = {networkPassphrase: network.passphrase}
+        //const opx = {network:network.name, networkPassphrase: network.passphrase, accountToSign: from}
         console.log('OPX', opx)
         //const res = await wallet.signAndSend(xdr, opx)
         const sgn = await signTransaction(xdr, opx)
         console.log('SGN', sgn)
         // Now send it?
-        const txs = TransactionBuilder.fromXDR(sgn, net.passphrase) // as Tx
+        const txs = TransactionBuilder.fromXDR(sgn, network.passphrase) // as Tx
         console.log('TXS', txs)
         //const six = await soroban.simulateTransaction(txs)
         //console.log('SIX', six)
@@ -134,12 +194,17 @@ export default function DonationForm(props:any) {
 
         const txid = res?.hash || ''
         console.log('TXID', txid)
+        if(res?.status.toString() == 'ERROR'){
+          console.log('TX ERROR')
+          return {success:false, txid, error:'Error sending payment (950)'} // get error
+        }
         if(res?.status.toString() == 'SUCCESS'){
+          console.log('TX SUCCESS')
           return {success:true, txid, error:null}
         } else {
           // Wait for confirmation
           const secs = 1000
-          const wait = [2,2,2,3,3,3,4,4,4,5,5,5] // 42 secs / 12 loops
+          const wait = [2,2,2,3,3,3,4,4,4,5,5,5,6,6,6] // 60 secs / 15 loops
           let count = 0
           let info = null
           while(count < wait.length){
@@ -148,20 +213,26 @@ export default function DonationForm(props:any) {
             count++
             info = await soroban.getTransaction(txid)
             console.log('INFO', info)
+            if(info.status=='ERROR') {
+              console.log('TX FAILED')
+              return {success:false, txid, error:'Error sending payment (951)', extra:info} // get error
+            }
             if(info.status=='NOT_FOUND' || info.status=='PENDING') {
               continue // Not ready in blockchain?
             }
             if(info.status=='SUCCESS'){
+              console.log('TX SUCCESS2')
               return {success:true, txid, error:null}
-            } else if(info.status!=='PENDING') {
-              return {success:false, txid:'', error:'Error sending payment (951)'} // get error
+            } else {
+              console.log('TX FAILED2')
+              return {success:false, txid, error:'Error sending payment (952)', extra:info} // get error
             }
           }
-          return {success:false, txid:'', error:'Error sending payment (952)'} // get error
+          return {success:false, txid, error:'Error sending payment - timeout (953)'} // get error
         }
       } else {
         console.log('BAD', sim)
-        return {success:false, txid:'', error:'Error sending payment (953)'} // get error
+        return {success:false, txid:'', error:'Error sending payment - bad simulation (954)'} // get error
       }
     } catch(ex) {
       console.log('ERROR', ex)
@@ -169,117 +240,7 @@ export default function DonationForm(props:any) {
     }
   }
 
-/*
-  async function donateX(contractId:string, from:string, amount:number) {
-    try {
-      console.log('-- Donating', contractId, from, amount)
-      const net = networks[network]
-      console.log('NET', net)
-      //const net = networks.mainnet
-      //const svr = new SorobanRpc.Server(net.soroban)
-      //const svr = new SorobanRpc.Server(net.soroban, { allowHttp: net.soroban.startsWith('http:') })
-      //const act = await svr.getAccount(from)
-      //console.log('ACT', act)
-      //const seq = act.sequence.toString()
-      //console.log('SEQ', seq)
-
-      //const opt = {...net, contractId}
-      const opt = {networkPassphrase:net.passphrase, rpcUrl:net.soroban, contractId, signTransaction:(xdr: string) => signTransaction(xdr, 'testnet')}
-      console.log('OPT', opt)
-      const ctr = new Contract(opt)
-      //const ctr = new Contract(contractId)
-      console.log('CTR', ctr)
-      const wei = BigInt(amount*10000000) // 7 decs
-      //const dat = [from, wei]
-      const dat = {from, amount:wei}
-      console.log('DAT', dat)
-
-      //const adr = new Address(from).toScVal()
-      //const wey = nativeToScVal(amount*10000000, { type: 'i128' })
-      //const args = {from:adr, amount:wey}
-      //const args = [adr, wei]
-
-
-      const trx = await ctr.donate(dat)
-      console.log('TRX', trx)
-      //trx.raw.source = act
-      //const opr = trx.raw.operations[0];
-      //console.log('OPR', opr)
-      //const arg = new Address(target).toScVal()
-      //const opy = ctr.call('method', dat)
-      //console.log('OPy', opy)
-
-      //trx.raw = new TransactionBuilder(act, {
-      //  fee: trx.raw.baseFee,
-      //  networkPassphrase: trx.options.networkPassphrase,
-      //})
-      //  .setTimeout(30)
-      //  .addOperation(Operation.invokeHostFunction({ opr, auth: opr.auth ?? [] }))
-      //  .build();
-      //await trx.simulate()
-
-      //const txb = new TransactionBuilder(act, { fee: BASE_FEE, networkPassphrase: net.passphrase })
-      //  .addOperation(opr)
-      //  .setTimeout(30)
-      //  .build()
-      
-      const soroban = new SorobanRpc.Server(net.soroban, { allowHttp: true })
-      const sim = await trx.simulate()
-      //const sim = await soroban.simulateTransaction(trx);
-      //console.log('SIM', sim)
-      
-      const trp = await soroban.prepareTransaction(trx.built)
-      console.log('TRP', trp)
-
-      const xdr = trp.toXDR()
-      console.log('XDR', xdr)
-      
-      //const opx = {network:net.name, networkPassphrase: net.passphrase, accountToSign: from}
-      const opx = {networkPassphrase: net.passphrase}
-      console.log('OPX', opx)
-      
-      //trx.raw.source = act
-      //const sin = await trx.simulate()
-      //console.log('SIN', sin)
-      //const xdr = sin.raw.build().toXDR()
-      //trx.built.addSignature(from, signature)
-      //const xdr = trx.raw.build().toXDR()
-
-      //const res = await wallet.signAndSend(xdr, opx)
-      //const res = await trx.signAndSend()
-      
-      const sgn = await signTransaction(xdr, opx)
-      console.log('SGN', sgn)
-      // Now send it?
-      const txs = TransactionBuilder.fromXDR(sgn, net.passphrase) as Tx
-      console.log('TXS', txs)
-      const res = await soroban.sendTransaction(txs)
-      console.log('RES', res)
-      console.log('JSN', JSON.stringify(res,null,2))
-
-      //console.log('RES2', res.sendTransactionResponse)
-      //console.log('RES3', res.getTransactionResponse)
-      //console.log('RES4', res.getTransactionResponse?.status)
-      let txid = ''
-      if(res?.getTransactionResponse?.status == 'SUCCESS'){
-        txid = res?.sendTransactionResponse?.hash || ''
-        return {success:true, txid, error:null}
-      } else {
-        return {success:false, txid:'', error:'Error sending payment'} // get error?
-      }
-    } catch(ex:any) {
-      console.error('ERROR', ex)
-      return {success:false, error:ex?.message || 'Error sending payment', txid:''}
-    }
-  }
-*/
-
   async function onAction(){
-    //sendPayment(contractId, name, email, organization, initiativeId, amount, currency, usdRate, issuer, destinationTag, yesReceipt, yesNFT)
-    //const wallet    = currentWallet?.value || ''
-    //const chainName = currentChain
-    const chainName = 'Stellar'
-    const currency  = 'XLM'
     const amount    = $('amount')?.value || '0'
     const name      = $('name-input')?.value || ''
     const email     = $('email-input')?.value || ''
@@ -320,13 +281,13 @@ export default function DonationForm(props:any) {
 
     const destinationTag = initiative.tag
     // if amount in USD convert by coin rate
-    const amountNum = parseInt(amount||'0')
-    const coinValue = showUSD ? amountNum : (amountNum / usdRate)
-    const usdValue  = showUSD ? (amountNum * usdRate) : amountNum
-    const rateMsg   = showUSD 
+    const amountNum = parseFloat(amount||'0')
+    const coinValue = showXLM ? amountNum : (amountNum / usdRate)
+    const usdValue  = showXLM ? (amountNum * usdRate) : amountNum
+    const rateMsg   = showXLM 
       ? `USD ${usdValue.toFixed(2)} at ${usdRate.toFixed(2)} ${currency}/USD` 
       : `${coinValue.toFixed(2)} ${currency} at ${usdRate.toFixed(2)} ${currency}/USD`
-    console.log('AMT', showUSD, coinValue, usdValue)
+    console.log('AMT', showXLM, coinValue, usdValue)
     setRateMessage(rateMsg)
     const weiValue = Math.trunc(coinValue * 10000000).toString()
     console.log('WEI', weiValue)
@@ -358,11 +319,17 @@ export default function DonationForm(props:any) {
     }
 
     // Check user exists or create a new one
+    let firstTime = true
     const userRes = await fetchApi('users?wallet='+donor)
     let userInfo = userRes?.result || null
-    //console.log('USER', userInfo)
+    console.log('USER', userInfo)
     const userId = userInfo?.id || ''
-    if(!userId){
+    if(userId){
+      // Check donations
+      const userDon = await fetchApi('donations?userid='+userId)
+      console.log('DONS', userDon)
+      if(userDon?.result?.length>0){ firstTime = false }
+    } else {
       //const email = donor.substr(0,10).toLowerCase() + '@example.com'
       const user = await postApi('users', {
         name: 'Anonymous', 
@@ -381,10 +348,15 @@ export default function DonationForm(props:any) {
         setMessage('Error: User could not be created')
         return
       }
+      //const ok1 = await registerUser(contractId, donor) // FIX: Bug in Soroban, register user in contract on first use
+      //console.log('REG', ok1)
+      /*
+        per discord: sorobanData.readBytes += 60; sorobanData.resourceFee +=  100; tx.fee += 100
+      */
     }
 
     //const memo = destinTag ? 'tag:'+destinTag : ''
-    const result = await donate(contractId, donor, amountNum)
+    const result = await donate(contractId, donor, amountNum, firstTime)
     console.log('UI RESULT', result)
     if(!result?.success){
       setMessage('Error sending payment')
@@ -401,7 +373,7 @@ export default function DonationForm(props:any) {
       userId:         userInfo?.id,
       paytype:        'crypto',
       chain:          chainName,
-      network:        network,
+      network:        netname,
       wallet:         donor,
       amount:         coinValue,
       usdvalue:       usdValue,
@@ -469,44 +441,42 @@ export default function DonationForm(props:any) {
     setMessage('Thank you for your donation!')
   }
 
-  const chains = getChainsList()
-  const chainLookup = getChainsMap()
-  const chainWallets = getChainWallets(chains[0].symbol)
+  useEffect(() => {
+    console.log('SWITCH')
+    recalc()
+  }, [showXLM])
 
-  // TODO: currentChain should be currently selected chain in wallet instead of first one
-  const [showUSD, toggleShowUSD] = useState(false)
-  const [currentChain, setCurrentChain] = useState('Stellar')
-  const [wallets, setWallets] = useState(chainWallets)
-  const [currentWallet, setCurrentWallet] = useState(wallets[0])
-  const amountInputRef = useRef(null)
-  const [disabled, setDisabled] = useState(false)
-  const [buttonText, setButtonText] = useState('Donate')
-  const [message, setMessage] = useState('One wallet confirmation required')
-  const [rateMessage, setRateMessage] = useState(`0 USD at ${usdRate.toFixed(2)} XLM/USD`)
-  const [chartTitle, setChartTitle] = useState('Total estimated carbon emissions retired')
-  const [chartValue, setChartValue] = useState(creditCurrent) // TODO: calc aggregate from db
-  const [percent, setPercent] = useState('0')
-  const [offset, setOffset]   = useState('0.00')
-
-  function amountChanged(evt){
-    console.log('REF', amountInputRef)
-    const currency = 'XLM'
-    const amount = evt.target.value || '0'
-    const amountNum = parseInt(amount)
-    const coinValue = showUSD ? amountNum : (amountNum / usdRate)
-    const usdValue  = showUSD ? (amountNum * usdRate) : amountNum
-    const rateMsg   = showUSD 
+  function recalc(){
+    console.log('--RECALC')
+    //const amountInp = evt.target.value || '0'
+    const amountInp = $('amount')?.value || '0'
+    const amountNum = parseFloat(amountInp)
+    const coinValue = showXLM ? amountNum : (amountNum / usdRate)
+    const usdValue  = showXLM ? (amountNum * usdRate) : amountNum
+    const rateMsg   = showXLM 
       ? `${usdValue.toFixed(2)} USD at ${usdRate.toFixed(2)} USD/${currency}` 
       : `${coinValue.toFixed(2)} ${currency} at ${usdRate.toFixed(2)} USD/${currency}`
-    console.log('AMT', showUSD, coinValue, usdValue)
+    console.log('USD', usdValue, 'XLM', coinValue, showXLM?'ON':'OFF')
     setRateMessage(rateMsg)
-    const retire = (amount / creditValue).toFixed(2)
-    const pct = ((amount>creditValue) ? 100 : (amount / creditValue * 100)).toFixed(2)
-    console.log('Amount changed', amount, retire, pct)
+    const retire = (usdValue / creditValue).toFixed(2)
+    const pct = ((usdValue>creditValue) ? 100 : (usdValue / creditValue * 100)).toFixed(2)
+    console.log('Changed', amountInp)
+    console.log('Retire', usdValue, retire, pct)
     setOffset(retire)
     setPercent(pct)
+    //const data = {...donation, amount:coinValue, amountFiat:usdValue, ticker:'XLM'}
+    //setDonation(data)
+    //console.log('DATA', data)
   }
-
+/*
+  function refresh(){
+    const name = $('name-input').value || 'Anonymous'
+    console.log('NAME', name)
+    const data = {...donation, donor:{address:donation.donor.address, name}}
+    setDonation(data)
+    console.log('DATA', data)
+  }
+*/
   return (
     <div className="flex min-h-full w-full">
       <Card className="py-6 w-full">
@@ -544,9 +514,10 @@ export default function DonationForm(props:any) {
         <Separator />
         <div className="px-6">
           <div className="my-10 text-center">
-            <Chart title={chartTitle} goal={creditGoal} value={chartValue} />
-            <p className="mt-12 mb-4">Your donation will offset {offset} tons of carbon</p>
+            <Chart title={chartTitle} goal={maxGoal} value={chartValue} />
+            <p className="mt-4 mb-4">Your donation will offset {offset} ton{parseInt(offset)==1?'':'s'} of carbon</p>
             <Progressbar value={percent} />
+            <p className="mt-2 mb-4">1 ton of carbon = USD {creditValue}</p>
           </div>
           <div className="w-full my-6">
             <div className="flex flex-row justify-between items-center mb-2">
@@ -555,9 +526,9 @@ export default function DonationForm(props:any) {
                 <Label htmlFor="show-usd-toggle">USD</Label>
                 <Switch
                   id="show-usd-toggle"
-                  valueBasis={showUSD}
+                  valueBasis={showXLM}
                   handleToggle={() => {
-                    toggleShowUSD(!showUSD)
+                    toggleShowXLM(!showXLM)
                   }}
                 />
                 <Label>{chainLookup[currentChain]?.symbol}</Label>
@@ -568,9 +539,9 @@ export default function DonationForm(props:any) {
                 className="pl-4"
                 type="text"
                 id="amount"
-                text={ showUSD ? '| ' + chainLookup[currentChain]?.symbol : '| USD' }
+                text={ showXLM ? '| ' + chainLookup[currentChain]?.symbol : '| USD' }
                 divRef={amountInputRef}
-                onChange={amountChanged}
+                onChange={recalc}
               />
             </div>
             <Label className="block mt-2 text-right">{rateMessage}</Label>

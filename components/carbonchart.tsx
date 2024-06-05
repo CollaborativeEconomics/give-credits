@@ -89,7 +89,7 @@ function CarbonChart({ title, goal=100, value=0, max100=false }: ChartType) {
   //console.log('Arrs', offs.length, tons.length)
   return (
     <>
-      <div className="text-center mb-4">{title} <span>{value}</span> tons</div>
+      <div className="text-center mb-4">{title} <span>{value}</span> out of {goal} tons</div>
       <div style={style.chart}>
         {offs.map(() => { return (<div style={style.off} key={Math.random()}></div>) } )}
         {dec>0 ? (<div style={prt}></div>) : <></> }

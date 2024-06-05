@@ -3,14 +3,14 @@ import { getDonations, getDonationsByUser, newDonation } from '@/utils/registry'
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
-    const user = (url.searchParams.get('user') || '')
+    const user = (url.searchParams.get('userid') || '')
     let res = null
-    if(!user){
-      res = await getDonations()
+    if(user){
+      res = await getDonationsByUser(user)
       console.log('Response', res)
       return Response.json({success:true, result:res})
     } else {
-      res = await getDonationsByUser(user)
+      res = await getDonations()
       console.log('Response', res)
       return Response.json({success:true, result:res})
     }

@@ -39,6 +39,10 @@ impl Credits {
 
   //---- METHODS
 
+  pub fn register(_: Env, from: Address) {
+    from.require_auth();
+  }
+
   pub fn donate(e: Env, from: Address, amount: i128) {
     if amount <= 0 { panic!("amount less than zero") }
     let minimum = read_minimum(&e);

@@ -31,4 +31,4 @@ export const networks = {
     horizon: 'https://horizon.stellar.org',
     soroban: 'https://soroban.stellar.org'
   }
-};
+}
