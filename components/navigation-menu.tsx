@@ -56,7 +56,7 @@ export function NavMenu() {
               </NavigationMenuContent>
             </NavigationMenuItem> */}
             <NavigationMenuItem>
-              {status == 'authenticated' || true ? (
+              {status == 'authenticated' ? (
                 <NavigationMenuLink
                   className={navigationMenuTriggerStyle({ type: 'avatar' })}
                   href={userurl}
