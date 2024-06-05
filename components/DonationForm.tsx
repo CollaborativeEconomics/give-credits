@@ -554,7 +554,7 @@ export default function DonationForm(props:any) {
         </div>
         <Separator />
         <div className="flex flex-col items-center justify-center">
-          <Button disabled={disabled} className="mt-6 mx-6 w-[250px] h-[50px] bg-lime-600 text-white text-lg outline outline-slate-300 outline-1 hover:bg-green-600 hover:shadow-inner" onClick={onAction}>
+          <Button disabled={disabled} className="mt-6 mx-6 w-[250px] h-[50px] bg-lime-600 text-white text-lg hover:bg-green-600 hover:shadow-inner" onClick={onAction}>
             {buttonText}
           </Button>
           <p className="mt-2 text-sm">{message}</p>
