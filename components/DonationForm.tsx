@@ -37,16 +37,21 @@ export default function DonationForm(props:any) {
   const usdRate = props.rate || 0
   const usdCarbon = props.carbon || 0
   const credit = initiative?.credits?.length>0 ? initiative?.credits[0] : null
-  const creditGoal = credit?.goal ?? 1
-  const creditCurrent = credit?.current ?? 0
-  const creditValue = credit?.value ?? 0
+  console.log('CREDIT', credit)
+  const creditGoal = credit?.goal || 1
+  const creditCurrent = credit?.current || 0
+  const creditValue = credit?.value || 0
   const creditPercent = (creditValue * 100 / creditGoal).toFixed(0)
   const creditDate = new Date().toLocaleDateString(undefined, {month:'long', day:'numeric', year:'numeric'})
-  console.log('CREDIT', creditValue)
+  console.log('CHART', creditGoal, creditCurrent, creditValue, creditPercent)
   
-  let maxGoal = creditGoal/1000 // 1 ton = 1000 kgs
-  if(maxGoal>100){ maxGoal = 30 }
-  console.log('MAXGOAL', maxGoal)
+  const maxGoal = 100
+  const maxValue = creditCurrent * 100 / creditGoal
+  console.log('MAXGOAL', maxGoal, maxValue)
+  const tons = 173.243
+  const tonx = parseFloat(credit?.current) / parseFloat(credit?.value)
+  const perc = tonx * 100 / tons
+  console.log('TONS', tons, tonx, perc, '%')
 
   const chains = getChainsList()
   const chainLookup = getChainsMap()
@@ -63,7 +68,7 @@ export default function DonationForm(props:any) {
   const [buttonText, setButtonText] = useState('Donate')
   const [message, setMessage] = useState('One wallet confirmation required')
   const [rateMessage, setRateMessage] = useState(`0 USD at ${usdRate.toFixed(2)} XLM/USD`)
-  const [chartTitle, setChartTitle] = useState('Total estimated carbon emissions retired')
+  const [chartTitle, setChartTitle] = useState(`${perc.toFixed(2)}% of total estimated carbon emissions retired ${tonx.toFixed(2)} out of ${tons} tons`)
   const [chartValue, setChartValue] = useState(creditCurrent) // TODO: calc aggregate from db
   const [percent, setPercent] = useState('0')
   const [offset, setOffset]   = useState('0.00')
@@ -390,6 +395,12 @@ export default function DonationForm(props:any) {
     }
     //const donationId = res.data?.id
 
+    // Save donation in usd to credit totals
+    console.log('CCC', credit.current, usdValue)
+    const current = parseFloat(credit.current) + usdValue
+    const res2 = await postApi('credits', {id:credit.id, data:{current}})
+    console.log('RES2', res2)
+
     // Send receipt
     if(receipt){
       //sendReceipt(name, email, organization, amount, currency, rate, issuer)
@@ -513,7 +524,7 @@ export default function DonationForm(props:any) {
         <Separator />
         <div className="px-6">
           <div className="my-10 text-center">
-            <Chart title={chartTitle} goal={maxGoal} value={chartValue} />
+            <Chart title={chartTitle} goal={maxGoal} value={maxValue} />
             <p className="mt-4 mb-4">Your donation will offset {offset} ton{parseInt(offset)==1?'':'s'} of carbon</p>
             <Progressbar value={percent} />
             <p className="mt-2 mb-4">1 ton of carbon = USD {creditValue}</p>

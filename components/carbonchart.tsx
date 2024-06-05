@@ -62,7 +62,8 @@ const style = {
 } as const
 
 //const CarbonChart = ({
-function CarbonChart({ title, goal=100, value=0, max100=false }: ChartType) {
+function CarbonChart({ title, goal=100, value=0, max100=true }: ChartType) {
+  console.log('CHART', goal, value)
   const max = (max100 ? 100 : goal)
   const pct:any = {
     10: { ...style.ton, ...style.p10 },
@@ -89,7 +90,7 @@ function CarbonChart({ title, goal=100, value=0, max100=false }: ChartType) {
   //console.log('Arrs', offs.length, tons.length)
   return (
     <>
-      <div className="text-center mb-4">{title} <span>{value}</span> out of {goal} tons</div>
+      <div className="text-center mb-4">{title}</div>
       <div style={style.chart}>
         {offs.map(() => { return (<div style={style.off} key={Math.random()}></div>) } )}
         {dec>0 ? (<div style={prt}></div>) : <></> }
