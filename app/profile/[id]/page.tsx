@@ -1,29 +1,92 @@
+"use client"
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Image as Picture, Newspaper, LayoutList } from 'lucide-react'
 import { ListObject } from '@/components/ui/list-object'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+//import { Input } from '@/components/ui/input'
 import TableReceiptsSort from '@/components/TableReceiptsSort'
 import TableDonationsSort from '@/components/TableDonationsSort'
 import StoryCardCompactVert from '@/components/StoryCardCompactVert'
+import FileView from '@/components/form/fileview'
 import NotFound from '@/components/NotFound'
-import { getUserById, getNFTsByAccount, getDonationsByUser, getFavoriteOrganizations, getUserBadges, getRecentStories } from '@/utils/registry'
+//import { getUserById, getNFTsByAccount, getDonationsByUser, getFavoriteOrganizations, getUserBadges, getRecentStories } from '@/utils/registry'
 import { coinFromChain } from '@/utils/chain'
 
 type Dictionary = { [key: string]: any }
 
-export default async function Profile(props: any) {
+export default function Profile(props: any) {
   console.log('PROPS', props)
   const userid = props?.params?.id
   const search = props?.searchParams?.tab || 'receipts'
-  const user = await getUserById(userid) || null
-  if(!user){ return (<NotFound />) }
-  const receipts:[Dictionary]  = await getNFTsByAccount(userid) || []
-  const donations:[Dictionary] = await getDonationsByUser(userid) || []
-  const favorgs:[Dictionary]   = await getFavoriteOrganizations(userid) || []
-  const badges:[Dictionary]    = await getUserBadges(userid) || []
-  const stories:[Dictionary]   = await getRecentStories(5) || []
+
+  //const receipts:[Dictionary]  = []
+  //const donations:[Dictionary] = []
+  //const favorgs:[Dictionary]   = []
+  //const badges:[Dictionary]    = []
+  //const stories:[Dictionary]   = []
   const nopic = '/media/nopic.png'
+
+  const [user, setUser] = useState(null)
+  const [receipts, setReceipts] = useState([])
+  const [donations, setDonations] = useState([])
+  const [favorgs, setFavorgs] = useState([])
+  const [badges, setBadges] = useState([])
+  const [stories, setStories] = useState([])
+  const [button, setButton] = useState('Save')
+
+  useEffect(()=>{
+    async function getData(){
+      const info = await fetch('/api/profile/'+userid)
+      const data = await info.json()
+      if(!data || data?.error){
+        //return (<NotFound />)
+        console.log('Error fetching user data')
+        return
+      }
+      console.log('PROFILE', data)
+      
+      setUser(data.user)
+      setReceipts(data.receipts)
+      setDonations(data.donations)
+      setFavorgs(data.favorgs)
+      setBadges(data.badges)
+      setStories(data.stories)
+    }
+    getData()
+  }, [])
+
+  //const {register, watch} = useForm()
+  //const [name,email,image] = watch(['name','email','image'],['', '', '', '']);
+
+  function getWallet(adr){
+    return adr ? adr.substr(0,10)+'...' : '?'
+  }
+  function $(id){ return document.getElementById(id) as HTMLInputElement }
+
+  async function onSave(){
+    console.log('Saving...')
+    const name  = $('name').value
+    const email = $('email').value
+    const image = $('imgFile').files[0]
+    console.log('Form', name, email, image)
+    // send form to server then save
+    const opt = {
+      method:'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({name, email})
+    }
+    const info = await fetch('/api/profile/'+userid, opt)
+    const data = await info.json()
+    if(!data || data?.error){
+      console.log('Error updating user data')
+      return
+    }
+    console.log('UPDATED', data)
+    setButton('Saved')
+    setTimeout(()=>{setButton('Save')},3000)
+  }
 
   return (
     <main className="container min-h-screen flex flex-col items-stretch py-24 mt-24">
@@ -32,22 +95,28 @@ export default async function Profile(props: any) {
         {/* Avatar */}
         <div className="border rounded-md p-8 w-full lg:w-2/4 bg-card">
           <div className="flex flex-row flex-start items-center rounded-full">
-            <Image className="mr-8 rounded-full" src={user.image||nopic} width={100} height={100} alt="Avatar" />
-            <div className="flex flex-col flex-start items-start rounded-full">
-              <h1 className="font-bold text-lg">{user.name}</h1>
-              <h2 className="">{user.email}</h2>
-              <h2 className="">{user.wallet.substr(0,10)+'...'}</h2>
+            {/*<Image className="mr-8 rounded-full" src={user?.image||nopic} width={100} height={100} alt="Avatar" />*/}
+            <FileView  id="imgFile" source={user?.image||nopic} className="mr-4" />
+            <div className="flex flex-col flex-start items-start w-full rounded-full">
+              {/*<h1 className="font-bold text-lg">{user?.name}</h1>*/}
+              {/*<h2 className="">{user?.email}</h2>*/}
+              <input type="text" className="pl-4 w-full bg-transparent" id="name" defaultValue={user?.name||''} placeholder="name" />
+              <input type="text" className="pl-4 w-full bg-transparent" id="email" defaultValue={user?.email||''} placeholder="email" />
+              <h2 className="mt-4">Wallet: {getWallet(user?.wallet)}</h2>
             </div>
+          </div>
+          <div className="mt-4 text-right">
+            { user && <button className="px-8 py-2 bg-blue-700 text-white rounded-full" onClick={onSave}>{button}</button> }
           </div>
         </div>
 
         {/* Chains */}
         <div className="flex flex-col items-center border rounded-md mt-4 lg:mt-0 p-4 w-full lg:w-1/3 bg-card">
-          {user.wallets ? (
+          {user?.wallets ? (
             <>
               <h1>Active Chains</h1>
               <div className="mt-4 pb-4 w-full border-b">
-                {user.wallets.map((item:any)=>{
+                {user?.wallets.map((item:any)=>{
                   return (
                     <span key={item.id} className="inline-block border rounded-full p-1 mx-1">
                       <Image src={'/coins/' + (coinFromChain(item.chain)||'none') + '.png'} width={48} height={48} alt="Chain" />
