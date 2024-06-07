@@ -28,7 +28,6 @@ export default async function Handler(props: any) {
   //restoreContract(contractId).then(result => {
   //  console.log('RESTORED', result);
   //});
-  //return <>TESTING...</>
 
   const organization = initiative.organization;
   const initiatives = await getInitiativesByOrganization(organization.id);

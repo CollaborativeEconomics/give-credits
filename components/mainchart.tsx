@@ -31,8 +31,8 @@ const style = {
     boxSizing: 'border-box',
     display: 'inline-block',
     width: '40px',
-    height: '40px',
-    margin: '2px',
+    height: '20px',
+    margin: '0px 4px',
     border: '1px solid #ccc',
     borderRadius: '6px',
     backgroundColor: '#f6f6f6',
@@ -41,8 +41,8 @@ const style = {
     boxSizing: 'border-box',
     display: 'inline-block',
     width: '40px',
-    height: '40px',
-    margin: '2px',
+    height: '20px',
+    margin: '0px 4px',
     // border: '1px solid #00440044',
     borderRadius: '6px',
     // backgroundColor: '#00aa00', // 1a56db blue
@@ -85,7 +85,8 @@ const style = {
   },
 } as const;
 
-function MainChart({ goal = 100, value, max100 = false }: ChartType) {
+function MainChart({ goal = 100, value, max100 = true }: ChartType) {
+  console.log('CHART', goal, value)
   const max = max100 ? 100 : goal;
   const pct: any = {
     10: { ...style.ton, ...style.p10 },
@@ -102,13 +103,14 @@ function MainChart({ goal = 100, value, max100 = false }: ChartType) {
   const int = Math.trunc(num);
   const mod = num % 1;
   const ext = mod ? 1 : 0;
-  const fix = mod.toFixed(1);
+  //const fix = mod.toFixed(1);
+  const fix = Math.trunc(mod*10)/10
   const dec = Number(fix) * max;
   const prt: any = pct[dec];
   const rst = max - int - ext;
   const offs = Array(int).fill(0);
   const tons = Array(rst).fill(0);
-  //console.log('Tons', num, int, mod, fix, dec, rst)
+  console.log('Tons', num, int, mod, fix, dec, rst)
   //console.log('Arrs', offs.length, tons.length)
   function keyRand(){ return Math.random().toString().substr(2) }
 
