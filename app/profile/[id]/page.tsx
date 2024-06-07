@@ -13,6 +13,8 @@ import FileView from '@/components/form/fileview'
 import NotFound from '@/components/NotFound'
 //import { getUserById, getNFTsByAccount, getDonationsByUser, getFavoriteOrganizations, getUserBadges, getRecentStories } from '@/utils/registry'
 import { coinFromChain } from '@/utils/chain'
+import { getExtension } from '@/utils/extension'
+import { randomString } from '@/utils/random'
 
 type Dictionary = { [key: string]: any }
 
@@ -65,17 +67,43 @@ export default function Profile(props: any) {
   }
   function $(id){ return document.getElementById(id) as HTMLInputElement }
 
+  async function saveImage(file) {
+    console.log('IMAGE', file)
+    //if(file){ return {error:'no image provided'} }
+    const name = randomString(10)
+    const body = new FormData()
+    body.append('name', name)
+    body.append('folder', 'avatars')
+    body.append('file', file)
+    const resp = await fetch('/api/upload', { method: 'POST', body })
+    const result = await resp.json()
+    return result
+  }
+
   async function onSave(){
     console.log('Saving...')
     const name  = $('name').value
     const email = $('email').value
-    const image = $('imgFile').files[0]
-    console.log('Form', name, email, image)
+    const file  = $('file').files[0]
+    console.log('Form', name, email, file)
+    const rec = {name, email}
+    // save image
+    let image = user.image ?? ''
+    if(file){
+      const ok = await saveImage(file)
+      console.log('UPLOADED', ok)
+      if(ok?.error){
+        console.log('Error uploading image')
+      } else {
+        image = ok.url
+      }
+    }
+    if(image!==user?.image){ rec['image'] = image }
     // send form to server then save
     const opt = {
       method:'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({name, email})
+      body: JSON.stringify(rec)
     }
     const info = await fetch('/api/profile/'+userid, opt)
     const data = await info.json()
@@ -96,7 +124,7 @@ export default function Profile(props: any) {
         <div className="border rounded-md p-8 w-full lg:w-2/4 bg-card">
           <div className="flex flex-row flex-start items-center rounded-full">
             {/*<Image className="mr-8 rounded-full" src={user?.image||nopic} width={100} height={100} alt="Avatar" />*/}
-            <FileView  id="imgFile" source={user?.image||nopic} className="mr-4" />
+            <FileView  id="file" source={user?.image||nopic} className="mr-4" />
             <div className="flex flex-col flex-start items-start w-full rounded-full">
               {/*<h1 className="font-bold text-lg">{user?.name}</h1>*/}
               {/*<h2 className="">{user?.email}</h2>*/}
