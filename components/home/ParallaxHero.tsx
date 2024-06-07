@@ -63,12 +63,15 @@ const TitleComponent = () => {
 const CTAComponent = () => {
   return (
     <div className="h-full flex items-end justify-center">
-      <Link
-        href={'/initiatives'}
-        className="bg-lime-600 text-white px-12 py-4 text-2xl rounded-full border shadow-xl border-none mb-36"
-      >
-        Donate Now
-      </Link>
+      <div className="flex items-center flex-col">
+        <h3>Find an initiative to support</h3>
+        <Link
+          href={'/initiatives'}
+          className="bg-lime-600 text-white px-12 py-4 text-2xl rounded-full border shadow-xl border-none mb-36"
+        >
+          Donate Now
+        </Link>
+      </div>
     </div>
   );
 };
