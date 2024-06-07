@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useState } from 'react'
+import { signOut } from "next-auth/react"
 import Image from 'next/image'
 import Link from 'next/link'
 import { Image as Picture, Newspaper, LayoutList } from 'lucide-react'
@@ -116,6 +117,10 @@ export default function Profile(props: any) {
     setTimeout(()=>{setButton('Save')},3000)
   }
 
+  function logout(){
+    signOut({ callbackUrl: '/' })
+  }
+
   return (
     <main className="container min-h-screen flex flex-col items-stretch py-24 mt-24">
       <div className="flex flex-col lg:flex-row justify-between">
@@ -155,8 +160,9 @@ export default function Profile(props: any) {
                   <Image src={'/coins/newcoin.png'} width={48} height={48} alt="New chain" />
                 </span>
               </div>
-              <button className="block w-2/3 mt-4 mx-auto py-1 px-8 bg-red-400 text-white rounded-full">
-                <Link href="/api/auth/signout">Log Out</Link>
+              <button className="block w-2/3 mt-4 mx-auto py-1 px-8 bg-red-400 text-white rounded-full" onClick={logout}>
+                {/*<Link href="/api/auth/signout">Log Out</Link>*/}
+                Log Out
               </button>
             </>
           ) : (
