@@ -1,11 +1,11 @@
-import * as React from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { signIn, signOut, useSession } from "next-auth/react"
-import { cn } from '@/libs/shadCnUtil'
-import { Button } from '@/components/ui/button'
-import { HamburgerMenuIcon } from '@radix-ui/react-icons'
-import { DarkModeSwitcher } from '@/components/dark-mode-switcher'
+import * as React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { signIn, signOut, useSession } from 'next-auth/react';
+import { cn } from '@/libs/shadCnUtil';
+import { Button } from '@/components/ui/button';
+import { HamburgerMenuIcon } from '@radix-ui/react-icons';
+import { DarkModeSwitcher } from '@/components/dark-mode-switcher';
 
 import {
   NavigationMenu,
@@ -15,7 +15,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu'
+} from '@/components/ui/navigation-menu';
 
 import {
   Sheet,
@@ -25,13 +25,13 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet'
+} from '@/components/ui/sheet';
 
 export function NavMenu() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
   //console.log('Header Session', session, status)
-  const avatar  = session?.user?.image || '/media/nopic.png'
-  const userurl = session?.userid ? '/profile/'+session?.userid : ''
+  const avatar = session?.user?.image || '/media/nopic.png';
+  const userurl = session?.userid ? '/profile/' + session?.userid : '';
 
   return (
     <>
@@ -56,16 +56,26 @@ export function NavMenu() {
               </NavigationMenuContent>
             </NavigationMenuItem> */}
             <NavigationMenuItem>
-              {status=='authenticated'
-              ?
-                <NavigationMenuLink className={navigationMenuTriggerStyle()} href={userurl}>
-                  <Image src={avatar} width={40} height={40} alt='Avatar' className="rounded-lg" />
+              {status == 'authenticated' ? (
+                <NavigationMenuLink
+                  className={navigationMenuTriggerStyle({ type: 'avatar' })}
+                  href={userurl}
+                >
+                  <Image
+                    src={avatar}
+                    fill
+                    alt="Avatar"
+                    className="rounded"
+                  />
                 </NavigationMenuLink>
-              :
-                <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/signin">
+              ) : (
+                <NavigationMenuLink
+                  className={navigationMenuTriggerStyle()}
+                  href="/signin"
+                >
                   Sign In
                 </NavigationMenuLink>
-              }
+              )}
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
@@ -100,7 +110,7 @@ export function NavMenu() {
         </Sheet>
       </div>
     </>
-  )
+  );
 }
 
 const ListItem = React.forwardRef<
@@ -114,7 +124,7 @@ const ListItem = React.forwardRef<
           ref={ref}
           className={cn(
             'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-            className
+            className,
           )}
           {...props}
         >
@@ -125,6 +135,6 @@ const ListItem = React.forwardRef<
         </a>
       </NavigationMenuLink>
     </li>
-  )
-})
-ListItem.displayName = 'ListItem'
+  );
+});
+ListItem.displayName = 'ListItem';

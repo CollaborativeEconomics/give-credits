@@ -121,7 +121,7 @@ export default async function Home(props: any) {
             </div>
 
             {/* CREDITS */}
-            {stories.length>0 && 
+            {stories?.length > 0 && 
               <div className="flex flex-col mt-24 pb-24">
                 <div className="text-center">
                   <h2 className="mt-6 mb-12 text-white text-4xl font-bold">

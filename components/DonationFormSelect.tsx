@@ -38,10 +38,10 @@ const DonationFormSelect = React.forwardRef<HTMLInputElement, SelectInputProps>(
     return (
       <Select onValueChange={handleChange} defaultValue={currentOption}>
         <SelectTrigger
-          className={`h-10 text-lg w-full rounded-full border border-slate-300 bg-white dark:bg-slate-500 ring-offset-background focus-within:border-blue-700 focus-within:ring-1 ${className || ''}`}
+          className={`dark:border-none h-10 text-lg w-full rounded-full border border-slate-300 bg-white dark:bg-slate-500 ring-offset-background focus-within:border-blue-700 focus-within:ring-1 ${className || ''}`}
         >
           <SelectValue
-            className="bg-white placeholder-gray-600"
+            className="dark:border-none bg-white placeholder-gray-600"
             placeholder={placeHolderText}
           />
         </SelectTrigger>
