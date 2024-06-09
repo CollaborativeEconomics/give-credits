@@ -1,6 +1,5 @@
-import { Address, BASE_FEE, Contract, FeeBumpTransaction, Keypair, Horizon, nativeToScVal, Networks, Operation, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, xdr } from "@stellar/stellar-sdk";
-const { Api, assembleTransaction } = SorobanRpc;
-import * as SorobanClient from 'soroban-client'
+import { Address, BASE_FEE, Contract, FeeBumpTransaction, Keypair, Horizon, nativeToScVal, scValToNative, Networks, Operation, SorobanDataBuilder, SorobanRpc, Transaction, TransactionBuilder, xdr } from "@stellar/stellar-sdk";
+const { Api, assembleTransaction } = SorobanRpc
 
 function sleep(ms:number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -217,7 +216,7 @@ export async function submit(network:any, secret:string, contractId:string, meth
   console.log({network, contractId, method, args})
 
   let op = contract.call(method, ...args)
-  let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })
+  let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.passphrase })
     .addOperation(op)
     .setTimeout(30)
     .build()
@@ -229,7 +228,7 @@ export async function submit(network:any, secret:string, contractId:string, meth
       //const meta:any = resp.meta
       //console.log('META', JSON.stringify(meta,null,2))
       //console.log('Return value:', resp?.value)
-      const resval = SorobanClient.scValToNative(resp?.value)
+      const resval = scValToNative(resp?.value)
       console.log('Return value:', resval)
       return {success:true, value:resval, error:null}
     } else {
@@ -255,9 +254,9 @@ export async function checkContract(network:any, secret:string, contractId:strin
     const horizon  = new Horizon.Server(HORIZON_URL)
     const account  = await horizon.loadAccount(pubkey)
 
-    console.log('CHECK4:', account)
+    console.log('CHECK4:', account?.id)
     let op = contract.call(method, ...args)
-    let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.networkPassphrase })
+    let tx = new TransactionBuilder(account, { fee: BASE_FEE, networkPassphrase: network.passphrase })
       .addOperation(op)
       .setTimeout(30)
       .build()

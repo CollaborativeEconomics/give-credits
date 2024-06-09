@@ -15,7 +15,7 @@ const fetchRegistry = async (url:string) => {
     }
     const response = await fetch(url, options)
     const result = await response.json()
-    //console.log('RESULT', result)
+    //console.log('DBRES', result)
     return result.data
   } catch(ex:any) {
     console.error(ex)
@@ -85,6 +85,7 @@ export const getCreditById = (id: string) => dbQuery(`credits/${id}`)
 export const getCredits = () => dbQuery('credits')
 export const getCreditsByInitiative = (id: string) => dbQuery(`credits?initiativeid=${id}`)
 export const getCreditsByProvider = (id: string) => dbQuery(`credits?providerid=${id}`)
+export const updateCredit = (id: string, data: Dictionary) => dbPost(`credits/${id}`, data)
 
 export const createNFT = (body: Dictionary) => dbPost('nft', body)
 export const getNFTs = () => dbQuery(`nft`)

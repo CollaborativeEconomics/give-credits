@@ -1,8 +1,8 @@
 'use client';
 import { ArrowDown, Mouse } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
-import 'tailwindcss/tailwind.css';
 import { Button } from '../ui/button';
 
 interface ParallaxLayerProps {

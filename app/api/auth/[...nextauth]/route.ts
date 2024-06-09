@@ -115,6 +115,9 @@ const authOptions: NextAuthOptions = {
   },
   providers,
   callbacks: {
+    //async signOut(args) {
+    //  console.log('LOGOUT----', args)
+    //},
     //async signIn(args) {
     //  console.log('LGN----', args)
     //  const { user, account, credentials } = args

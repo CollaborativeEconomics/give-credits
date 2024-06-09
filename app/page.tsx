@@ -8,9 +8,9 @@ import StoryCard from '@/components/StoryCardCompactVert';
 import { getRecentStories, getCreditsByInitiative } from '@/utils/registry';
 
 export default async function Home(props: any) {
-  const appMode = process.env.NODE_ENV || 'development'
-  console.log(`App running in ${appMode} mode`)
-  const initid = '30c0636f-b0f1-40d5-bb9c-a531dc4d69e2';
+  const appMode = process.env.NODE_ENV || 'development';
+  console.log(`App running in ${appMode} mode`);
+  const initid = process.env.FEATURED_INITIATIVE;
   const featured = '/initiatives/'+initid;
   let stories = await getRecentStories(4);
   if (stories?.error) {
@@ -20,9 +20,18 @@ export default async function Home(props: any) {
   // Chart data
   const credits = await getCreditsByInitiative(initid);
   const credit = credits?.length > 0 ? credits[0] : null;
-  const goal = credit?.goal || 1;
-  const current = credit?.current || 0;
-  const percent = ((current * 100) / goal).toFixed(0);
+  const goal = 100
+  //let goal = credit?.goal || 1;
+  //if(goal > 100){ goal = 100 }
+  const tons = 173.243
+  const tonx = parseFloat(credit?.current) / parseFloat(credit?.value)
+  const perc = tonx * 100 / tons
+  console.log('TONS', tons, tonx, perc, '%')
+  const current = Math.floor(parseFloat(credit?.current) / parseFloat(credit?.goal) * 100) || 0;
+  //const current = credit?.current || 0;
+  const percent = ((current * 100) / goal)
+  //console.log('CREDIT', credit);
+  console.log('CHART', goal, current, percent, '%');
   const date = new Date().toLocaleDateString(undefined, {
     month: 'long',
     day: 'numeric',
@@ -102,17 +111,17 @@ export default async function Home(props: any) {
             <div className="container">
               <div className="flex flex-col max-w-[920px] rounded-lg bg-slate-400 bg-[#00000022] justify-center items-center mx-auto mt-16 p-12 shadow-xl">
                 <h2 className="mb-12 text-white text-4xl font-bold">
-                  {percent}% Carbon Neutral
+                  {perc.toFixed(2)}% Carbon Neutral
                 </h2>
-                <MainChart goal={goal} value={current} />
+                <MainChart goal={100} value={perc} />
                 <p className="mt-4 text-white">
-                  {current} out of {goal} ton{goal==1?'':'s'} of carbon offset as of {date}
+                  {tonx.toFixed(2)} out of {tons.toFixed(2)} tons of carbon offset as of {date}
                 </p>
               </div>
             </div>
 
             {/* CREDITS */}
-            {stories.length && 
+            {stories?.length > 0 && 
               <div className="flex flex-col mt-24 pb-24">
                 <div className="text-center">
                   <h2 className="mt-6 mb-12 text-white text-4xl font-bold">
@@ -127,7 +136,7 @@ export default async function Home(props: any) {
                 </div>
               </div>
             }
-            <div className="text-center">{appMode}</div>
+            {/*<div className="text-center">{appMode}</div>*/}
           </div>
         </div>
       </div>

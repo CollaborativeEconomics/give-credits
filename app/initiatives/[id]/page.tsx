@@ -28,15 +28,19 @@ export default async function Handler(props: any) {
   //restoreContract(contractId).then(result => {
   //  console.log('RESTORED', result);
   //});
-  //return <>TESTING...</>
 
   const organization = initiative.organization;
   const initiatives = await getInitiativesByOrganization(organization.id);
   const stories = initiative.stories;
   console.log('STORIES', stories.length);
   const rate = await getRates('XLM');
-  //const rate = await fetch('/api/rates?coin=XLM')
+  //const carbon = await getCarbon();
+  let carbon = '0'
+  if(initiative.credits.length>0){
+    carbon = initiative.credits[0].value
+  }
   console.log('RATE', rate)
+  console.log('CARBON', carbon)
 
   const receipt = {
     status: ReceiptStatus.pending,
@@ -57,7 +61,7 @@ export default async function Handler(props: any) {
   };
 
   return (
-    <main className="w-full bg-gradient-to-t from-slate-200 mt-12">
+    <main className="w-full bg-gradient-to-t from-slate-200 dark:from-slate-950 mt-12">
       <div className="relative flex flex-col px-[5%] container pt-24 w-full h-full">
         <div className="flex overflow-hidden mb-4 flex-col md:flex-row">
           <div className="relative w-full md:w-[45%] h-[200px] md:h-[300px] mb-12 md:mb-2">
@@ -106,7 +110,7 @@ export default async function Handler(props: any) {
         <Separator className="mb-6" />
 
         <div className="md:flex md:flex-col items-center">
-          <DonationView initiative={initiative} receipt={receipt} rate={rate} />
+          <DonationView initiative={initiative} receipt={receipt} rate={rate} carbon={carbon} />
         </div>
 
         <div className="mb-10 pt-10 flex justify-center w-full">
