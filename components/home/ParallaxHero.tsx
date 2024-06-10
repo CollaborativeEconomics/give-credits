@@ -59,6 +59,22 @@ const TitleComponent = () => {
   );
 };
 
+const CTAComponent = () => {
+  return (
+    <div className="h-full flex items-end justify-center">
+      <div className="flex items-center flex-col">
+        <h3>Find an initiative to support</h3>
+        <Link
+          href={'/initiatives'}
+          className="bg-lime-600 text-white px-12 py-4 text-2xl rounded-full border shadow-xl border-none mb-36"
+        >
+          Donate Now
+        </Link>
+      </div>
+    </div>
+  );
+};
+
 const layers = [
   { src: '/home/Hero/Layer5.jpg' },
   { src: '/home/Hero/Layer4.png' },
@@ -66,6 +82,7 @@ const layers = [
   { src: TitleComponent },
   { src: '/home/Hero/Layer2.png' },
   { src: '/home/Hero/Layer1.png' },
+  { src: CTAComponent },
 ];
 
 const ParallaxExample: React.FC = () => {
@@ -78,7 +95,7 @@ const ParallaxExample: React.FC = () => {
 
   return (
     <>
-      <div className="relative w-full h-full overflow-hidden pb-6">
+      <div className="relative w-full h-[125vh] overflow-hidden pb-6">
         {layers.map((layer, index) => (
           <ParallaxLayer
             key={index}
@@ -99,7 +116,7 @@ const ParallaxExample: React.FC = () => {
         ))}
       </div>
       <Button
-        className="animate-bounce bg-white rounded-full absolute left-1/2 p-2 bottom-12 shadow-lg"
+        className="animate-bounce bg-white rounded-full fixed left-1/2 p-2 shadow-lg bottom-4 transform -translate-x-1/2"
         onClick={scrollDown}
       >
         <ArrowDown className="text-black" />
